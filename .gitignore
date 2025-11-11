@@ -1,0 +1,34 @@
+# Ignore everything by default
+/*
+
+# Allow repository metadata and top-level docs
+!.gitignore
+!.gitattributes
+!.gitmodules
+!README.md
+!LICENSE
+!overview.md
+!docs/
+!wp-content/
+
+# Ignore all contents of wp-content by default
+wp-content/*
+
+# Re-allow the scaffolding directories we manage
+!wp-content/themes/
+!wp-content/plugins/
+
+# Allow specific custom theme/plugin folders
+!wp-content/themes/tahoak-park-directory/
+!wp-content/plugins/tahoak-directory-core/
+!wp-content/plugins/tahoak-directory-core/**
+
+# Ignore common runtime directories
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+
+# Misc
+*.log
+.DS_Store
+node_modules/
