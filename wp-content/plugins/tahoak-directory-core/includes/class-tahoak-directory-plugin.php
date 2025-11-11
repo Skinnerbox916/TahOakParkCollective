@@ -19,10 +19,14 @@ final class Plugin {
 		require_once __DIR__ . '/class-taxonomies.php';
 		require_once __DIR__ . '/class-meta.php';
 		require_once __DIR__ . '/class-admin.php';
+		require_once __DIR__ . '/class-requests.php';
+		require_once __DIR__ . '/class-forms.php';
 
 		Post_Types::instance();
 		Taxonomies::instance();
 		Meta::instance();
 		Admin::instance();
+		Requests::instance();
+		Forms::instance();
 	}
 }
