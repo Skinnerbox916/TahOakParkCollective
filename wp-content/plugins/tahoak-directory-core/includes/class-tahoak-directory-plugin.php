@@ -18,9 +18,11 @@ final class Plugin {
 		require_once __DIR__ . '/class-post-types.php';
 		require_once __DIR__ . '/class-taxonomies.php';
 		require_once __DIR__ . '/class-meta.php';
+		require_once __DIR__ . '/class-admin.php';
 
 		Post_Types::instance();
 		Taxonomies::instance();
 		Meta::instance();
+		Admin::instance();
 	}
 }
