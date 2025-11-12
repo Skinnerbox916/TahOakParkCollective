@@ -1,24 +1,36 @@
-(function() {
-	const filterButtons = document.querySelectorAll('[data-filter-service]');
-	const listItems = document.querySelectorAll('[data-service-types]');
+(function () {
+	// Mobile navigation toggle
+	const navToggle = document.querySelector('[data-nav-toggle]');
+	const nav = document.querySelector('[data-nav]');
 
-	if (!filterButtons.length || !listItems.length) {
-		return;
+	if (navToggle && nav) {
+		navToggle.addEventListener('click', () => {
+			const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+			navToggle.setAttribute('aria-expanded', String(!expanded));
+			nav.classList.toggle('is-open', !expanded);
+		});
 	}
 
-	filterButtons.forEach((button) => {
-		button.addEventListener('click', () => {
-			const selected = button.getAttribute('data-filter-service');
+	// Directory filtering (client-side placeholder)
+	const form = document.querySelector('#tahoak-directory-search');
+	const listItems = document.querySelectorAll('[data-service-types]');
 
-			filterButtons.forEach((btn) => {
-				btn.classList.toggle('is-active', btn === button);
-			});
+	if (form && listItems.length) {
+		form.addEventListener('submit', (event) => {
+			event.preventDefault();
+
+			const searchValue = form.querySelector('[name="search"]')?.value.trim().toLowerCase() ?? '';
+			const selectedType = form.querySelector('[name="service_type"]')?.value ?? 'all';
 
 			listItems.forEach((item) => {
-				const types = item.getAttribute('data-service-types').split(',');
-				const shouldShow = selected === 'all' || types.includes(selected);
-				item.style.display = shouldShow ? '' : 'none';
+				const types = item.getAttribute('data-service-types')?.split(',') ?? [];
+				const title = item.querySelector('h2')?.textContent.toLowerCase() ?? '';
+
+				const matchesType = selectedType === 'all' || types.includes(selectedType);
+				const matchesSearch = !searchValue || title.includes(searchValue);
+
+				item.style.display = matchesType && matchesSearch ? '' : 'none';
 			});
 		});
-	});
+	}
 })();
