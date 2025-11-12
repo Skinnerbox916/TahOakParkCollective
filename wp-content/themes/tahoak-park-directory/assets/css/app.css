@@ -1,0 +1,176 @@
+:root {
+	--tahoak-bg: #f5f3ef;
+	--tahoak-primary: #264653;
+	--tahoak-accent: #f4a261;
+	--tahoak-text: #1a1a1a;
+}
+
+body {
+	font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	color: var(--tahoak-text);
+	background: var(--tahoak-bg);
+	margin: 0;
+	line-height: 1.5;
+}
+
+a {
+	color: var(--tahoak-primary);
+}
+
+a:hover,
+a:focus {
+	color: var(--tahoak-accent);
+}
+
+.site-header,
+.site-footer {
+	padding: 1.5rem;
+	background: #fff;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.site-header__inner,
+.site-footer__inner {
+	max-width: 1200px;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.site-main {
+	max-width: 1200px;
+	margin: 2rem auto;
+	padding: 0 1.5rem;
+}
+
+.directory-hero {
+	margin-bottom: 2rem;
+	text-align: center;
+}
+
+.directory-layout {
+	display: grid;
+	gap: 1.5rem;
+}
+
+@media (min-width: 960px) {
+	.directory-layout {
+		grid-template-columns: 2fr 1fr;
+	}
+}
+
+.directory-map {
+	background: #e8e2d9;
+	min-height: 320px;
+	border-radius: 12px;
+	position: relative;
+	overflow: hidden;
+}
+
+.directory-list {
+	background: #fff;
+	border-radius: 12px;
+	padding: 1.5rem;
+	box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.directory-list__item {
+	border-bottom: 1px solid #ece7de;
+	padding: 1rem 0;
+}
+
+.directory-list__item:last-child {
+	border-bottom: 0;
+}
+
+.directory-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 1rem 0 1.5rem;
+}
+
+.directory-filter-btn {
+	background: #fff;
+	border: 1px solid var(--tahoak-primary);
+	color: var(--tahoak-primary);
+	border-radius: 999px;
+	padding: 0.4rem 1rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.directory-filter-btn.is-active,
+.directory-filter-btn:hover {
+	background: var(--tahoak-primary);
+	color: #fff;
+}
+
+.tahoak-request-form {
+	margin-top: 2rem;
+	padding: 1.5rem;
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tahoak-form__group {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 1rem;
+}
+
+.tahoak-form__group label {
+	font-weight: 600;
+	margin-bottom: 0.4rem;
+}
+
+.tahoak-form__group input,
+.tahoak-form__group select,
+.tahoak-form__group textarea {
+	border-radius: 8px;
+	border: 1px solid #d8d2c9;
+	padding: 0.6rem 0.75rem;
+	font-size: 1rem;
+}
+
+.tahoak-form__submit {
+	background: var(--tahoak-primary);
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	padding: 0.75rem 1.5rem;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.tahoak-form__submit:hover,
+.tahoak-form__submit:focus {
+	background: var(--tahoak-accent);
+}
+
+.tahoak-request-alert {
+	border-radius: 8px;
+	padding: 0.75rem 1rem;
+	margin-bottom: 1rem;
+	font-weight: 600;
+}
+
+.tahoak-request-alert--success {
+	background: #e1f7eb;
+	color: #185938;
+}
+
+.tahoak-request-alert--error,
+.tahoak-request-alert--missing,
+.tahoak-request-alert--invalid {
+	background: #fdeaea;
+	color: #8b1d1d;
+}
+
+.tahoak-request-alert--spam {
+	background: #fff7d6;
+	color: #725503;
+}
