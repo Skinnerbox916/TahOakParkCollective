@@ -1,17 +1,35 @@
 (function () {
-	// Mobile navigation toggle
 	const navToggle = document.querySelector('[data-nav-toggle]');
 	const nav = document.querySelector('[data-nav]');
 
+	const updateNavState = (open) => {
+		if (!navToggle || !nav) {
+			return;
+		}
+		navToggle.setAttribute('aria-expanded', String(open));
+		nav.classList.toggle('is-open', open);
+	};
+
 	if (navToggle && nav) {
+		// Default closed for mobile; open on desktop loads
+		const desktopMq = window.matchMedia('(min-width: 900px)');
+
+		const syncWithViewport = (mq) => {
+			updateNavState(mq.matches);
+		};
+
 		navToggle.addEventListener('click', () => {
-			const expanded = navToggle.getAttribute('aria-expanded') === 'true';
-			navToggle.setAttribute('aria-expanded', String(!expanded));
-			nav.classList.toggle('is-open', !expanded);
+			const isOpen = nav.classList.contains('is-open');
+			updateNavState(!isOpen);
 		});
+
+		desktopMq.addEventListener('change', (event) => {
+			syncWithViewport(event);
+		});
+
+		syncWithViewport(desktopMq);
 	}
 
-	// Directory filtering (client-side placeholder)
 	const form = document.querySelector('#tahoak-directory-search');
 	const listItems = document.querySelectorAll('[data-service-types]');
 
