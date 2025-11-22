@@ -1,34 +1,43 @@
-# Ignore everything by default
-/*
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Allow repository metadata and top-level docs
-!.gitignore
-!.gitattributes
-!.gitmodules
-!README.md
-!LICENSE
-!overview.md
-!docs/
-!wp-content/
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Ignore all contents of wp-content by default
-wp-content/*
+# testing
+/coverage
 
-# Re-allow the scaffolding directories we manage
-!wp-content/themes/
-!wp-content/plugins/
+# next.js
+/.next/
+/out/
 
-# Allow specific custom theme/plugin folders
-!wp-content/themes/tahoak-park-directory/
-!wp-content/plugins/tahoak-directory-core/
-!wp-content/plugins/tahoak-directory-core/**
+# production
+/build
 
-# Ignore common runtime directories
-wp-content/uploads/
-wp-content/cache/
-wp-content/upgrade/
-
-# Misc
-*.log
+# misc
 .DS_Store
-node_modules/
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+/src/generated/prisma

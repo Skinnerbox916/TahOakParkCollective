@@ -1,0 +1,38 @@
+services:
+  tahoak-web:
+    build: .
+    container_name: tahoak-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://tahoak:tahoak_password@tahoak-db:5432/tahoak_db
+      - NEXTAUTH_URL=https://tahoak.skibri.us
+      - NEXTAUTH_SECRET=development_secret_change_me_in_prod
+    depends_on:
+      - tahoak-db
+    networks:
+      - proxy
+      - default
+
+  tahoak-db:
+    image: postgres:16-alpine
+    container_name: tahoak-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=tahoak
+      - POSTGRES_PASSWORD=tahoak_password
+      - POSTGRES_DB=tahoak_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - default
+
+networks:
+  proxy:
+    external: true
+  default:
+
+volumes:
+  db_data:
+
