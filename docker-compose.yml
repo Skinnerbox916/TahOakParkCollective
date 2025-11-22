@@ -6,9 +6,20 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://tahoak:tahoak_password@tahoak-db:5432/tahoak_db
-      - NEXTAUTH_URL=https://tahoak.skibri.us
-      - NEXTAUTH_SECRET=development_secret_change_me_in_prod
+      # Database connection - uses DATABASE_URL from .env file
+      # For Docker network, use tahoak-db as hostname
+      - DATABASE_URL=postgresql://tahoak:${POSTGRES_PASSWORD:-tahoak_password}@tahoak-db:5432/${POSTGRES_DB:-tahoak_db}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-https://tahoak.skibri.us}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-development_secret_change_me_in_prod}
+      - NODE_ENV=${NODE_ENV:-development}
+    volumes:
+      # Mount prisma directory so Prisma client can be regenerated
+      - ./prisma:/app/prisma
+      # Exclude node_modules and .next to use container's built versions
+      - /app/node_modules
+      - /app/.next
+    # Override entrypoint to regenerate Prisma client on startup
+    entrypoint: sh -c "npx prisma generate && node server.js"
     depends_on:
       - tahoak-db
     networks:
@@ -19,10 +30,12 @@ services:
     image: postgres:16-alpine
     container_name: tahoak-db
     restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      - POSTGRES_USER=tahoak
-      - POSTGRES_PASSWORD=tahoak_password
-      - POSTGRES_DB=tahoak_db
+      - POSTGRES_USER=${POSTGRES_USER:-tahoak}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-tahoak_password}
+      - POSTGRES_DB=${POSTGRES_DB:-tahoak_db}
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -35,4 +48,5 @@ networks:
 
 volumes:
   db_data:
+
 

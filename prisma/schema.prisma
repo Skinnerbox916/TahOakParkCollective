@@ -5,12 +5,11 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -19,31 +18,69 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  password      String?   // Hashed password
   accounts      Account[]
   sessions      Session[]
   businesses    Business[]
   role          Role      @default(USER)
 }
 
-model Business {
-  id          String   @id @default(cuid())
-  name        String
+model Category {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  slug        String      @unique
   description String?
-  address     String?
-  phone       String?
-  website     String?
-  latitude    Float?
-  longitude   Float?
-  ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  businesses  Business[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Business {
+  id            String          @id @default(cuid())
+  name          String
+  slug          String          @unique
+  description   String?         @db.Text
+  address       String?
+  phone         String?
+  website       String?
+  latitude      Float?
+  longitude     Float?
+  neighborhoods Neighborhood[]
+  categoryId    String?
+  category      Category?       @relation(fields: [categoryId], references: [id])
+  status        BusinessStatus  @default(PENDING)
+  images        Json?           // Array of image URLs
+  hours         Json?           // Business hours structure
+  socialMedia   Json?           // Social media links
+  ownerId       String
+  owner         User            @relation(fields: [ownerId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([categoryId])
+  @@index([ownerId])
 }
 
 enum Role {
   USER
   ADMIN
   BUSINESS_OWNER
+}
+
+enum Neighborhood {
+  TAHOE_PARK
+  OAK_PARK
+  ELMHURST
+  COLONIAL_PARK
+  CURTIS_PARK
+}
+
+enum BusinessStatus {
+  ACTIVE
+  PENDING
+  INACTIVE
 }
 
 model Account {
