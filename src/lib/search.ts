@@ -1,9 +1,9 @@
-import type { Neighborhood } from "@/lib/prismaEnums";
+import type { EntityType } from "@/lib/prismaEnums";
 
 export interface SearchParams {
   q?: string;
-  neighborhood?: Neighborhood | "";
   category?: string;
+  entityType?: EntityType | "";
   view?: "map" | "list";
 }
 
@@ -14,12 +14,12 @@ export function buildSearchUrl(params: SearchParams): string {
     searchParams.set("q", params.q.trim());
   }
 
-  if (params.neighborhood) {
-    searchParams.set("neighborhood", params.neighborhood);
-  }
-
   if (params.category) {
     searchParams.set("category", params.category);
+  }
+
+  if (params.entityType) {
+    searchParams.set("entityType", params.entityType);
   }
 
   if (params.view) {
@@ -35,8 +35,8 @@ export function parseSearchParams(
 ): SearchParams {
   return {
     q: searchParams.get("q") || undefined,
-    neighborhood: (searchParams.get("neighborhood") as Neighborhood) || "",
     category: searchParams.get("category") || "",
+    entityType: (searchParams.get("entityType") as EntityType) || "",
     view: (searchParams.get("view") as "map" | "list") || "list",
   };
 }

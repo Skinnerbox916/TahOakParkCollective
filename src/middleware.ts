@@ -10,7 +10,7 @@ export default withAuth(
 
     // Admin routes - require ADMIN role
     if (path.startsWith("/admin")) {
-      if (token?.role !== ROLE.ADMIN) {
+      if (!token?.roles?.includes(ROLE.ADMIN)) {
         return NextResponse.redirect(new URL("/auth/unauthorized", req.url));
       }
     }
@@ -18,8 +18,8 @@ export default withAuth(
     // Portal routes - require BUSINESS_OWNER or ADMIN role
     if (path.startsWith("/portal")) {
       if (
-        token?.role !== ROLE.BUSINESS_OWNER &&
-        token?.role !== ROLE.ADMIN
+        !token?.roles?.includes(ROLE.BUSINESS_OWNER) &&
+        !token?.roles?.includes(ROLE.ADMIN)
       ) {
         return NextResponse.redirect(new URL("/auth/unauthorized", req.url));
       }
@@ -66,6 +66,7 @@ export const config = {
     "/portal/:path*",
     "/",
     "/auth/:path*",
+    "/businesses/:path*",
   ],
 };
 

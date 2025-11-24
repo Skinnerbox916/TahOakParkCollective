@@ -1,9 +1,9 @@
-import type { Business, Category, User, Prisma } from "@prisma/client";
-import type { Role, Neighborhood, BusinessStatus } from "@/lib/prismaEnums";
+import type { Entity, Category, User, Prisma } from "@prisma/client";
+import type { Role, BusinessStatus, EntityType } from "@/lib/prismaEnums";
 
-export type { Business, Category, User, Role, Neighborhood, BusinessStatus };
+export type { Entity, Category, User, Role, BusinessStatus, EntityType };
 
-export type BusinessWithRelations = Prisma.BusinessGetPayload<{
+export type EntityWithRelations = Prisma.EntityGetPayload<{
   include: {
     category: true;
     owner: true;
@@ -43,14 +43,14 @@ export interface SocialMediaLinks {
   yelp?: string;
 }
 
-export interface BusinessFormData {
+export interface EntityFormData {
   name: string;
   description?: string;
   address?: string;
   phone?: string;
   website?: string;
   categoryId?: string;
-  neighborhoods: Neighborhood[];
+  entityType?: EntityType;
   hours?: BusinessHours;
   socialMedia?: SocialMediaLinks;
 }

@@ -43,13 +43,13 @@ export async function POST(request: NextRequest) {
         email,
         password: hashedPassword,
         name: name || null,
-        role: ROLE.USER,
+        roles: [ROLE.USER],
       },
       select: {
         id: true,
         email: true,
         name: true,
-        role: true,
+        roles: true,
       },
     });
 
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        roles: user.roles,
       },
       "Account created successfully"
     );

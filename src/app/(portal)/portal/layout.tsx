@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
-import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 
 export default async function PortalLayout({
@@ -16,7 +15,6 @@ export default async function PortalLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className="flex">
         <Sidebar type="portal" />
         <main className="flex-1 p-6">{children}</main>

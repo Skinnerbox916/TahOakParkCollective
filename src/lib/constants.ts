@@ -1,19 +1,19 @@
-import type { Neighborhood } from "@/lib/prismaEnums";
+import type { EntityType } from "@/lib/prismaEnums";
 
-export const NEIGHBORHOODS: { value: Neighborhood; label: string }[] = [
-  { value: "TAHOE_PARK", label: "Tahoe Park" },
-  { value: "OAK_PARK", label: "Oak Park" },
-  { value: "ELMHURST", label: "Elmhurst" },
-  { value: "COLONIAL_PARK", label: "Colonial Park" },
-  { value: "CURTIS_PARK", label: "Curtis Park" },
+export const ENTITY_TYPES: { value: EntityType; label: string }[] = [
+  { value: "COMMERCE", label: "Commerce" },
+  { value: "CIVIC", label: "Civic" },
+  { value: "ADVOCACY", label: "Advocacy" },
+  { value: "PUBLIC_SPACE", label: "Public Space" },
+  { value: "NON_PROFIT", label: "Non-Profit" },
 ];
 
-export const NEIGHBORHOOD_LABELS: Record<Neighborhood, string> = {
-  TAHOE_PARK: "Tahoe Park",
-  OAK_PARK: "Oak Park",
-  ELMHURST: "Elmhurst",
-  COLONIAL_PARK: "Colonial Park",
-  CURTIS_PARK: "Curtis Park",
+export const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
+  COMMERCE: "Commerce",
+  CIVIC: "Civic",
+  ADVOCACY: "Advocacy",
+  PUBLIC_SPACE: "Public Space",
+  NON_PROFIT: "Non-Profit",
 };
 
 export const DEFAULT_CATEGORIES = [

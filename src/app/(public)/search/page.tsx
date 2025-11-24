@@ -1,0 +1,269 @@
+"use client";
+
+import { useState, useEffect, useCallback, Suspense } from "react";
+import dynamic from "next/dynamic";
+import { useSearchParams, useRouter } from "next/navigation";
+import { SearchFilters } from "@/components/search/SearchFilters";
+import { EntityList } from "@/components/entity/EntityList";
+import { Button } from "@/components/ui/Button";
+import { EntityWithRelations, Category } from "@/types";
+import { parseSearchParams, buildSearchUrl, debounce } from "@/lib/search";
+import { ENTITY_TYPE } from "@/lib/prismaEnums";
+import type { EntityType } from "@/lib/prismaEnums";
+import { SACRAMENTO_CENTER, DEFAULT_ZOOM } from "@/lib/map";
+
+// Dynamically import map component to avoid SSR issues with Leaflet
+const EntityMap = dynamic(
+  () => import("@/components/search/EntityMap").then((mod) => mod.EntityMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
+        <p className="text-gray-500">Loading map...</p>
+      </div>
+    ),
+  }
+);
+
+function SearchPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlParams = parseSearchParams(searchParams);
+
+  const [searchQuery, setSearchQuery] = useState(urlParams.q || "");
+  const [selectedCategory, setSelectedCategory] = useState(
+    urlParams.category || ""
+  );
+  const [selectedEntityType, setSelectedEntityType] = useState<EntityType | "">(
+    (urlParams.entityType as EntityType) || ""
+  );
+  const [viewMode, setViewMode] = useState<"map" | "list">(
+    urlParams.view || "list"
+  );
+
+  const [entities, setEntities] = useState<EntityWithRelations[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch("/api/categories");
+        const data = await response.json();
+        if (data.success && data.data) {
+          setCategories(data.data);
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    }
+    fetchCategories();
+  }, []);
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce(async (params: {
+      q: string;
+      category: string;
+      entityType: EntityType | "";
+    }) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const queryParams = new URLSearchParams();
+        if (params.q) queryParams.set("q", params.q);
+        if (params.category) queryParams.set("category", params.category);
+        if (params.entityType) queryParams.set("entityType", params.entityType);
+
+        const response = await fetch(`/api/entities?${queryParams.toString()}`);
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          setEntities(data.data);
+        } else {
+          setError(data.error || "Failed to fetch entities");
+          setEntities([]);
+        }
+      } catch (err) {
+        console.error("Error fetching entities:", err);
+        setError("An error occurred while fetching entities");
+        setEntities([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300),
+    []
+  );
+
+  // Fetch entities when filters change
+  useEffect(() => {
+    debouncedSearch({
+      q: searchQuery,
+      category: selectedCategory,
+      entityType: selectedEntityType,
+    });
+  }, [searchQuery, selectedCategory, selectedEntityType, debouncedSearch]);
+
+  // Sync URL with state changes
+  useEffect(() => {
+    const newParams = buildSearchUrl({
+      q: searchQuery || undefined,
+      category: selectedCategory || undefined,
+      entityType: selectedEntityType || undefined,
+      view: viewMode,
+    });
+
+    const currentUrl = searchParams.toString();
+    const newUrl = newParams.replace(/^\?/, "");
+
+    if (currentUrl !== newUrl) {
+      router.replace(newParams || "/search", { scroll: false });
+    }
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedEntityType,
+    viewMode,
+    router,
+    searchParams,
+  ]);
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("");
+    setSelectedEntityType("");
+    setViewMode("list");
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+  };
+
+  const handleEntityTypeChange = (entityType: EntityType | "") => {
+    setSelectedEntityType(entityType);
+  };
+
+  const toggleViewMode = () => {
+    setViewMode((prev) => (prev === "map" ? "list" : "map"));
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Find Local Entities
+          </h1>
+          <p className="text-gray-600">
+            Discover local businesses and organizations in your community
+          </p>
+        </div>
+
+        {/* Search Filters */}
+        <div className="mb-6">
+          <SearchFilters
+            searchQuery={searchQuery}
+            selectedCategory={selectedCategory}
+            selectedEntityType={selectedEntityType}
+            categories={categories}
+            onSearchChange={handleSearchChange}
+            onCategoryChange={handleCategoryChange}
+            onEntityTypeChange={handleEntityTypeChange}
+            onClearFilters={handleClearFilters}
+          />
+        </div>
+
+        {/* View Toggle and Results Count */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-gray-600">
+            {isLoading ? (
+              <span>Searching...</span>
+            ) : error ? (
+              <span className="text-red-600">{error}</span>
+            ) : (
+              <span>
+                {entities.length} {entities.length === 1 ? "entity" : "entities"} found
+              </span>
+            )}
+          </div>
+          <Button variant="outline" size="sm" onClick={toggleViewMode}>
+            {viewMode === "map" ? "Show List" : "Show Map"}
+          </Button>
+        </div>
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            <p>{error}</p>
+          </div>
+        )}
+
+        {/* Map or List View */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {viewMode === "map" ? (
+            <>
+              <div className="lg:col-span-2">
+                <EntityMap
+                  entities={entities}
+                  center={SACRAMENTO_CENTER}
+                  zoom={DEFAULT_ZOOM}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Desktop: Show both map and list side by side */}
+              <div className="hidden lg:block">
+                <EntityMap
+                  entities={entities}
+                  center={SACRAMENTO_CENTER}
+                  zoom={DEFAULT_ZOOM}
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <EntityList entities={entities} isLoading={isLoading} />
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Mobile: Show map below list when in list view */}
+        {viewMode === "list" && (
+          <div className="lg:hidden mt-6">
+            <EntityMap
+              entities={entities}
+              center={SACRAMENTO_CENTER}
+              zoom={DEFAULT_ZOOM}
+            />
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-gray-500">Loading...</p>
+          </div>
+        </main>
+      </div>
+    }>
+      <SearchPageContent />
+    </Suspense>
+  );
+}
+
+

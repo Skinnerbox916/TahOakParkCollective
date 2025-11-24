@@ -3,34 +3,34 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { NEIGHBORHOODS } from "@/lib/constants";
-import type { Neighborhood } from "@/lib/prismaEnums";
+import { ENTITY_TYPES } from "@/lib/constants";
+import type { EntityType } from "@/lib/prismaEnums";
 import type { Category } from "@prisma/client";
 
 interface SearchFiltersProps {
   searchQuery: string;
-  selectedNeighborhood: Neighborhood | "";
   selectedCategory: string;
+  selectedEntityType: EntityType | "";
   categories: Category[];
   onSearchChange: (query: string) => void;
-  onNeighborhoodChange: (neighborhood: Neighborhood | "") => void;
   onCategoryChange: (categoryId: string) => void;
+  onEntityTypeChange: (entityType: EntityType | "") => void;
   onClearFilters: () => void;
 }
 
 export function SearchFilters({
   searchQuery,
-  selectedNeighborhood,
   selectedCategory,
+  selectedEntityType,
   categories,
   onSearchChange,
-  onNeighborhoodChange,
   onCategoryChange,
+  onEntityTypeChange,
   onClearFilters,
 }: SearchFiltersProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const hasActiveFilters =
-    localSearchQuery || selectedNeighborhood || selectedCategory;
+    localSearchQuery || selectedCategory || selectedEntityType;
 
   useEffect(() => {
     setLocalSearchQuery(searchQuery);
@@ -44,12 +44,12 @@ export function SearchFilters({
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-      <div className="space-y-4">
+      <div className="space-y-4" suppressHydrationWarning>
         {/* Search Input */}
         <div>
           <Input
             type="text"
-            placeholder="Search businesses..."
+            placeholder="Search entities..."
             value={localSearchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full"
@@ -58,29 +58,6 @@ export function SearchFilters({
 
         {/* Filters Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Neighborhood Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Neighborhood
-            </label>
-            <select
-              value={selectedNeighborhood}
-              onChange={(e) =>
-                onNeighborhoodChange(
-                  (e.target.value || "") as Neighborhood | ""
-                )
-              }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              <option value="">All Neighborhoods</option>
-              {NEIGHBORHOODS.map((neighborhood) => (
-                <option key={neighborhood.value} value={neighborhood.value}>
-                  {neighborhood.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Category Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -99,6 +76,27 @@ export function SearchFilters({
               ))}
             </select>
           </div>
+
+          {/* Entity Type Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Entity Type
+            </label>
+            <select
+              value={selectedEntityType}
+              onChange={(e) =>
+                onEntityTypeChange((e.target.value || "") as EntityType | "")
+              }
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="">All Types</option>
+              {ENTITY_TYPES.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Active Filters & Clear Button */}
@@ -110,17 +108,14 @@ export function SearchFilters({
                   Search: {localSearchQuery}
                 </span>
               )}
-              {selectedNeighborhood && (
-                <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
-                  {
-                    NEIGHBORHOODS.find((n) => n.value === selectedNeighborhood)
-                      ?.label
-                  }
-                </span>
-              )}
               {selectedCategory && (
                 <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
                   {categories.find((c) => c.id === selectedCategory)?.name}
+                </span>
+              )}
+              {selectedEntityType && (
+                <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
+                  {ENTITY_TYPES.find((t) => t.value === selectedEntityType)?.label}
                 </span>
               )}
             </div>

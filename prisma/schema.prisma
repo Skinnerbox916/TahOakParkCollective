@@ -21,8 +21,8 @@ model User {
   password      String?   // Hashed password
   accounts      Account[]
   sessions      Session[]
-  businesses    Business[]
-  role          Role      @default(USER)
+  entities      Entity[]
+  roles         Role[]    @default([USER])
 }
 
 model Category {
@@ -30,12 +30,14 @@ model Category {
   name        String      @unique
   slug        String      @unique
   description String?
-  businesses  Business[]
+  featured    Boolean     @default(false)
+  entityTypes EntityType[]
+  entities    Entity[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
 
-model Business {
+model Entity {
   id            String          @id @default(cuid())
   name          String
   slug          String          @unique
@@ -45,10 +47,11 @@ model Business {
   website       String?
   latitude      Float?
   longitude     Float?
-  neighborhoods Neighborhood[]
   categoryId    String?
   category      Category?       @relation(fields: [categoryId], references: [id])
+  entityType    EntityType      @default(COMMERCE)
   status        BusinessStatus  @default(PENDING)
+  featured      Boolean         @default(false)
   images        Json?           // Array of image URLs
   hours         Json?           // Business hours structure
   socialMedia   Json?           // Social media links
@@ -61,6 +64,8 @@ model Business {
   @@index([status])
   @@index([categoryId])
   @@index([ownerId])
+  @@index([featured])
+  @@index([entityType])
 }
 
 enum Role {
@@ -69,12 +74,12 @@ enum Role {
   BUSINESS_OWNER
 }
 
-enum Neighborhood {
-  TAHOE_PARK
-  OAK_PARK
-  ELMHURST
-  COLONIAL_PARK
-  CURTIS_PARK
+enum EntityType {
+  COMMERCE
+  CIVIC
+  ADVOCACY
+  PUBLIC_SPACE
+  NON_PROFIT
 }
 
 enum BusinessStatus {

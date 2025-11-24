@@ -52,7 +52,7 @@ export async function PUT(request: NextRequest) {
         return createErrorResponse("Business not found", 404);
       }
 
-      if (user.role !== ROLE.ADMIN && business.ownerId !== user.id) {
+      if (!user.roles.includes(ROLE.ADMIN) && business.ownerId !== user.id) {
         return createErrorResponse("Forbidden", 403);
       }
 

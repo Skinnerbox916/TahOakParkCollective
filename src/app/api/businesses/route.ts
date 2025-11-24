@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { BUSINESS_STATUS } from "@/lib/prismaEnums";
-import type { BusinessStatus } from "@/lib/prismaEnums";
+import { createSuccessResponse, createErrorResponse, withAuth, withRole } from "@/lib/api-helpers";
+import { BUSINESS_STATUS, ROLE } from "@/lib/prismaEnums";
+import type { BusinessStatus, LocalTier } from "@/lib/prismaEnums";
+import { expandSearchQuery, getMatchingCategories } from "@/lib/keyword-search";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,8 +11,9 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") as BusinessStatus | null;
     const categoryId = searchParams.get("categoryId");
     const category = searchParams.get("category"); // Also support "category" param
-    const neighborhood = searchParams.get("neighborhood");
+    const localTier = searchParams.get("localTier") as LocalTier | null;
     const searchQuery = searchParams.get("q") || searchParams.get("search");
+    const featured = searchParams.get("featured") === "true";
 
     const where: any = {};
     
@@ -22,35 +24,74 @@ export async function GET(request: NextRequest) {
       where.status = BUSINESS_STATUS.ACTIVE;
     }
 
+    // Filter by featured flag
+    if (featured) {
+      where.featured = true;
+    }
+
     // Use categoryId or category param
     const finalCategoryId = categoryId || category;
     if (finalCategoryId) {
       where.categoryId = finalCategoryId;
     }
 
-    if (neighborhood) {
-      where.neighborhoods = {
-        has: neighborhood,
-      };
+    if (localTier) {
+      where.localTier = localTier;
     }
 
-    // Keyword search across name and description
+    // Enhanced natural language search with keyword expansion
     if (searchQuery && searchQuery.trim()) {
       const searchTerm = searchQuery.trim();
-      where.OR = [
-        {
-          name: {
-            contains: searchTerm,
-            mode: "insensitive",
+      const expandedTerms = expandSearchQuery(searchTerm);
+      const matchingCategorySlugs = getMatchingCategories(searchTerm);
+      
+      // Get category IDs for matching category slugs
+      let matchingCategoryIds: string[] = [];
+      if (matchingCategorySlugs.length > 0) {
+        const categories = await prisma.category.findMany({
+          where: {
+            slug: {
+              in: matchingCategorySlugs,
+            },
           },
-        },
-        {
-          description: {
-            contains: searchTerm,
-            mode: "insensitive",
+          select: {
+            id: true,
           },
-        },
-      ];
+        });
+        matchingCategoryIds = categories.map(c => c.id);
+      }
+
+      // Build OR conditions: search name/description with expanded terms AND search by matching category IDs
+      const searchConditions: any[] = [];
+      
+      // Add text search conditions for each expanded term
+      expandedTerms.forEach(term => {
+        searchConditions.push(
+          {
+            name: {
+              contains: term,
+              mode: "insensitive",
+            },
+          },
+          {
+            description: {
+              contains: term,
+              mode: "insensitive",
+            },
+          }
+        );
+      });
+
+      // Add category ID search if we found matching categories
+      if (matchingCategoryIds.length > 0) {
+        searchConditions.push({
+          categoryId: {
+            in: matchingCategoryIds,
+          },
+        });
+      }
+
+      where.OR = searchConditions;
     }
 
     const businesses = await prisma.business.findMany({
@@ -81,10 +122,24 @@ export async function POST(request: NextRequest) {
   return withAuth(async (user) => {
     try {
       const body = await request.json();
-      const { name, description, address, phone, website, categoryId, neighborhoods } = body;
+      const { name, description, address, phone, website, categoryId, ownerId, localTier } = body;
 
       if (!name) {
         return createErrorResponse("Business name is required", 400);
+      }
+
+      // Determine the owner ID
+      // Admins can specify an ownerId, otherwise use the authenticated user's ID
+      let finalOwnerId = user.id;
+      if (ownerId && user.roles.includes(ROLE.ADMIN)) {
+        // Verify the owner exists
+        const owner = await prisma.user.findUnique({
+          where: { id: ownerId },
+        });
+        if (!owner) {
+          return createErrorResponse("Specified owner not found", 400);
+        }
+        finalOwnerId = ownerId;
       }
 
       // Generate slug from name
@@ -96,20 +151,24 @@ export async function POST(request: NextRequest) {
         .replace(/^-+|-+$/g, "");
 
       // Ensure unique slug
-      const existingBusiness = await prisma.business.findUnique({
+      let check = await prisma.business.findUnique({
         where: { slug },
       });
 
       let uniqueSlug = slug;
       let counter = 1;
-      while (existingBusiness) {
+      while (check) {
         uniqueSlug = `${slug}-${counter}`;
-        const check = await prisma.business.findUnique({
+        check = await prisma.business.findUnique({
           where: { slug: uniqueSlug },
         });
-        if (!check) break;
         counter++;
       }
+
+      // Admins can set status directly, others default to PENDING
+      const status = user.roles.includes(ROLE.ADMIN) && body.status 
+        ? body.status 
+        : BUSINESS_STATUS.PENDING;
 
       const business = await prisma.business.create({
         data: {
@@ -120,9 +179,9 @@ export async function POST(request: NextRequest) {
           phone,
           website,
           categoryId: categoryId || null,
-          neighborhoods: neighborhoods || [],
-          status: BUSINESS_STATUS.PENDING,
-          ownerId: user.id,
+          status,
+          localTier: localTier || null,
+          ownerId: finalOwnerId,
         },
         include: {
           category: true,

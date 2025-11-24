@@ -1,0 +1,92 @@
+[
+    {
+      "name": "Office of Councilmember Eric Guerra (District 6)",
+      "address": "915 I Street, Sacramento, CA 95814",
+      "zone": "Tahoe Park Representative",
+      "entity_type": "CIVIC",
+      "category": "Elected Official",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "City Council representative for Tahoe Park and Tallac Village."
+    },
+    {
+      "name": "Office of Councilmember Caity Maple (District 5)",
+      "address": "915 I Street, Sacramento, CA 95814",
+      "zone": "Oak Park Representative",
+      "entity_type": "CIVIC",
+      "category": "Elected Official",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "City Council representative for Oak Park, Med Center, and Stockton Blvd."
+    },
+    {
+      "name": "Tahoe Park Neighborhood Association (TPNA)",
+      "address": "5900 11th Ave, Sacramento, CA 95820",
+      "zone": "Tahoe Park Proper",
+      "entity_type": "ADVOCACY",
+      "category": "Neighborhood Association",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "Volunteer board organizing 'Food Truck Nights', park cleanups, and scholarships."
+    },
+    {
+      "name": "Oak Park Neighborhood Association (OPNA)",
+      "address": "PO Box 5523, Sacramento, CA 95817",
+      "zone": "Oak Park",
+      "entity_type": "ADVOCACY",
+      "category": "Neighborhood Association",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "Historic association focusing on equity, housing, and historic preservation."
+    },
+    {
+      "name": "Stockton Boulevard Partnership",
+      "address": "5657 Stockton Blvd, Sacramento, CA 95824",
+      "zone": "Stockton Blvd Corridor",
+      "entity_type": "ADVOCACY",
+      "category": "Business Improvement District",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "PBID managing safety, cleanliness, and security on the Stockton corridor."
+    },
+    {
+      "name": "Tahoe Park (The Park)",
+      "address": "3501 59th St, Sacramento, CA 95820",
+      "zone": "Tahoe Park Proper",
+      "entity_type": "PUBLIC_SPACE",
+      "category": "Park",
+      "local_tier": "Level 2: The Anchors",
+      "notes": "29-acre park featuring a pool, softball fields, and walking loop. Neighborhood centerpiece."
+    },
+    {
+      "name": "McClatchy Park",
+      "address": "3500 5th Ave, Sacramento, CA 95817",
+      "zone": "Oak Park",
+      "entity_type": "PUBLIC_SPACE",
+      "category": "Park",
+      "local_tier": "Level 2: The Anchors",
+      "notes": "Historic park (formerly an amusement park) known for its distinct Joyland archway."
+    },
+    {
+      "name": "Colonial Heights Library",
+      "address": "4799 Stockton Blvd, Sacramento, CA 95820",
+      "zone": "Stockton Blvd Corridor",
+      "entity_type": "PUBLIC_SPACE",
+      "category": "Library",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "Crucial community hub offering internet access, family programs, and cooling centers."
+    },
+    {
+      "name": "Sacramento Food Bank & Family Services",
+      "address": "3333 3rd Ave, Sacramento, CA 95817",
+      "zone": "Oak Park North",
+      "entity_type": "NON_PROFIT",
+      "category": "Social Services",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "Major provider of food access, clothing, and adult education for the region."
+    },
+    {
+      "name": "WellSpace Health - Oak Park",
+      "address": "3415 Martin Luther King Jr Blvd, Sacramento, CA 95817",
+      "zone": "Oak Park",
+      "entity_type": "NON_PROFIT",
+      "category": "Healthcare",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "Community health center providing medical and dental care."
+    }
+  ]

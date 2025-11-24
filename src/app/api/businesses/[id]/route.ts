@@ -42,7 +42,7 @@ export async function PUT(
     try {
       const { id } = await params;
       const body = await request.json();
-      const { name, description, address, phone, website, categoryId, neighborhoods, status } = body;
+      const { name, description, address, phone, website, categoryId, status, localTier } = body;
 
       // Check if business exists
       const existingBusiness = await prisma.business.findUnique({
@@ -54,12 +54,12 @@ export async function PUT(
       }
 
       // Check authorization: user must be owner or admin
-      if (user.role !== ROLE.ADMIN && existingBusiness.ownerId !== user.id) {
+      if (!user.roles.includes(ROLE.ADMIN) && existingBusiness.ownerId !== user.id) {
         return createErrorResponse("Forbidden: You can only update your own business", 403);
       }
 
       // Restrict status changes to admins only
-      if (status !== undefined && user.role !== ROLE.ADMIN) {
+      if (status !== undefined && !user.roles.includes(ROLE.ADMIN)) {
         return createErrorResponse("Forbidden: Only admins can change business status", 403);
       }
 
@@ -71,10 +71,13 @@ export async function PUT(
       if (phone !== undefined) updateData.phone = phone;
       if (website !== undefined) updateData.website = website;
       if (categoryId !== undefined) updateData.categoryId = categoryId || null;
-      if (neighborhoods) updateData.neighborhoods = neighborhoods;
       // Only include status if user is admin
-      if (status !== undefined && user.role === ROLE.ADMIN) {
+      if (status !== undefined && user.roles.includes(ROLE.ADMIN)) {
         updateData.status = status;
+      }
+      // Local tier can be updated by admins or business owners
+      if (localTier !== undefined) {
+        updateData.localTier = localTier || null;
       }
 
       const business = await prisma.business.update({
@@ -118,7 +121,7 @@ export async function DELETE(
       }
 
       // Check authorization: user must be owner or admin
-      if (user.role !== ROLE.ADMIN && business.ownerId !== user.id) {
+      if (!user.roles.includes(ROLE.ADMIN) && business.ownerId !== user.id) {
         return createErrorResponse("Forbidden: You can only delete your own business", 403);
       }
 

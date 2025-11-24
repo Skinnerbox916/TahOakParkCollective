@@ -11,7 +11,7 @@ export default function AuthError({
       : "An authentication error occurred";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 py-8">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Auth Error</h1>
         <p className="text-gray-600 mb-8">{errorMessage}</p>

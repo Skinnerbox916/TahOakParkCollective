@@ -22,7 +22,7 @@ export async function requireAuth() {
 
 export async function requireRole(allowedRoles: Role[]) {
   const user = await requireAuth();
-  if (!allowedRoles.includes(user.role)) {
+  if (!user.roles || !user.roles.some(role => allowedRoles.includes(role))) {
     throw new Error("Forbidden");
   }
   return user;
@@ -30,8 +30,8 @@ export async function requireRole(allowedRoles: Role[]) {
 
 export async function isAdmin() {
   try {
-    const user = await requireRole([ROLE.ADMIN]);
-    return !!user;
+    const user = await requireAuth();
+    return user.roles?.includes(ROLE.ADMIN) ?? false;
   } catch {
     return false;
   }
@@ -39,8 +39,8 @@ export async function isAdmin() {
 
 export async function isBusinessOwner() {
   try {
-    const user = await requireRole([ROLE.BUSINESS_OWNER, ROLE.ADMIN]);
-    return !!user;
+    const user = await requireAuth();
+    return (user.roles?.includes(ROLE.BUSINESS_OWNER) ?? false) || (user.roles?.includes(ROLE.ADMIN) ?? false);
   } catch {
     return false;
   }
@@ -49,7 +49,7 @@ export async function isBusinessOwner() {
 export async function hasRole(role: Role) {
   try {
     const user = await requireAuth();
-    return user.role === role || user.role === ROLE.ADMIN;
+    return (user.roles?.includes(role) ?? false) || (user.roles?.includes(ROLE.ADMIN) ?? false);
   } catch {
     return false;
   }

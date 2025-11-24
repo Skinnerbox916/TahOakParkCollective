@@ -50,3 +50,7 @@ export function BusinessList({ businesses, isLoading }: BusinessListProps) {
 }
 
 
+
+
+
+

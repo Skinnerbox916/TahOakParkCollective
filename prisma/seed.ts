@@ -40,11 +40,12 @@ async function main() {
     where: { email: "admin@tahoak.com" },
     update: {
       password: adminPassword, // Update password if user exists
+      roles: [Role.USER, Role.ADMIN], // Ensure roles array is set
     },
     create: {
       email: "admin@tahoak.com",
       name: "Admin User",
-      role: Role.ADMIN,
+      roles: [Role.USER, Role.ADMIN],
       password: adminPassword,
     },
   });
@@ -57,11 +58,12 @@ async function main() {
     where: { email: "owner@tahoak.com" },
     update: {
       password: ownerPassword, // Update password if user exists
+      roles: [Role.USER, Role.BUSINESS_OWNER], // Ensure roles array is set
     },
     create: {
       email: "owner@tahoak.com",
       name: "Business Owner",
-      role: Role.BUSINESS_OWNER,
+      roles: [Role.USER, Role.BUSINESS_OWNER],
       password: ownerPassword,
     },
   });

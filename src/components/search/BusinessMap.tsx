@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { BusinessWithRelations } from "@/types";
+import { EntityWithRelations } from "@/types";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 
@@ -25,12 +25,12 @@ const icon = L.icon({
 });
 
 interface BusinessMapProps {
-  businesses: BusinessWithRelations[];
+  businesses: EntityWithRelations[];
   center?: [number, number];
   zoom?: number;
 }
 
-function MapBounds({ businesses }: { businesses: BusinessWithRelations[] }) {
+function MapBounds({ businesses }: { businesses: EntityWithRelations[] }) {
   const map = useMap();
 
   useEffect(() => {
@@ -63,8 +63,8 @@ export function BusinessMap({
     return (
       <div className="w-full h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
         <div className="text-center text-gray-500">
-          <p className="text-lg mb-2">No businesses with locations found</p>
-          <p className="text-sm">Add location data to see businesses on the map</p>
+          <p className="text-lg mb-2">No entities with locations found</p>
+          <p className="text-sm">Add location data to see entities on the map</p>
         </div>
       </div>
     );
@@ -107,7 +107,7 @@ export function BusinessMap({
                   </p>
                 )}
                 <a
-                  href={`/businesses/${business.slug}`}
+                  href={`/entities/${business.slug}`}
                   className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                 >
                   View Details →

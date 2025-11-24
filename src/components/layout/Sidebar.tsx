@@ -10,7 +10,7 @@ interface SidebarProps {
 
 const adminNavItems = [
   { href: "/admin/dashboard", label: "Dashboard" },
-  { href: "/admin/businesses", label: "Businesses" },
+  { href: "/admin/entities", label: "Entities" },
   { href: "/admin/users", label: "Users" },
 ];
 
@@ -54,5 +54,9 @@ export function Sidebar({ type }: SidebarProps) {
     </aside>
   );
 }
+
+
+
+
 
 

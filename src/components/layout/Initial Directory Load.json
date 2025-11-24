@@ -1,0 +1,186 @@
+[
+    {
+      "name": "Sac City Brews",
+      "address": "3940 60th St, Sacramento, CA 95820",
+      "zone": "Tallac Village",
+      "category": "Restaurant/Bar",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "Owners live in the neighborhood; created as a community gathering spot."
+    },
+    {
+      "name": "Toby's Tacos",
+      "address": "5990a 14th Ave, Sacramento, CA 95820",
+      "zone": "Tallac Village",
+      "category": "Restaurant",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "Small family-run spot (sometimes pop-up style) in Tallac Village center."
+    },
+    {
+      "name": "Tallac Bottle Shop",
+      "address": "5994 14th Ave, Sacramento, CA 95820",
+      "zone": "Tallac Village",
+      "category": "Retail",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "Owned by the same local family since 1984."
+    },
+    {
+      "name": "Calm Computing",
+      "address": "2836 Redding Ave, Sacramento, CA 95820",
+      "zone": "Tahoe Park East",
+      "category": "Service",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "Small owner-operated IT service."
+    },
+    {
+      "name": "Anna's Vegan Café",
+      "address": "3500 Stockton Blvd, Sacramento, CA 95820",
+      "zone": "Stockton Blvd Corridor",
+      "category": "Restaurant",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "Longstanding family-owned vegan staple."
+    },
+    {
+      "name": "Luigi's Pizza Parlor",
+      "address": "3800 Stockton Blvd, Sacramento, CA 95820",
+      "zone": "Stockton Blvd Corridor",
+      "category": "Restaurant",
+      "local_tier": "Level 2: The Anchors",
+      "notes": "Historic institution defining the Stockton Blvd strip."
+    },
+    {
+      "name": "The Colonial Theatre",
+      "address": "3522 Stockton Blvd, Sacramento, CA 95820",
+      "zone": "Stockton Blvd Corridor",
+      "category": "Entertainment",
+      "local_tier": "Level 2: The Anchors",
+      "notes": "The primary historic landmark for the commercial district."
+    },
+    {
+      "name": "MoMo's Meat Market",
+      "address": "5780 Broadway, Sacramento, CA 95820",
+      "zone": "Tahoe Park Proper",
+      "category": "Restaurant/Retail",
+      "local_tier": "Level 2: The Anchors",
+      "notes": "Famous local BBQ/Butcher that draws visitors to Broadway."
+    },
+    {
+      "name": "Bacon & Butter",
+      "address": "5913 Broadway, Sacramento, CA 95820",
+      "zone": "Tahoe Park Proper",
+      "category": "Restaurant",
+      "local_tier": "Level 2: The Anchors",
+      "notes": "Culinary destination that put Tahoe Park on the map."
+    },
+    {
+      "name": "Faria Bakery",
+      "address": "3413 Broadway, Sacramento, CA 95817",
+      "zone": "Oak Park North",
+      "category": "Bakery",
+      "local_tier": "Level 2: The Anchors",
+      "notes": "Started as a home bakery in Oak Park before opening brick-and-mortar."
+    },
+    {
+      "name": "T & R Taste of Texas Barbeque",
+      "address": "3621 Broadway, Sacramento, CA 95817",
+      "zone": "Oak Park North",
+      "category": "Restaurant",
+      "local_tier": "Level 2: The Anchors",
+      "notes": "Family-run BBQ institution."
+    },
+    {
+      "name": "Community Shop Class",
+      "address": "3818 Stockton Blvd, Sacramento, CA 95820",
+      "zone": "Stockton Blvd Corridor",
+      "category": "Education/Non-Profit",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "Non-profit teaching industrial arts to the neighborhood."
+    },
+    {
+      "name": "Cafe Colonial",
+      "address": "3520 Stockton Blvd, Sacramento, CA 95820",
+      "zone": "Stockton Blvd Corridor",
+      "category": "Restaurant/Bar",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "Saved by local music lovers to preserve the all-ages venue scene."
+    },
+    {
+      "name": "MADE Makerspace",
+      "address": "3540 3rd Ave, Sacramento, CA 95817",
+      "zone": "Oak Park North",
+      "category": "Service/Education",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "Community workshop and fabrication studio."
+    },
+    {
+      "name": "Oak Park Brewing Co.",
+      "address": "3514 Broadway, Sacramento, CA 95817",
+      "zone": "Oak Park North",
+      "category": "Brewery",
+      "local_tier": "Level 3: The Boosters",
+      "notes": "Acts as a community hub for events and local collaborations."
+    },
+    {
+      "name": "La Superior Mercados",
+      "address": "4940 Stockton Blvd, Sacramento, CA 95820",
+      "zone": "Tallac Village / South Borders",
+      "category": "Grocery",
+      "local_tier": "Level 4: Homegrown Success",
+      "notes": "Locally founded regional chain with ~9 locations."
+    },
+    {
+      "name": "Fixins Soul Kitchen",
+      "address": "3428 3rd Ave, Sacramento, CA 95817",
+      "zone": "Oak Park North",
+      "category": "Restaurant",
+      "local_tier": "Level 4: Homegrown Success",
+      "notes": "Flagship location of a now-national brand (founded by Kevin Johnson)."
+    },
+    {
+      "name": "Old Soul @ 40 Acres",
+      "address": "3434 Broadway, Sacramento, CA 95817",
+      "zone": "Oak Park North",
+      "category": "Cafe",
+      "local_tier": "Level 4: Homegrown Success",
+      "notes": "Part of a successful local coffee chain."
+    },
+    {
+      "name": "The Butterscotch Den",
+      "address": "3406 Broadway, Sacramento, CA 95817",
+      "zone": "Oak Park North",
+      "category": "Bar/Restaurant",
+      "local_tier": "Level 4: Homegrown Success",
+      "notes": "Owned by Irish Hospitality Group (The Snug, Ro Sham Beaux)."
+    },
+    {
+      "name": "Mezcal Grill",
+      "address": "5701 Broadway, Sacramento, CA 95820",
+      "zone": "Tahoe Park Proper",
+      "category": "Restaurant",
+      "local_tier": "Level 4: Homegrown Success",
+      "notes": "Part of a small local family chain."
+    },
+    {
+      "name": "Uptown Mini-Mart",
+      "address": "3504 Stockton Blvd, Sacramento, CA 95820",
+      "zone": "Stockton Blvd Corridor",
+      "category": "Retail",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "Small boutique market."
+    },
+    {
+      "name": "Altar Room",
+      "address": "3045 65th St, Sacramento, CA 95820",
+      "zone": "Tahoe Park Proper",
+      "category": "Retail",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "Owner Shasta Smith is a well-known local designer/preservationist."
+    },
+    {
+      "name": "Capsity Coworking",
+      "address": "3810 Broadway, Sacramento, CA 95817",
+      "zone": "Oak Park North",
+      "category": "Service",
+      "local_tier": "Level 1: The Neighbors",
+      "notes": "Independent coworking space."
+    }
+  ]

@@ -25,11 +25,11 @@ export function createErrorResponse(
 }
 
 export async function withAuth<T>(
-  handler: (user: { id: string; role: Role }) => Promise<T>
+  handler: (user: { id: string; roles: Role[] }) => Promise<T>
 ): Promise<T | NextResponse<ApiResponse>> {
   try {
     const user = await requireAuth();
-    return await handler(user as { id: string; role: Role });
+    return await handler(user as { id: string; roles: Role[] });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return createErrorResponse("Unauthorized", 401);
@@ -40,11 +40,11 @@ export async function withAuth<T>(
 
 export async function withRole<T>(
   allowedRoles: Role[],
-  handler: (user: { id: string; role: Role }) => Promise<T>
+  handler: (user: { id: string; roles: Role[] }) => Promise<T>
 ): Promise<T | NextResponse<ApiResponse>> {
   try {
     const user = await requireRole(allowedRoles);
-    return await handler(user as { id: string; role: Role });
+    return await handler(user as { id: string; roles: Role[] });
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "Unauthorized") {

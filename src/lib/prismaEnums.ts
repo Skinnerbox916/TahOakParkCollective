@@ -15,14 +15,14 @@ export const BUSINESS_STATUS = {
 export type BusinessStatus =
   (typeof BUSINESS_STATUS)[keyof typeof BUSINESS_STATUS];
 
-export const NEIGHBORHOOD = {
-  TAHOE_PARK: "TAHOE_PARK",
-  OAK_PARK: "OAK_PARK",
-  ELMHURST: "ELMHURST",
-  COLONIAL_PARK: "COLONIAL_PARK",
-  CURTIS_PARK: "CURTIS_PARK",
+export const ENTITY_TYPE = {
+  COMMERCE: "COMMERCE",
+  CIVIC: "CIVIC",
+  ADVOCACY: "ADVOCACY",
+  PUBLIC_SPACE: "PUBLIC_SPACE",
+  NON_PROFIT: "NON_PROFIT",
 } as const;
 
-export type Neighborhood =
-  (typeof NEIGHBORHOOD)[keyof typeof NEIGHBORHOOD];
+export type EntityType =
+  (typeof ENTITY_TYPE)[keyof typeof ENTITY_TYPE];
 

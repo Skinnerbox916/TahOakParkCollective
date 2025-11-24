@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { BusinessWithRelations } from "@/types";
-import { NEIGHBORHOOD_LABELS } from "@/lib/constants";
+import { LOCAL_TIER_LABELS } from "@/lib/constants";
 import { truncate } from "@/lib/utils";
-import type { Neighborhood } from "@/lib/prismaEnums";
+import type { LocalTier } from "@/lib/prismaEnums";
 
 interface BusinessCardProps {
   business: BusinessWithRelations;
@@ -12,55 +12,53 @@ export function BusinessCard({ business }: BusinessCardProps) {
   return (
     <Link
       href={`/businesses/${business.slug}`}
-      className="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200"
+      className="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 h-full flex flex-col"
     >
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="text-xl font-semibold text-gray-900">
-            {business.name}
-          </h3>
+      <div className="p-6 flex flex-col flex-1">
+        {/* Business Name */}
+        <h3 className="text-xl font-semibold text-gray-900 mb-3">
+          {business.name}
+        </h3>
+
+        {/* Unified Tags Section */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {business.localTier && (
+            <span className="px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-md whitespace-nowrap">
+              {LOCAL_TIER_LABELS[business.localTier as LocalTier]}
+            </span>
+          )}
           {business.category && (
-            <span className="px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded">
+            <span className="px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md whitespace-nowrap">
               {business.category.name}
             </span>
           )}
         </div>
 
-        {business.neighborhoods && business.neighborhoods.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {business.neighborhoods.map((neighborhood: Neighborhood) => (
-              <span
-                key={neighborhood}
-                className="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded"
-              >
-                {NEIGHBORHOOD_LABELS[neighborhood]}
-              </span>
-            ))}
-          </div>
-        )}
-
+        {/* Description */}
         {business.description && (
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-            {truncate(business.description, 120)}
+          <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-1">
+            {truncate(business.description, 150)}
           </p>
         )}
 
-        <div className="space-y-1 text-sm text-gray-500">
+        {/* Contact Info */}
+        <div className="space-y-1.5 text-sm text-gray-500 mb-4">
           {business.address && (
-            <p className="flex items-center gap-1">
-              <span>📍</span>
-              <span>{business.address}</span>
+            <p className="flex items-start gap-2">
+              <span className="mt-0.5">📍</span>
+              <span className="line-clamp-1">{business.address}</span>
             </p>
           )}
           {business.phone && (
-            <p className="flex items-center gap-1">
+            <p className="flex items-center gap-2">
               <span>📞</span>
               <span>{business.phone}</span>
             </p>
           )}
         </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-200">
+        {/* Footer */}
+        <div className="mt-auto pt-4 border-t border-gray-200">
           <span className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
             View Details →
           </span>
