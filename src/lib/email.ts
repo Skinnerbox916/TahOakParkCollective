@@ -4,17 +4,17 @@ import { MagicLinkPurpose } from '@/lib/prismaEnums';
 // Mock Resend client for development when RESEND_API_KEY is not set
 // This allows development/testing without a live email service
 const apiKey = process.env.RESEND_API_KEY;
-const resend = apiKey 
-  ? new Resend(apiKey) 
-  : { 
-      emails: { 
-        send: async (params: any) => { 
-          // Mock email sending - logs to console in development
-          console.log('[MOCK EMAIL]', JSON.stringify(params, null, 2)); 
-          return { data: { id: 'mock_id' }, error: null }; 
-        } 
-      } 
-    } as unknown as Resend;
+const resend: Pick<Resend, 'emails'> = apiKey
+  ? new Resend(apiKey)
+  : {
+      emails: {
+        // Mock email sending that mimics the real client when no API key is set
+        send: async (params: Parameters<Resend['emails']['send']>[0]) => {
+          console.log('[MOCK EMAIL]', JSON.stringify(params, null, 2));
+          return { data: { id: 'mock_id' }, error: null };
+        }
+      }
+    };
 
 const FROM_EMAIL = process.env.SMTP_FROM || 'noreply@tahoak.skibri.us';
 
