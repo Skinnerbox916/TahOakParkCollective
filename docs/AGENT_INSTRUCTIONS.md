@@ -43,30 +43,31 @@ src/
 
 ### Docker Configuration
 
-**IMPORTANT**: The project uses Docker Compose for development. Key points:
+**IMPORTANT**: The project uses Docker Compose for development with live reloading. Key points:
 
 1. **Database Connection**: Always use `tahoak-db` as the hostname (not `localhost`) when connecting from the web container
    - Correct: `postgresql://tahoak:password@tahoak-db:5432/tahoak_db`
    - Wrong: `postgresql://tahoak:password@localhost:5432/tahoak_db`
 
-2. **Volume Mounts**: 
-   - `./prisma:/app/prisma` - Mounted so Prisma client can be regenerated
-   - `./src`, `./public` - NOT mounted (code is baked into image)
-   - `/app/node_modules` and `/app/.next` - Excluded (use container's versions)
+2. **Volume Mounts** (development):
+   - `./src`, `./public`, `./prisma` and key config files are mounted for hot reload via `next dev`
+   - `/app/node_modules` and `/app/.next` are excluded so the container uses its own installs/build artifacts
 
-3. **Production Mode**: Container runs in production mode (`node server.js`), not dev mode
-   - Code changes require rebuilding the image: `docker compose build tahoak-web`
-   - Prisma client regenerates on container startup via entrypoint
+3. **Runtime Mode**: The web container uses the development server (`npm run dev`) so code changes apply immediately without rebuilding the image
+   - Prisma client is regenerated on container start through the command `npx prisma generate && npm run dev`
 
 4. **Environment Variables**:
-   - `DATABASE_URL` is hardcoded in docker-compose.yml to use `tahoak-db` hostname
-   - `.env` file exists but should NOT override DATABASE_URL for Docker
+   - `DATABASE_URL` in docker-compose.yml already points to the `tahoak-db` hostname
+   - `.env` can override DATABASE_URL when running locally on the host; keep the Docker hostname when relying on containers
    - `NEXTAUTH_URL` defaults to `https://tahoak.skibri.us`
 
 ### Common Issues and Solutions
 
 #### Issue: Code changes not appearing
-**Solution**: Rebuild Docker image - `docker compose build tahoak-web && docker compose up -d tahoak-web`
+**Solution**:
+- Ensure `tahoak-web` is running in dev mode (`docker compose logs tahoak-web` should show `ready - started server...`)
+- Verify volume mounts are active (`docker inspect tahoak-web` will list binds)
+- If mounts look correct but changes are stale, restart the container: `docker compose restart tahoak-web`
 
 #### Issue: Prisma connection errors (ECONNREFUSED)
 **Solution**: 
@@ -75,15 +76,15 @@ src/
 - Ensure database container is running: `docker compose ps tahoak-db`
 
 #### Issue: Prisma client out of sync
-**Solution**: Prisma client regenerates automatically on container startup via entrypoint. If issues persist:
+**Solution**: Prisma client regenerates automatically when the container starts. If issues persist:
 ```bash
 docker compose exec tahoak-web npx prisma generate
 docker compose restart tahoak-web
 ```
 
 #### Issue: Sign Up button or UI changes not showing
-**Solution**: 
-- Rebuild image (code is baked in, not mounted)
+**Solution**:
+- Confirm the dev server is running (hot reload should pick up changes automatically)
 - Clear browser cache (hard refresh: Ctrl+Shift+R)
 - Check reverse proxy cache if using tahoak.skibri.us
 
@@ -238,7 +239,7 @@ DATABASE_URL="postgresql://tahoak:tahoak_password@localhost:5432/tahoak_db" npm 
 # Start services
 docker compose up -d
 
-# Rebuild and restart web
+# Rebuild and restart web (rarely needed for dev; use if dependencies change)
 docker compose build tahoak-web && docker compose up -d tahoak-web
 
 # View logs
@@ -259,12 +260,12 @@ npx prisma generate
 
 ## Key Learnings from Development
 
-1. **Docker Volume Mounts**: Production mode doesn't use mounted source code - code is baked into image
+1. **Docker Volume Mounts**: Development uses mounted source code for hot reload; rebuild only if dependencies change
 2. **Database Hostname**: Always use service name (`tahoak-db`) not `localhost` in Docker
 3. **Prisma Client**: Must regenerate when schema changes, happens automatically on container startup
 4. **Environment Variables**: `.env` can override docker-compose defaults - be careful with DATABASE_URL
 5. **Caching**: Browser and reverse proxy caching can hide UI changes - always hard refresh
-6. **Production vs Dev**: Container runs production mode, requires rebuilds for code changes
+6. **Production vs Dev**: Local Docker setup runs dev mode; production deploys should pin env vars and build artifacts
 
 ## Current Features
 
@@ -297,7 +298,7 @@ npx prisma generate
 
 - Always check if you're logged in when testing UI (affects navbar buttons)
 - Database connection issues usually mean wrong hostname in DATABASE_URL
-- Code changes require Docker rebuild - volume mounts don't work in production mode
+- Code changes should live-reload in Docker dev mode; rebuild only if dependencies or Prisma schema changes break the dev server
 - Prisma client auto-regenerates on startup, but may need manual generation if issues persist
 - Test at `tahoak.skibri.us` - that's the dev environment
 - When in doubt, check container logs: `docker compose logs tahoak-web`
