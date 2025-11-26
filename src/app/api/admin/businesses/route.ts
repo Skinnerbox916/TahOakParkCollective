@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
         where.OR = searchConditions;
       }
 
-      const businesses = await prisma.business.findMany({
+      const businesses = await prisma.entity.findMany({
         where,
         include: {
           category: true,
@@ -127,7 +127,7 @@ export async function PUT(request: NextRequest) {
         return createErrorResponse("At least one field (status, featured, or localTier) must be provided", 400);
       }
 
-      const business = await prisma.business.update({
+      const business = await prisma.entity.update({
         where: { id },
         data: updateData,
         include: {

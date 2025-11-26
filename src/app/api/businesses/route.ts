@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
       where.OR = searchConditions;
     }
 
-    const businesses = await prisma.business.findMany({
+    const businesses = await prisma.entity.findMany({
       where,
       include: {
         category: true,
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
         .replace(/^-+|-+$/g, "");
 
       // Ensure unique slug
-      let check = await prisma.business.findUnique({
+      let check = await prisma.entity.findUnique({
         where: { slug },
       });
 
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
       let counter = 1;
       while (check) {
         uniqueSlug = `${slug}-${counter}`;
-        check = await prisma.business.findUnique({
+        check = await prisma.entity.findUnique({
           where: { slug: uniqueSlug },
         });
         counter++;
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
         ? body.status 
         : BUSINESS_STATUS.PENDING;
 
-      const business = await prisma.business.create({
+      const business = await prisma.entity.create({
         data: {
           name,
           slug: uniqueSlug,
@@ -180,7 +180,6 @@ export async function POST(request: NextRequest) {
           website,
           categoryId: categoryId || null,
           status,
-          localTier: localTier || null,
           ownerId: finalOwnerId,
         },
         include: {

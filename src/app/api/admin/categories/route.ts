@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
         include: {
           _count: {
             select: {
-              businesses: true,
+              entities: true,
             },
           },
         },
@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest) {
         include: {
           _count: {
             select: {
-              businesses: true,
+              entities: true,
             },
           },
         },

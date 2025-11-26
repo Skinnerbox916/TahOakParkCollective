@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter, Link } from "@/i18n/routing";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
@@ -14,10 +15,14 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tForms = useTranslations("forms");
+  const tErrors = useTranslations("errors");
 
   const successMessage =
     searchParams.get("registered") === "true"
-      ? "Account created successfully! Please sign in."
+      ? t("accountCreated")
       : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +38,7 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        setError(t("invalidCredentials"));
         setLoading(false);
       } else {
         // Redirect based on user role or default to dashboard
@@ -41,7 +46,7 @@ export function LoginForm() {
         router.refresh();
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("errorOccurred"));
       setLoading(false);
     }
   };
@@ -62,7 +67,7 @@ export function LoginForm() {
 
       <Input
         type="email"
-        label="Email"
+        label={tCommon("email")}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -71,7 +76,7 @@ export function LoginForm() {
 
       <Input
         type="password"
-        label="Password"
+        label={tCommon("password")}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -79,13 +84,13 @@ export function LoginForm() {
       />
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Signing in..." : "Sign In"}
+        {loading ? t("signingIn") : t("signIn")}
       </Button>
 
       <div className="text-center text-sm text-gray-600">
-        Don&apos;t have an account?{" "}
+        {t("dontHaveAccount")}{" "}
         <Link href="/auth/signup" className="text-indigo-600 hover:text-indigo-700 font-medium">
-          Sign up
+          {t("signUpLink")}
         </Link>
       </div>
     </form>

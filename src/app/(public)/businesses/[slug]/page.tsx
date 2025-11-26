@@ -6,7 +6,7 @@ import type { BusinessWithRelations } from "@/types";
 
 async function getBusinessBySlug(slug: string): Promise<BusinessWithRelations | null> {
   try {
-    const business = await prisma.business.findFirst({
+    const business = await prisma.entity.findFirst({
       where: {
         slug,
         status: BUSINESS_STATUS.ACTIVE, // Only show active businesses publicly

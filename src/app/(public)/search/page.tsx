@@ -44,6 +44,7 @@ function SearchPageContent() {
   const [entities, setEntities] = useState<EntityWithRelations[]>([]);
   const [allEntities, setAllEntities] = useState<EntityWithRelations[]>([]); // Store unfiltered entities
   const [categories, setCategories] = useState<Category[]>([]);
+  // Tags from API - category is a string from the API, components expect TagCategory type
   const [tags, setTags] = useState<Array<{ id: string; name: string; category: string }>>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -226,7 +227,7 @@ function SearchPageContent() {
             selectedEntityType={selectedEntityType}
             selectedTags={selectedTags}
             categories={categories}
-            tags={tags}
+            tags={tags as any}
             onSearchChange={handleSearchChange}
             onCategoryChange={handleCategoryChange}
             onEntityTypeChange={handleEntityTypeChange}

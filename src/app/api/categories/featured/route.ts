@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       include: {
         _count: {
           select: {
-            businesses: true,
+            entities: true,
           },
         },
       },
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       slug: category.slug,
       description: category.description,
       featured: category.featured,
-      businessCount: category._count.businesses,
+      businessCount: category._count.entities,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
     }));

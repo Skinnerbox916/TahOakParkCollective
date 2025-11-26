@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { EntityTable } from "@/components/admin/EntityTable";
 import { Card } from "@/components/ui/Card";
@@ -12,7 +12,7 @@ import type { BusinessStatus, EntityType } from "@/lib/prismaEnums";
 import type { Category } from "@/types";
 import { ENTITY_TYPES } from "@/lib/constants";
 
-export default function AdminEntities() {
+function AdminEntitiesContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [entities, setEntities] = useState<EntityWithRelations[]>([]);
@@ -275,6 +275,25 @@ export default function AdminEntities() {
         </Card>
       )}
     </div>
+  );
+}
+
+export default function AdminEntities() {
+  return (
+    <Suspense fallback={
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Manage Entities</h1>
+        </div>
+        <Card>
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading...</p>
+          </div>
+        </Card>
+      </div>
+    }>
+      <AdminEntitiesContent />
+    </Suspense>
   );
 }
 

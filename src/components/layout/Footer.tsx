@@ -1,7 +1,11 @@
-import Link from "next/link";
+"use client";
+
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const t = useTranslations("footer");
 
   return (
     <footer className="bg-gray-900 text-gray-300 mt-auto">
@@ -9,32 +13,31 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <h3 className="text-lg font-bold text-white mb-4">TahOak Park Collective</h3>
+            <h3 className="text-lg font-bold text-white mb-4">{t("title")}</h3>
             <p className="text-sm text-gray-400 mb-4">
-              A hyper-local discovery platform for genuinely local businesses, organizations,
-              and community resources.
+              {t("description")}
             </p>
           </div>
 
           {/* Links */}
           <div>
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Pages
+              {t("pages")}
             </h4>
             <ul className="space-y-2">
               <li>
                 <Link href="/about" className="text-sm hover:text-white transition-colors">
-                  About
+                  {t("about")}
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="text-sm hover:text-white transition-colors">
-                  Contact
+                  {t("contact")}
                 </Link>
               </li>
               <li>
                 <Link href="/subscribe" className="text-sm hover:text-white transition-colors">
-                  Subscribe
+                  {t("subscribe")}
                 </Link>
               </li>
             </ul>
@@ -43,17 +46,17 @@ export function Footer() {
           {/* Legal */}
           <div>
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Legal
+              {t("legal")}
             </h4>
             <ul className="space-y-2">
               <li>
                 <Link href="/terms" className="text-sm hover:text-white transition-colors">
-                  Terms of Use
+                  {t("terms")}
                 </Link>
               </li>
               <li>
                 <Link href="/privacy" className="text-sm hover:text-white transition-colors">
-                  Privacy Policy
+                  {t("privacy")}
                 </Link>
               </li>
             </ul>
@@ -63,14 +66,14 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-gray-800">
           <p className="text-xs text-gray-500 text-center">
-            © {currentYear} TahOak Park Collective. Built by{" "}
+            {t("copyright", { year: currentYear })}{" "}
             <a
               href="https://canopydigital.services"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-white transition-colors"
             >
-              Canopy Digital Services
+              {t("builtBy")}
             </a>
             .
           </p>

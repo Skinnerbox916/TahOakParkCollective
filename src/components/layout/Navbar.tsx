@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { UserMenu } from "./UserMenu";
 import { MobileMenu } from "./MobileMenu";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Navbar() {
   const { data: session, status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const t = useTranslations("common");
+  const tNav = useTranslations("nav");
 
   return (
     <>
@@ -24,17 +28,18 @@ export function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+              <LanguageSwitcher />
               {status === "loading" ? (
-                <span className="text-gray-500 text-sm">Loading...</span>
+                <span className="text-gray-500 text-sm">{t("loading")}</span>
               ) : session ? (
                 <UserMenu />
               ) : (
                 <>
                   <Button href="/auth/signup" variant="outline" size="sm">
-                    Sign Up
+                    {t("signUp")}
                   </Button>
                   <Button href="/auth/signin" size="sm">
-                    Sign In
+                    {t("signIn")}
                   </Button>
                 </>
               )}
@@ -42,14 +47,15 @@ export function Navbar() {
 
             {/* Mobile Navigation */}
             <div className="flex md:hidden items-center space-x-2">
+              <LanguageSwitcher />
               {status === "loading" ? (
-                <span className="text-gray-500 text-sm">Loading...</span>
+                <span className="text-gray-500 text-sm">{t("loading")}</span>
               ) : session ? (
                 <UserMenu />
               ) : (
                 <>
                   <Button href="/auth/signin" size="sm">
-                    Sign In
+                    {t("signIn")}
                   </Button>
                 </>
               )}

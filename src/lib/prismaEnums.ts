@@ -93,3 +93,13 @@ export const MagicLinkPurpose = {
 
 export type MagicLinkPurpose =
   (typeof MagicLinkPurpose)[keyof typeof MagicLinkPurpose];
+
+// LocalTier for legacy Business-related code
+export const LocalTier = {
+  LEVEL_1_NEIGHBORS: "LEVEL_1_NEIGHBORS",
+  LEVEL_2_ANCHORS: "LEVEL_2_ANCHORS",
+  LEVEL_3_BOOSTERS: "LEVEL_3_BOOSTERS",
+  LEVEL_4_HOMEGROWN_SUCCESS: "LEVEL_4_HOMEGROWN_SUCCESS",
+} as const;
+
+export type LocalTier = (typeof LocalTier)[keyof typeof LocalTier];

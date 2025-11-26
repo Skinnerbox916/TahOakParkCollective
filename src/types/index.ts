@@ -25,6 +25,26 @@ export type EntityWithRelations = Prisma.EntityGetPayload<{
   };
 }>;
 
+// Alias for legacy code that uses Business terminology
+export type BusinessWithRelations = EntityWithRelations;
+
+// For suggestion pages
+export type SuggestionWithEntity = {
+  id: string;
+  name: string;
+  description: string | null;
+  address: string | null;
+  website: string | null;
+  submitterEmail: string;
+  submitterName: string | null;
+  status: string;
+  reviewedBy: string | null;
+  reviewedAt: Date | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;

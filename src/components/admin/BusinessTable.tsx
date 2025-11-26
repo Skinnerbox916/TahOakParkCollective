@@ -6,24 +6,20 @@ import { BusinessWithRelations } from "@/types";
 import { StatusBadge } from "./StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { BUSINESS_STATUS } from "@/lib/prismaEnums";
-import type { BusinessStatus, LocalTier } from "@/lib/prismaEnums";
-import { ApiResponse } from "@/types";
+import type { BusinessStatus } from "@/lib/prismaEnums";
 import { formatPhoneNumber } from "@/lib/utils";
-import { LOCAL_TIER_LABELS, LOCAL_TIERS } from "@/lib/constants";
 
 interface BusinessTableProps {
   businesses: BusinessWithRelations[];
   onStatusChange?: (businessId: string, newStatus: BusinessStatus) => Promise<void>;
   onFeaturedChange?: (businessId: string, featured: boolean) => Promise<void>;
-  onLocalTierChange?: (businessId: string, localTier: LocalTier | null) => Promise<void>;
   onDelete?: (businessId: string) => Promise<void>;
 }
 
-export function BusinessTable({ businesses, onStatusChange, onFeaturedChange, onLocalTierChange, onDelete }: BusinessTableProps) {
+export function BusinessTable({ businesses, onStatusChange, onFeaturedChange, onDelete }: BusinessTableProps) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
-  const [updatingLocalTier, setUpdatingLocalTier] = useState<string | null>(null);
 
   const handleStatusChange = async (businessId: string, newStatus: BusinessStatus) => {
     if (!onStatusChange) return;
@@ -50,20 +46,6 @@ export function BusinessTable({ businesses, onStatusChange, onFeaturedChange, on
       alert("Failed to update featured status");
     } finally {
       setTogglingFeatured(null);
-    }
-  };
-
-  const handleLocalTierChange = async (businessId: string, newTier: LocalTier | "") => {
-    if (!onLocalTierChange) return;
-    
-    setUpdatingLocalTier(businessId);
-    try {
-      await onLocalTierChange(businessId, newTier || null);
-    } catch (error) {
-      console.error("Error updating local tier:", error);
-      alert("Failed to update local tier");
-    } finally {
-      setUpdatingLocalTier(null);
     }
   };
 
@@ -109,9 +91,6 @@ export function BusinessTable({ businesses, onStatusChange, onFeaturedChange, on
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Featured
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Local Tier
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Owner
@@ -166,27 +145,6 @@ export function BusinessTable({ businesses, onStatusChange, onFeaturedChange, on
                 ) : (
                   <span className="text-sm text-gray-700">
                     {business.featured ? "Yes" : "No"}
-                  </span>
-                )}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {onLocalTierChange ? (
-                  <select
-                    value={business.localTier || ""}
-                    onChange={(e) => handleLocalTierChange(business.id, e.target.value as LocalTier | "")}
-                    disabled={updatingLocalTier === business.id}
-                    className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[180px]"
-                  >
-                    <option value="">No Tier</option>
-                    {LOCAL_TIERS.map((tier) => (
-                      <option key={tier.value} value={tier.value}>
-                        {tier.label}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <span className="text-sm text-gray-700">
-                    {business.localTier ? LOCAL_TIER_LABELS[business.localTier as LocalTier] : "—"}
                   </span>
                 )}
               </td>
@@ -256,4 +214,3 @@ export function BusinessTable({ businesses, onStatusChange, onFeaturedChange, on
     </div>
   );
 }
-

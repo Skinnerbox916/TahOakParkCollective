@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const business = await prisma.business.findUnique({
+    const business = await prisma.entity.findUnique({
       where: { id },
       include: {
         category: true,
@@ -45,7 +45,7 @@ export async function PUT(
       const { name, description, address, phone, website, categoryId, status, localTier } = body;
 
       // Check if business exists
-      const existingBusiness = await prisma.business.findUnique({
+      const existingBusiness = await prisma.entity.findUnique({
         where: { id },
       });
 
@@ -80,7 +80,7 @@ export async function PUT(
         updateData.localTier = localTier || null;
       }
 
-      const business = await prisma.business.update({
+      const business = await prisma.entity.update({
         where: { id },
         data: updateData,
         include: {
@@ -112,7 +112,7 @@ export async function DELETE(
       const { id } = await params;
 
       // Check if business exists
-      const business = await prisma.business.findUnique({
+      const business = await prisma.entity.findUnique({
         where: { id },
       });
 
@@ -125,7 +125,7 @@ export async function DELETE(
         return createErrorResponse("Forbidden: You can only delete your own business", 403);
       }
 
-      await prisma.business.delete({
+      await prisma.entity.delete({
         where: { id },
       });
 

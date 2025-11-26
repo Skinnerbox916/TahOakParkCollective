@@ -94,3 +94,21 @@ export async function reverseGeocode(
   }
 }
 
+/**
+ * Determine which coverage area a location belongs to based on coordinates
+ * @param lat Latitude
+ * @param lng Longitude
+ * @returns Coverage area name or null
+ */
+export function getCoverageArea(lat: number, lng: number): string | null {
+  // Simplified boundary check - Oak Park is roughly north/west, Tahoe Park south/east
+  // This is a simplified heuristic - adjust based on actual neighborhood boundaries
+  if (!lat || !lng) return null;
+  
+  // Rough dividing line around 38th Street area
+  if (lat > 38.545) {
+    return "OAK_PARK";
+  }
+  return "TAHOE_PARK";
+}
+

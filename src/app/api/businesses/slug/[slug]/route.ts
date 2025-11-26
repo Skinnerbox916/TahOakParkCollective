@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const business = await prisma.business.findFirst({
+    const business = await prisma.entity.findFirst({
       where: {
         slug,
         status: BUSINESS_STATUS.ACTIVE, // Only return active businesses for public API

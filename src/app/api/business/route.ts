@@ -6,7 +6,7 @@ import { ROLE } from "@/lib/prismaEnums";
 export async function GET(request: NextRequest) {
   return withRole([ROLE.BUSINESS_OWNER, ROLE.ADMIN], async (user) => {
     try {
-      const businesses = await prisma.business.findMany({
+      const businesses = await prisma.entity.findMany({
         where: {
           ownerId: user.id,
         },
@@ -44,7 +44,7 @@ export async function PUT(request: NextRequest) {
       }
 
       // Verify the user owns this business (unless admin)
-      const business = await prisma.business.findUnique({
+      const business = await prisma.entity.findUnique({
         where: { id },
       });
 
@@ -56,7 +56,7 @@ export async function PUT(request: NextRequest) {
         return createErrorResponse("Forbidden", 403);
       }
 
-      const updated = await prisma.business.update({
+      const updated = await prisma.entity.update({
         where: { id },
         data: updateData,
         include: {

@@ -29,7 +29,7 @@ export default function RootLayout({
   const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
@@ -43,11 +43,7 @@ export default function RootLayout({
           />
         )}
         <SessionProvider>
-          <Navbar />
-          <div className="flex-1">
-            {children}
-          </div>
-          <Footer />
+          {children}
         </SessionProvider>
       </body>
     </html>

@@ -92,3 +92,13 @@ export function getBoundaryPolygon(): [number, number][] {
   return COLLECTIVE_BOUNDARY;
 }
 
+/**
+ * Coverage area options for dropdowns
+ */
+export const COVERAGE_AREA_OPTIONS = [
+  { value: "OAK_PARK", label: "Oak Park" },
+  { value: "TAHOE_PARK", label: "Tahoe Park" },
+] as const;
+
+export type CoverageArea = typeof COVERAGE_AREA_OPTIONS[number]["value"];
+

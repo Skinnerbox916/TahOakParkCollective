@@ -49,11 +49,12 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
 
         if (result.data) {
           setData(result.data);
-          setPreferences(result.data.preferences || {
-            newsletter: true,
-            newBusinesses: true,
-            events: true,
-            updates: true,
+          const prefs = result.data.preferences || {};
+          setPreferences({
+            newsletter: prefs.newsletter ?? true,
+            newBusinesses: prefs.newBusinesses ?? true,
+            events: prefs.events ?? true,
+            updates: prefs.updates ?? true,
           });
         }
       } catch (err) {
@@ -104,7 +105,6 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
 
     setError(null);
     setSaving(true);
-    setSuccess(false);
 
     try {
       const response = await fetch(
@@ -120,19 +120,8 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
         throw new Error(result.error || "Failed to unsubscribe");
       }
 
-      setData((prev) =>
-        prev
-          ? {
-              ...prev,
-              unsubscribed: true,
-            }
-          : {
-              email: "",
-              preferences: {},
-              verified: true,
-              unsubscribed: true,
-            }
-      );
+      // Reload preferences to show updated status
+      window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to unsubscribe");
     } finally {
@@ -297,4 +286,6 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
     </Card>
   );
 }
+
+
 

@@ -56,3 +56,4 @@ echo ""
 echo "✨ Once configured, analytics will be available in the admin panel!"
 echo ""
 
+

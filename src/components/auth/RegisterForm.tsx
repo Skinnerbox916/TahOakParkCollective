@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useRouter, Link } from "@/i18n/routing";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
@@ -14,26 +14,30 @@ export function RegisterForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tForms = useTranslations("forms");
+  const tErrors = useTranslations("errors");
 
   const validateForm = () => {
     if (!email || !password) {
-      setError("Email and password are required");
+      setError(tForms("validation.emailRequired"));
       return false;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address");
+      setError(tForms("validation.invalidEmail"));
       return false;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
+      setError(tForms("validation.passwordMinLength"));
       return false;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(tForms("validation.passwordsDoNotMatch"));
       return false;
     }
 
@@ -66,7 +70,7 @@ export function RegisterForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to create account. Please try again.");
+        setError(data.error || tErrors("generic"));
         setLoading(false);
         return;
       }
@@ -75,7 +79,7 @@ export function RegisterForm() {
       router.push("/auth/signin?registered=true");
     } catch (err) {
       console.error("Registration error:", err);
-      setError("An error occurred. Please try again.");
+      setError(t("errorOccurred"));
       setLoading(false);
     }
   };
@@ -90,7 +94,7 @@ export function RegisterForm() {
 
       <Input
         type="text"
-        label="Name (Optional)"
+        label={tForms("nameOptional")}
         value={name}
         onChange={(e) => setName(e.target.value)}
         disabled={loading}
@@ -98,7 +102,7 @@ export function RegisterForm() {
 
       <Input
         type="email"
-        label="Email"
+        label={tCommon("email")}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -107,7 +111,7 @@ export function RegisterForm() {
 
       <Input
         type="password"
-        label="Password"
+        label={tCommon("password")}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -117,7 +121,7 @@ export function RegisterForm() {
 
       <Input
         type="password"
-        label="Confirm Password"
+        label={tForms("confirmPassword")}
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
@@ -126,13 +130,13 @@ export function RegisterForm() {
       />
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Creating account..." : "Create Account"}
+        {loading ? t("creatingAccount") : t("createAccount")}
       </Button>
 
       <div className="text-center text-sm text-gray-600">
-        Already have an account?{" "}
+        {t("alreadyHaveAccount")}{" "}
         <Link href="/auth/signin" className="text-indigo-600 hover:text-indigo-700 font-medium">
-          Sign in
+          {t("signInLink")}
         </Link>
       </div>
     </form>

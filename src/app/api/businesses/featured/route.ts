@@ -6,7 +6,7 @@ import { BUSINESS_STATUS } from "@/lib/prismaEnums";
 export async function GET(request: NextRequest) {
   try {
     // Fetch all featured active businesses
-    const featuredBusinesses = await prisma.business.findMany({
+    const featuredBusinesses = await prisma.entity.findMany({
       where: {
         featured: true,
         status: BUSINESS_STATUS.ACTIVE,

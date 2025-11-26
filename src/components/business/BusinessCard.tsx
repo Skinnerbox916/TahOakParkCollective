@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { BusinessWithRelations } from "@/types";
-import { LOCAL_TIER_LABELS } from "@/lib/constants";
 import { truncate } from "@/lib/utils";
-import type { LocalTier } from "@/lib/prismaEnums";
 
 interface BusinessCardProps {
   business: BusinessWithRelations;
@@ -20,19 +18,14 @@ export function BusinessCard({ business }: BusinessCardProps) {
           {business.name}
         </h3>
 
-        {/* Unified Tags Section */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {business.localTier && (
-            <span className="px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-md whitespace-nowrap">
-              {LOCAL_TIER_LABELS[business.localTier as LocalTier]}
-            </span>
-          )}
-          {business.category && (
+        {/* Category Tag */}
+        {business.category && (
+          <div className="flex flex-wrap gap-2 mb-4">
             <span className="px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md whitespace-nowrap">
               {business.category.name}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Description */}
         {business.description && (
