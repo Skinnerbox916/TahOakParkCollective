@@ -136,7 +136,7 @@ function SpotlightMask() {
 
 export function EntityMap({
   entities,
-  center = polyBounds.getCenter().toArray().reverse() as [number, number],
+  center = polyBounds.getCenter().toArray() as [number, number],
   zoom = 12,
 }: EntityMapProps) {
   // Filter entities to only those within polygon boundary AND with location data
