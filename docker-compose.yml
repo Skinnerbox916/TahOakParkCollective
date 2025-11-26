@@ -14,6 +14,11 @@ services:
       - NEXTAUTH_URL=${NEXTAUTH_URL:-https://tahoak.skibri.us}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-development_secret_change_me_in_prod}
       - NODE_ENV=development
+      # Umami Analytics (optional)
+      - NEXT_PUBLIC_UMAMI_WEBSITE_ID=${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
+      - NEXT_PUBLIC_UMAMI_URL=${NEXT_PUBLIC_UMAMI_URL:-http://192.168.1.219:3010}
+      - NEXT_PUBLIC_UMAMI_DASHBOARD_URL=${NEXT_PUBLIC_UMAMI_DASHBOARD_URL:-http://192.168.1.219:3010}
+      - UMAMI_INTERNAL_URL=${UMAMI_INTERNAL_URL:-http://umami:3000}
     volumes:
       # Mount everything for development hot-reloading
       - ./src:/app/src
@@ -53,6 +58,35 @@ services:
     networks:
       - default
 
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: tahoak-umami
+    restart: unless-stopped
+    ports:
+      - "${UMAMI_PORT:-3010}:3000"
+    environment:
+      - DATABASE_URL=postgresql://${UMAMI_DB_USER:-umami}:${UMAMI_DB_PASSWORD:-umami_password}@umami-db:5432/${UMAMI_DB_NAME:-umami}
+      - DATABASE_TYPE=postgresql
+      - HASH_SALT=${UMAMI_HASH_SALT:-change-me-in-production}
+    depends_on:
+      - umami-db
+    networks:
+      - default
+      - proxy
+
+  umami-db:
+    image: postgres:16-alpine
+    container_name: tahoak-umami-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${UMAMI_DB_USER:-umami}
+      - POSTGRES_PASSWORD=${UMAMI_DB_PASSWORD:-umami_password}
+      - POSTGRES_DB=${UMAMI_DB_NAME:-umami}
+    volumes:
+      - umami_db_data:/var/lib/postgresql/data
+    networks:
+      - default
+
 networks:
   proxy:
     external: true
@@ -60,5 +94,6 @@ networks:
 
 volumes:
   db_data:
+  umami_db_data:
 
 

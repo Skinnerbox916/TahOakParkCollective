@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
           roles: true,
           _count: {
             select: {
-              businesses: true,
+              entities: true,
             },
           },
         },
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         email: user.email,
         name: user.name,
         roles: user.roles,
-        businessCount: user._count.businesses,
+        businessCount: user._count.entities,
       }));
 
       // Filter by role if provided
@@ -57,7 +57,8 @@ export async function GET(request: NextRequest) {
       return createSuccessResponse(usersWithCounts);
     } catch (error) {
       console.error("Error fetching users:", error);
-      return createErrorResponse("Failed to fetch users", 500);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      return createErrorResponse(`Failed to fetch users: ${errorMessage}`, 500);
     }
   });
 }

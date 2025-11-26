@@ -1,27 +1,56 @@
 import Link from "next/link";
-import { EntityWithRelations } from "@/types";
+import { EntityWithRelations, EntityTagWithTag } from "@/types";
 import { ENTITY_TYPE_LABELS } from "@/lib/constants";
 import { truncate } from "@/lib/utils";
 import type { EntityType } from "@/lib/prismaEnums";
+import { TagBadge } from "@/components/tags/TagBadge";
 
 interface EntityCardProps {
   entity: EntityWithRelations;
 }
 
 export function EntityCard({ entity }: EntityCardProps) {
+  // Get first 3 tags
+  const tags = (entity.tags as EntityTagWithTag[] || []).slice(0, 3);
+  const images = entity.images as Record<string, string> | null;
+
   return (
     <Link
       href={`/entities/${entity.slug}`}
-      className="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 h-full flex flex-col"
+      className="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 h-full flex flex-col overflow-hidden"
     >
-      <div className="p-6 flex flex-col flex-1">
-        {/* Entity Name */}
-        <h3 className="text-xl font-semibold text-gray-900 mb-3">
-          {entity.name}
-        </h3>
+      {/* Hero Image */}
+      {images?.hero ? (
+        <div className="h-48 w-full relative bg-gray-100">
+          <img
+            src={images.hero}
+            alt={`${entity.name} cover`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : null}
 
-        {/* Unified Tags Section */}
-        <div className="flex flex-wrap gap-2 mb-4">
+      <div className="p-6 flex flex-col flex-1">
+        <div className="flex items-start gap-4 mb-3">
+          {/* Logo */}
+          {images?.logo && (
+            <div className="w-12 h-12 flex-shrink-0 rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+              <img 
+                src={images.logo} 
+                alt={`${entity.name} logo`}
+                className="w-full h-full object-contain p-1"
+              />
+            </div>
+          )}
+          
+          {/* Entity Name */}
+          <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">
+            {entity.name}
+          </h3>
+        </div>
+
+        {/* Category & Type Badges */}
+        <div className="flex flex-wrap gap-2 mb-3">
           <span className="px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-md whitespace-nowrap">
             {ENTITY_TYPE_LABELS[entity.entityType as EntityType]}
           </span>
@@ -31,6 +60,26 @@ export function EntityCard({ entity }: EntityCardProps) {
             </span>
           )}
         </div>
+
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {tags.map((et) => (
+              <TagBadge 
+                key={et.id} 
+                name={et.tag.name} 
+                category={et.tag.category} 
+                verified={et.verified}
+                className="text-[10px] px-2 py-0.5"
+              />
+            ))}
+            {entity.tags.length > 3 && (
+              <span className="text-xs text-gray-500 self-center">
+                +{entity.tags.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Description */}
         {entity.description && (
@@ -65,4 +114,3 @@ export function EntityCard({ entity }: EntityCardProps) {
     </Link>
   );
 }
-

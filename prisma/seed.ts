@@ -1,4 +1,4 @@
-import { Role, Neighborhood, BusinessStatus } from "@prisma/client";
+import { Role, BusinessStatus, EntityType, TagCategory } from "@prisma/client";
 import { prisma } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/password";
 
@@ -11,6 +11,36 @@ const DEFAULT_CATEGORIES = [
   { name: "Education", slug: "education", description: "Educational institutions" },
   { name: "Automotive", slug: "automotive", description: "Auto services and dealerships" },
   { name: "Home & Garden", slug: "home-garden", description: "Home improvement and garden centers" },
+];
+
+const INITIAL_TAGS = [
+  // Identity
+  { name: "Black-owned", category: TagCategory.IDENTITY },
+  { name: "LGBTQ-owned", category: TagCategory.IDENTITY },
+  { name: "Women-owned", category: TagCategory.IDENTITY },
+  { name: "Veteran-owned", category: TagCategory.IDENTITY },
+  { name: "Family-owned", category: TagCategory.IDENTITY },
+  { name: "Asian-owned", category: TagCategory.IDENTITY },
+  { name: "Latinx-owned", category: TagCategory.IDENTITY },
+  { name: "Indigenous-owned", category: TagCategory.IDENTITY },
+  
+  // Friendliness
+  { name: "Kid-friendly", category: TagCategory.FRIENDLINESS },
+  { name: "Dog-friendly", category: TagCategory.FRIENDLINESS },
+  { name: "Neurodiversity-friendly", category: TagCategory.FRIENDLINESS },
+  { name: "Wheelchair-accessible", category: TagCategory.FRIENDLINESS },
+  { name: "Senior-friendly", category: TagCategory.FRIENDLINESS },
+  { name: "Sensory-friendly", category: TagCategory.FRIENDLINESS },
+  
+  // Amenities
+  { name: "WiFi", category: TagCategory.AMENITY },
+  { name: "Outdoor Seating", category: TagCategory.AMENITY },
+  { name: "Parking Available", category: TagCategory.AMENITY },
+  { name: "Public Restroom", category: TagCategory.AMENITY },
+  { name: "Accepts Cash", category: TagCategory.AMENITY },
+  { name: "Accepts Cards", category: TagCategory.AMENITY },
+  { name: "Gender-neutral Restrooms", category: TagCategory.AMENITY },
+  { name: "Changing Tables", category: TagCategory.AMENITY },
 ];
 
 async function main() {
@@ -32,6 +62,22 @@ async function main() {
     )
   );
   console.log(`Created ${categories.length} categories`);
+
+  // Create tags
+  console.log("Creating tags...");
+  for (const tag of INITIAL_TAGS) {
+    const slug = tag.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+    await prisma.tag.upsert({
+      where: { slug },
+      update: {},
+      create: {
+        name: tag.name,
+        slug,
+        category: tag.category,
+      },
+    });
+  }
+  console.log(`Created ${INITIAL_TAGS.length} tags`);
 
   // Create admin user
   console.log("Creating admin user...");
@@ -69,13 +115,13 @@ async function main() {
   });
   console.log("Business owner created:", businessOwner.email);
 
-  // Create sample businesses
-  console.log("Creating sample businesses...");
+  // Create sample entities
+  console.log("Creating sample entities...");
   const restaurantsCategory = categories.find((c) => c.slug === "restaurants");
   const retailCategory = categories.find((c) => c.slug === "retail");
 
   if (restaurantsCategory) {
-    const business1 = await prisma.business.upsert({
+    const entity1 = await prisma.entity.upsert({
       where: { slug: "sample-restaurant-tahoe-park" },
       update: {},
       create: {
@@ -85,8 +131,9 @@ async function main() {
         address: "123 Main St, Sacramento, CA 95820",
         phone: "(916) 555-0100",
         website: "https://example.com",
-        neighborhoods: [Neighborhood.TAHOE_PARK],
+        coverageArea: "TAHOE_PARK",
         categoryId: restaurantsCategory.id,
+        entityType: EntityType.COMMERCE,
         status: BusinessStatus.ACTIVE,
         ownerId: businessOwner.id,
         latitude: 38.5384,
@@ -102,11 +149,11 @@ async function main() {
         },
       },
     });
-    console.log("Created business:", business1.name);
+    console.log("Created entity:", entity1.name);
   }
 
   if (retailCategory) {
-    const business2 = await prisma.business.upsert({
+    const entity2 = await prisma.entity.upsert({
       where: { slug: "sample-shop-oak-park" },
       update: {},
       create: {
@@ -116,20 +163,21 @@ async function main() {
         address: "456 Broadway, Sacramento, CA 95817",
         phone: "(916) 555-0200",
         website: "https://example.com",
-        neighborhoods: [Neighborhood.OAK_PARK],
+        coverageArea: "OAK_PARK",
         categoryId: retailCategory.id,
+        entityType: EntityType.COMMERCE,
         status: BusinessStatus.PENDING,
         ownerId: businessOwner.id,
         latitude: 38.5569,
         longitude: -121.4614,
       },
     });
-    console.log("Created business:", business2.name);
+    console.log("Created entity:", entity2.name);
   }
 
-  // Create businesses in other neighborhoods
+  // Create entities in other areas
   if (restaurantsCategory) {
-    const business3 = await prisma.business.upsert({
+    const entity3 = await prisma.entity.upsert({
       where: { slug: "elmhurst-cafe" },
       update: {},
       create: {
@@ -138,19 +186,20 @@ async function main() {
         description: "Cozy cafe in Elmhurst",
         address: "789 Oak Ave, Sacramento, CA 95815",
         phone: "(916) 555-0300",
-        neighborhoods: [Neighborhood.ELMHURST],
+        coverageArea: "ELMHURST", // Note: Using enum-like string, although strictly we only validate OAK_PARK/TAHOE_PARK in logic usually
         categoryId: restaurantsCategory.id,
+        entityType: EntityType.COMMERCE,
         status: BusinessStatus.ACTIVE,
         ownerId: businessOwner.id,
         latitude: 38.6107,
         longitude: -121.4789,
       },
     });
-    console.log("Created business:", business3.name);
+    console.log("Created entity:", entity3.name);
   }
 
   if (retailCategory) {
-    const business4 = await prisma.business.upsert({
+    const entity4 = await prisma.entity.upsert({
       where: { slug: "colonial-park-market" },
       update: {},
       create: {
@@ -159,19 +208,20 @@ async function main() {
         description: "Local market in Colonial Park",
         address: "321 Market St, Sacramento, CA 95819",
         phone: "(916) 555-0400",
-        neighborhoods: [Neighborhood.COLONIAL_PARK],
+        coverageArea: "COLONIAL_PARK",
         categoryId: retailCategory.id,
+        entityType: EntityType.COMMERCE,
         status: BusinessStatus.ACTIVE,
         ownerId: businessOwner.id,
         latitude: 38.5705,
         longitude: -121.4614,
       },
     });
-    console.log("Created business:", business4.name);
+    console.log("Created entity:", entity4.name);
   }
 
   if (retailCategory) {
-    const business5 = await prisma.business.upsert({
+    const entity5 = await prisma.entity.upsert({
       where: { slug: "curtis-park-boutique" },
       update: {},
       create: {
@@ -180,15 +230,16 @@ async function main() {
         description: "Fashion boutique in Curtis Park",
         address: "654 Park Blvd, Sacramento, CA 95818",
         phone: "(916) 555-0500",
-        neighborhoods: [Neighborhood.CURTIS_PARK],
+        coverageArea: "CURTIS_PARK",
         categoryId: retailCategory.id,
+        entityType: EntityType.COMMERCE,
         status: BusinessStatus.ACTIVE,
         ownerId: businessOwner.id,
         latitude: 38.5569,
         longitude: -121.4614,
       },
     });
-    console.log("Created business:", business5.name);
+    console.log("Created entity:", entity5.name);
   }
 
   console.log("Seed completed successfully!");
@@ -202,4 +253,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

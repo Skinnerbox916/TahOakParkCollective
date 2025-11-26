@@ -11,6 +11,13 @@ interface SidebarProps {
 const adminNavItems = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/entities", label: "Entities" },
+  { href: "/admin/pending-changes", label: "Pending Changes" },
+  { href: "/admin/spot-checks", label: "Spot Checks" },
+  { href: "/admin/suggestions", label: "Suggestions" },
+  { href: "/admin/issue-reports", label: "Issue Reports" },
+  { href: "/admin/subscribers", label: "Subscribers" },
+  { href: "/admin/analytics", label: "Analytics" },
+  { href: "/admin/tags", label: "Tags" },
   { href: "/admin/users", label: "Users" },
 ];
 

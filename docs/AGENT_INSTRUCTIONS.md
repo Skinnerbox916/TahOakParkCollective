@@ -141,7 +141,7 @@ DATABASE_URL="postgresql://tahoak:tahoak_password@localhost:5432/tahoak_db" npx 
 ## API Endpoints
 
 ### Public
-- `GET /api/businesses` - Search businesses (filters: q, neighborhood, category, status)
+- `GET /api/businesses` - Search businesses (filters: q, category, status)
 - `GET /api/businesses/[id]` - Get single business
 - `GET /api/categories` - List all categories
 
@@ -271,7 +271,7 @@ npx prisma generate
 ### Implemented
 - ✅ User registration with password hashing
 - ✅ User authentication (sign in/out)
-- ✅ Business search with filters (neighborhood, category, keyword)
+- ✅ Business search with filters (category, keyword)
 - ✅ Map view with business locations
 - ✅ List view with business cards
 - ✅ Role-based access control

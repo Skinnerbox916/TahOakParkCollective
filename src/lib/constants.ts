@@ -6,6 +6,8 @@ export const ENTITY_TYPES: { value: EntityType; label: string }[] = [
   { value: "ADVOCACY", label: "Advocacy" },
   { value: "PUBLIC_SPACE", label: "Public Space" },
   { value: "NON_PROFIT", label: "Non-Profit" },
+  { value: "EVENT", label: "Event" },
+  { value: "SERVICE_PROVIDER", label: "Service Provider" },
 ];
 
 export const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
@@ -14,6 +16,8 @@ export const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
   ADVOCACY: "Advocacy",
   PUBLIC_SPACE: "Public Space",
   NON_PROFIT: "Non-Profit",
+  EVENT: "Event",
+  SERVICE_PROVIDER: "Service Provider",
 };
 
 export const DEFAULT_CATEGORIES = [

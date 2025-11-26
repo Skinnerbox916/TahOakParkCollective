@@ -42,11 +42,14 @@ function SearchPageContent() {
   );
 
   const [entities, setEntities] = useState<EntityWithRelations[]>([]);
+  const [allEntities, setAllEntities] = useState<EntityWithRelations[]>([]); // Store unfiltered entities
   const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<Array<{ id: string; name: string; category: string }>>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch categories on mount
+  // Fetch categories and tags on mount
   useEffect(() => {
     async function fetchCategories() {
       try {
@@ -54,12 +57,37 @@ function SearchPageContent() {
         const data = await response.json();
         if (data.success && data.data) {
           setCategories(data.data);
+          
+          // If selectedCategory is a slug (not an ID), convert it to ID
+          if (selectedCategory && selectedCategory.length < 25) {
+            const categoryBySlug = data.data.find(
+              (cat: Category) => cat.slug === selectedCategory
+            );
+            if (categoryBySlug) {
+              setSelectedCategory(categoryBySlug.id);
+            }
+          }
         }
       } catch (err) {
         console.error("Error fetching categories:", err);
       }
     }
+
+    async function fetchTags() {
+      try {
+        const response = await fetch("/api/tags");
+        const data = await response.json();
+        if (data.success && data.data) {
+          setTags(data.data);
+        }
+      } catch (err) {
+        console.error("Error fetching tags:", err);
+      }
+    }
+
     fetchCategories();
+    fetchTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Debounced search function
@@ -82,9 +110,11 @@ function SearchPageContent() {
         const data = await response.json();
 
         if (data.success && data.data) {
-          setEntities(data.data);
+          setAllEntities(data.data); // Store all entities
+          // Tag filtering happens in useEffect below
         } else {
           setError(data.error || "Failed to fetch entities");
+          setAllEntities([]);
           setEntities([]);
         }
       } catch (err) {
@@ -98,7 +128,7 @@ function SearchPageContent() {
     []
   );
 
-  // Fetch entities when filters change
+  // Fetch entities when filters change (excluding tags - those filter client-side)
   useEffect(() => {
     debouncedSearch({
       q: searchQuery,
@@ -106,6 +136,22 @@ function SearchPageContent() {
       entityType: selectedEntityType,
     });
   }, [searchQuery, selectedCategory, selectedEntityType, debouncedSearch]);
+
+  // Filter entities by selected tags (client-side)
+  useEffect(() => {
+    if (selectedTags.length === 0) {
+      setEntities(allEntities);
+      return;
+    }
+
+    const filtered = allEntities.filter((entity) => {
+      if (!entity.tags || !Array.isArray(entity.tags)) return false;
+      const entityTagIds = (entity.tags as any[]).map((et: any) => et.tag?.id || et.tagId);
+      // Entity must have ALL selected tags
+      return selectedTags.every((tagId) => entityTagIds.includes(tagId));
+    });
+    setEntities(filtered);
+  }, [allEntities, selectedTags]);
 
   // Sync URL with state changes
   useEffect(() => {
@@ -135,7 +181,12 @@ function SearchPageContent() {
     setSearchQuery("");
     setSelectedCategory("");
     setSelectedEntityType("");
+    setSelectedTags([]);
     setViewMode("list");
+  };
+
+  const handleTagsChange = (tagIds: string[]) => {
+    setSelectedTags(tagIds);
   };
 
   const handleSearchChange = (query: string) => {
@@ -173,10 +224,13 @@ function SearchPageContent() {
             searchQuery={searchQuery}
             selectedCategory={selectedCategory}
             selectedEntityType={selectedEntityType}
+            selectedTags={selectedTags}
             categories={categories}
+            tags={tags}
             onSearchChange={handleSearchChange}
             onCategoryChange={handleCategoryChange}
             onEntityTypeChange={handleEntityTypeChange}
+            onTagsChange={handleTagsChange}
             onClearFilters={handleClearFilters}
           />
         </div>

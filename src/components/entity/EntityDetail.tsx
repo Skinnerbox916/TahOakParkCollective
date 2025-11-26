@@ -1,12 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { EntityWithRelations } from "@/types";
+import Link from "next/link";
+import { EntityWithRelations, EntityTagWithTag } from "@/types";
 import { formatPhoneNumber } from "@/lib/utils";
 import { ENTITY_TYPE_LABELS } from "@/lib/constants";
-import type { EntityType } from "@/lib/prismaEnums";
+import type { EntityType, TagCategory } from "@/lib/prismaEnums";
 import { BusinessHours } from "../business/BusinessHours";
 import { SocialMediaLinks } from "../business/SocialMediaLinks";
+import { TagBadge } from "@/components/tags/TagBadge";
 
 // Dynamically import map component to avoid SSR issues
 const EntityMap = dynamic(
@@ -31,6 +33,16 @@ export function EntityDetail({ entity }: EntityDetailProps) {
     ? ([entity.latitude!, entity.longitude!] as [number, number])
     : undefined;
 
+  // Group tags by category
+  const groupedTags = (entity.tags as EntityTagWithTag[] || []).reduce((acc, entityTag) => {
+    const category = entityTag.tag.category;
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(entityTag);
+    return acc;
+  }, {} as Record<TagCategory, EntityTagWithTag[]>);
+
+  const tagOrder: TagCategory[] = ["IDENTITY", "FRIENDLINESS", "AMENITY"];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -50,6 +62,23 @@ export function EntityDetail({ entity }: EntityDetailProps) {
                 </span>
               )}
             </div>
+            
+            {/* Tags */}
+            {entity.tags && entity.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {tagOrder.map(category => {
+                  if (!groupedTags[category]) return null;
+                  return groupedTags[category].map(et => (
+                    <TagBadge 
+                      key={et.id} 
+                      name={et.tag.name} 
+                      category={et.tag.category}
+                      verified={et.verified}
+                    />
+                  ));
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -84,20 +113,32 @@ export function EntityDetail({ entity }: EntityDetailProps) {
           )}
 
           {/* Images (if available) */}
-          {entity.images && Array.isArray(entity.images) && entity.images.length > 0 && (
+          {entity.images && typeof entity.images === 'object' && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Photos
               </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {(entity.images as string[]).map((imageUrl, index) => (
-                  <img
-                    key={index}
-                    src={imageUrl}
-                    alt={`${entity.name} - Photo ${index + 1}`}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(entity.images as any).hero && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-500">Cover Image</p>
+                    <img
+                      src={(entity.images as any).hero}
+                      alt={`${entity.name} - Cover`}
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                  </div>
+                )}
+                {(entity.images as any).logo && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-500">Logo</p>
+                    <img
+                      src={(entity.images as any).logo}
+                      alt={`${entity.name} - Logo`}
+                      className="w-full h-48 object-contain bg-gray-50 rounded-lg p-4"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -161,9 +202,40 @@ export function EntityDetail({ entity }: EntityDetailProps) {
               socialMedia={entity.socialMedia as Record<string, string>}
             />
           )}
+
+          {/* Claim Entity */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Own This Business?
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Claim this listing to manage your business information.
+            </p>
+            <Link
+              href={`/claim?entityId=${entity.id}`}
+              className="inline-block w-full text-center px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium mb-3"
+            >
+              Claim This Entity
+            </Link>
+          </div>
+
+          {/* Report Issue */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Found an Issue?
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              See incorrect information? Let us know.
+            </p>
+            <Link
+              href={`/report?entityId=${entity.id}`}
+              className="inline-block w-full text-center px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+            >
+              Report an Issue
+            </Link>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-

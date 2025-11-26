@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSuccessResponse, createErrorResponse, withAuth, withRole } from "@/lib/api-helpers";
+import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
 import { BUSINESS_STATUS, ROLE, ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { BusinessStatus, EntityType } from "@/lib/prismaEnums";
 import { expandSearchQuery, getMatchingCategories } from "@/lib/keyword-search";
@@ -10,10 +10,11 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status") as BusinessStatus | null;
     const categoryId = searchParams.get("categoryId");
-    const category = searchParams.get("category"); // Also support "category" param
+    const category = searchParams.get("category"); 
     const entityType = searchParams.get("entityType") as EntityType | null;
     const searchQuery = searchParams.get("q") || searchParams.get("search");
     const featured = searchParams.get("featured") === "true";
+    const sort = searchParams.get("sort") || "random"; // Default to random
 
     const where: any = {};
     
@@ -24,76 +25,69 @@ export async function GET(request: NextRequest) {
       where.status = BUSINESS_STATUS.ACTIVE;
     }
 
-    // Filter by featured flag
     if (featured) {
       where.featured = true;
     }
 
-    // Filter by entity type
     if (entityType) {
       where.entityType = entityType;
     }
 
-    // Use categoryId or category param
-    const finalCategoryId = categoryId || category;
+    // Category Logic
+    let finalCategoryId = categoryId || null;
+    if (!finalCategoryId && category) {
+      const categoryBySlug = await prisma.category.findUnique({
+        where: { slug: category },
+        select: { id: true },
+      });
+      if (categoryBySlug) {
+        finalCategoryId = categoryBySlug.id;
+      } else {
+        finalCategoryId = category;
+      }
+    }
     if (finalCategoryId) {
       where.categoryId = finalCategoryId;
     }
 
-    // Enhanced natural language search with keyword expansion
+    // Search Logic
     if (searchQuery && searchQuery.trim()) {
       const searchTerm = searchQuery.trim();
       const expandedTerms = expandSearchQuery(searchTerm);
       const matchingCategorySlugs = getMatchingCategories(searchTerm);
       
-      // Get category IDs for matching category slugs
       let matchingCategoryIds: string[] = [];
       if (matchingCategorySlugs.length > 0) {
         const categories = await prisma.category.findMany({
-          where: {
-            slug: {
-              in: matchingCategorySlugs,
-            },
-          },
-          select: {
-            id: true,
-          },
+          where: { slug: { in: matchingCategorySlugs } },
+          select: { id: true },
         });
         matchingCategoryIds = categories.map(c => c.id);
       }
 
-      // Build OR conditions: search name/description with expanded terms AND search by matching category IDs
       const searchConditions: any[] = [];
-      
-      // Add text search conditions for each expanded term
       expandedTerms.forEach(term => {
         searchConditions.push(
-          {
-            name: {
-              contains: term,
-              mode: "insensitive",
-            },
-          },
-          {
-            description: {
-              contains: term,
-              mode: "insensitive",
-            },
-          }
+          { name: { contains: term, mode: "insensitive" } },
+          { description: { contains: term, mode: "insensitive" } }
         );
       });
 
-      // Add category ID search if we found matching categories
       if (matchingCategoryIds.length > 0) {
-        searchConditions.push({
-          categoryId: {
-            in: matchingCategoryIds,
-          },
-        });
+        searchConditions.push({ categoryId: { in: matchingCategoryIds } });
       }
 
       where.OR = searchConditions;
     }
+
+    // Sorting
+    let orderBy: any = { createdAt: "desc" }; // Default fallback
+    if (sort === "name") {
+      orderBy = { name: "asc" };
+    } else if (sort === "featured") {
+      orderBy = [{ featured: "desc" }, { name: "asc" }];
+    }
+    // If sort === 'random', we'll handle it in memory after fetch
 
     const entities = await prisma.entity.findMany({
       where,
@@ -106,20 +100,26 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
+        tags: {
+          include: {
+            tag: true
+          }
+        }
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: sort !== "random" ? orderBy : undefined,
     });
+
+    // Handle random sort in memory
+    if (sort === "random") {
+      for (let i = entities.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [entities[i], entities[j]] = [entities[j], entities[i]];
+      }
+    }
 
     return createSuccessResponse(entities);
   } catch (error: any) {
     console.error("Error fetching entities:", error);
-    console.error("Error details:", {
-      message: error?.message,
-      code: error?.code,
-      meta: error?.meta,
-    });
     return createErrorResponse(
       `Failed to fetch entities: ${error?.message || "Unknown error"}`,
       500
@@ -131,17 +131,18 @@ export async function POST(request: NextRequest) {
   return withAuth(async (user) => {
     try {
       const body = await request.json();
-      const { name, description, address, phone, website, categoryId, ownerId, entityType } = body;
+      const { name, description, address, phone, website, categoryId, ownerId, entityType, coverageArea } = body;
 
       if (!name) {
         return createErrorResponse("Entity name is required", 400);
       }
 
+      // Optional: Validate coverage area if coordinates are provided
+      // We can use geometry-based validation if needed in the future
+
       // Determine the owner ID
-      // Admins can specify an ownerId, otherwise use the authenticated user's ID
       let finalOwnerId = user.id;
       if (ownerId && user.roles.includes(ROLE.ADMIN)) {
-        // Verify the owner exists
         const owner = await prisma.user.findUnique({
           where: { id: ownerId },
         });
@@ -174,12 +175,10 @@ export async function POST(request: NextRequest) {
         counter++;
       }
 
-      // Admins can set status directly, others default to PENDING
       const status = user.roles.includes(ROLE.ADMIN) && body.status 
         ? body.status 
         : BUSINESS_STATUS.PENDING;
 
-      // Default entityType to COMMERCE if not provided
       const finalEntityType = entityType || ENTITY_TYPE.COMMERCE;
 
       const entity = await prisma.entity.create({
@@ -194,6 +193,7 @@ export async function POST(request: NextRequest) {
           entityType: finalEntityType,
           status,
           ownerId: finalOwnerId,
+          coverageArea: coverageArea || null,
         },
         include: {
           category: true,
@@ -214,4 +214,3 @@ export async function POST(request: NextRequest) {
     }
   });
 }
-

@@ -57,6 +57,14 @@ model Entity {
   socialMedia   Json?           // Social media links
   ownerId       String
   owner         User            @relation(fields: [ownerId], references: [id])
+  
+  // New MVP fields
+  tags                EntityTag[]
+  pendingChanges      PendingChange[]
+  spotCheckDate       DateTime?
+  verificationContact String?
+  coverageArea        String?       // OAK_PARK or TAHOE_PARK
+  
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
@@ -67,6 +75,125 @@ model Entity {
   @@index([featured])
   @@index([entityType])
 }
+
+// New Models for MVP
+
+model Tag {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  slug        String      @unique
+  category    TagCategory
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  entities    EntityTag[]
+  
+  @@index([category])
+}
+
+model EntityTag {
+  id            String   @id @default(cuid())
+  entityId      String
+  tagId         String
+  verified      Boolean  @default(false)  // For FRIENDLINESS tags
+  entity        Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  tag           Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  createdBy     String?  // User ID who added the tag
+  
+  @@unique([entityId, tagId])
+  @@index([entityId])
+  @@index([tagId])
+}
+
+model PendingChange {
+  id            String   @id @default(cuid())
+  entityId      String
+  changeType    ChangeType
+  fieldName     String?  // For field-level changes
+  oldValue      Json?    // Previous value
+  newValue      Json     // Proposed value
+  submittedBy   String?  // User ID (nullable for public submissions)
+  submitterEmail String? // For public submissions
+  status        ChangeStatus @default(PENDING)
+  reviewedBy    String?  // Admin ID who reviewed
+  reviewedAt    DateTime?
+  notes         String?  @db.Text
+  entity        Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([status])
+  @@index([entityId])
+  @@index([submittedBy])
+}
+
+model EntitySuggestion {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?  @db.Text
+  address       String?
+  website       String?
+  submitterEmail String
+  submitterName String?
+  status        SuggestionStatus @default(PENDING)
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([status])
+}
+
+model IssueReport {
+  id            String   @id @default(cuid())
+  entityId      String
+  issueType     IssueType
+  description   String   @db.Text
+  submitterEmail String
+  submitterName String?
+  status        ReportStatus @default(PENDING)
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  resolution    String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([status])
+  @@index([entityId])
+}
+
+model Subscriber {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  verified      Boolean  @default(false)
+  verificationToken String? @unique
+  verifiedAt    DateTime?
+  preferences   Json?    // Subscription preferences (newsletter, updates, etc.)
+  unsubscribed  Boolean  @default(false)
+  unsubscribedAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([email])
+  @@index([verified])
+}
+
+model MagicLink {
+  id            String   @id @default(cuid())
+  email         String
+  token         String   @unique
+  purpose       MagicLinkPurpose
+  expiresAt     DateTime
+  used          Boolean  @default(false)
+  usedAt        DateTime?
+  createdAt     DateTime @default(now())
+  
+  @@index([token])
+  @@index([email])
+}
+
+// Enums
 
 enum Role {
   USER
@@ -80,6 +207,8 @@ enum EntityType {
   ADVOCACY
   PUBLIC_SPACE
   NON_PROFIT
+  EVENT
+  SERVICE_PROVIDER
 }
 
 enum BusinessStatus {
@@ -87,6 +216,53 @@ enum BusinessStatus {
   PENDING
   INACTIVE
 }
+
+enum TagCategory {
+  IDENTITY        // Owner-assigned: Black-owned, LGBTQ-owned, etc.
+  FRIENDLINESS    // Admin-verified: Kid-friendly, Dog-friendly, etc.
+  AMENITY         // Open: WiFi, Outdoor Seating, etc.
+}
+
+enum ChangeType {
+  CREATE_ENTITY
+  UPDATE_ENTITY
+  ADD_TAG
+  REMOVE_TAG
+  UPDATE_IMAGE
+}
+
+enum ChangeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum IssueType {
+  INCORRECT_INFO
+  CLOSED
+  INELIGIBLE
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+enum MagicLinkPurpose {
+  VERIFY_SUBSCRIPTION
+  MANAGE_PREFERENCES
+  CLAIM_ENTITY
+}
+
+// NextAuth Models
 
 model Account {
   id                 String  @id @default(cuid())

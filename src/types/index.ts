@@ -1,12 +1,27 @@
-import type { Entity, Category, User, Prisma } from "@prisma/client";
-import type { Role, BusinessStatus, EntityType } from "@/lib/prismaEnums";
+import type { Entity, Category, User, Prisma, Tag, EntityTag, PendingChange } from "@prisma/client";
+import type { Role, BusinessStatus, EntityType, TagCategory, ChangeType, ChangeStatus } from "@/lib/prismaEnums";
 
-export type { Entity, Category, User, Role, BusinessStatus, EntityType };
+export type { Entity, Category, User, Role, BusinessStatus, EntityType, Tag, EntityTag, TagCategory, PendingChange, ChangeType, ChangeStatus };
+
+export type EntityTagWithTag = EntityTag & { tag: Tag };
+
+export type PendingChangeWithEntity = PendingChange & {
+  entity: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+};
 
 export type EntityWithRelations = Prisma.EntityGetPayload<{
   include: {
     category: true;
     owner: true;
+    tags: {
+      include: {
+        tag: true;
+      };
+    };
   };
 }>;
 
@@ -53,5 +68,5 @@ export interface EntityFormData {
   entityType?: EntityType;
   hours?: BusinessHours;
   socialMedia?: SocialMediaLinks;
+  coverageArea?: string;
 }
-

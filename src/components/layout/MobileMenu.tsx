@@ -89,6 +89,34 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               >
                 Directory
               </Link>
+              <Link
+                href="/suggest"
+                onClick={onClose}
+                className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Suggest Entity
+              </Link>
+              <Link
+                href="/report"
+                onClick={onClose}
+                className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Report Issue
+              </Link>
+              <Link
+                href="/claim"
+                onClick={onClose}
+                className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Claim Entity
+              </Link>
+              <Link
+                href="/subscribe"
+                onClick={onClose}
+                className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Subscribe
+              </Link>
 
               {session ? (
                 <>
