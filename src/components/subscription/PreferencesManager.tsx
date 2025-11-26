@@ -104,6 +104,7 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
 
     setError(null);
     setSaving(true);
+    setSuccess(false);
 
     try {
       const response = await fetch(
@@ -119,8 +120,19 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
         throw new Error(result.error || "Failed to unsubscribe");
       }
 
-      // Reload preferences to show updated status
-      window.location.reload();
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              unsubscribed: true,
+            }
+          : {
+              email: "",
+              preferences: {},
+              verified: true,
+              unsubscribed: true,
+            }
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to unsubscribe");
     } finally {
