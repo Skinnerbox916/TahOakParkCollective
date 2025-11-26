@@ -1,9 +1,11 @@
 "use client";
 
-import { EntityWithRelations, ApiResponse } from "@/types";
+import { EntityWithRelations } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import Link from "next/link";
+
+const NOW = Date.now();
 
 interface SpotCheckListProps {
   entities: EntityWithRelations[];
@@ -37,9 +39,7 @@ export function SpotCheckList({ entities, onMarkChecked, loading }: SpotCheckLis
 
   const getDaysAgo = (date: Date | string | null): string => {
     if (!date) return "Never checked";
-    const daysAgo = Math.floor(
-      (Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const daysAgo = Math.floor((NOW - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
     if (daysAgo === 0) return "Today";
     if (daysAgo === 1) return "Yesterday";
     if (daysAgo < 30) return `${daysAgo} days ago`;
@@ -53,9 +53,7 @@ export function SpotCheckList({ entities, onMarkChecked, loading }: SpotCheckLis
 
   const getStatusColor = (date: Date | string | null): string => {
     if (!date) return "bg-red-100 text-red-800";
-    const daysAgo = Math.floor(
-      (Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const daysAgo = Math.floor((NOW - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
     if (daysAgo < 30) return "bg-green-100 text-green-800";
     if (daysAgo < 180) return "bg-yellow-100 text-yellow-800";
     return "bg-red-100 text-red-800";
