@@ -81,8 +81,8 @@ export default function AdminSpotChecksPage() {
       <div className="mb-6 flex items-center justify-between">
         <Card className="p-4 bg-blue-50 border-blue-200">
           <p className="text-sm text-blue-800">
-            <strong>Tip:</strong> Review each entity and verify that the information is accurate. 
-            Click "Mark as Checked" when complete.
+            <strong>Tip:</strong> Review each entity and verify that the information is accurate.
+            Click &quot;Mark as Checked&quot; when complete.
           </p>
         </Card>
         <Button onClick={fetchSpotChecks} disabled={loading} variant="outline">
