@@ -1,6 +1,7 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import Link from "next/link";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { PreferencesManager } from "@/components/subscription/PreferencesManager";
 import { Card } from "@/components/ui/Card";
@@ -8,13 +9,9 @@ import { Card } from "@/components/ui/Card";
 function ManagePreferencesContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!token) {
-      setError("Invalid link. Please check your email for the correct management link.");
-    }
-  }, [token]);
+  const error = token
+    ? null
+    : "Invalid link. Please check your email for the correct management link.";
 
   return (
     <>
@@ -27,9 +24,9 @@ function ManagePreferencesContent() {
           <p className="text-gray-600 mb-6">{error}</p>
           <p className="text-sm text-gray-500">
             If you need a new management link, please{" "}
-            <a href="/subscribe" className="text-indigo-600 hover:underline">
+            <Link href="/subscribe" className="text-indigo-600 hover:underline">
               subscribe again
-            </a>
+            </Link>
             {" "}or contact us.
           </p>
         </Card>
