@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -11,16 +11,14 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    if (searchParams.get("registered") === "true") {
-      setSuccess("Account created successfully! Please sign in.");
-    }
-  }, [searchParams]);
+  const successMessage =
+    searchParams.get("registered") === "true"
+      ? "Account created successfully! Please sign in."
+      : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +40,7 @@ export function LoginForm() {
         router.push("/");
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred. Please try again.");
       setLoading(false);
     }
@@ -50,9 +48,9 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {success && (
+      {successMessage && (
         <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-          {success}
+          {successMessage}
         </div>
       )}
 
@@ -85,7 +83,7 @@ export function LoginForm() {
       </Button>
 
       <div className="text-center text-sm text-gray-600">
-        Don't have an account?{" "}
+        Don&apos;t have an account?{" "}
         <Link href="/auth/signup" className="text-indigo-600 hover:text-indigo-700 font-medium">
           Sign up
         </Link>
