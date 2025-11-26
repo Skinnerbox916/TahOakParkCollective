@@ -1,6 +1,15 @@
 // Script to get street geometries from OpenStreetMap Overpass API
 // This will help us create a polygon that follows the actual street paths
 
+type OverpassPoint = {
+  lat: number;
+  lon: number;
+};
+
+type OverpassWay = {
+  geometry?: OverpassPoint[];
+};
+
 async function getStreetGeometry(streetName: string, bbox: string) {
   // Overpass API query to get street geometries
   const query = `
@@ -45,11 +54,11 @@ async function main() {
     console.log(`Found ${geometries.length} segments\n`);
     
     if (geometries.length > 0) {
-      geometries.forEach((way: any, i: number) => {
+      geometries.forEach((way: OverpassWay, i: number) => {
         if (way.geometry) {
           console.log(`Segment ${i + 1}: ${way.geometry.length} points`);
           // Print first few coordinates
-          way.geometry.slice(0, 3).forEach((point: any) => {
+          way.geometry.slice(0, 3).forEach((point: OverpassPoint) => {
             console.log(`  [${point.lat}, ${point.lon}]`);
           });
         }
