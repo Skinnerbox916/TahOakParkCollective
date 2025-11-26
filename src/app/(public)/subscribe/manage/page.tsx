@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { PreferencesManager } from "@/components/subscription/PreferencesManager";
 import { Card } from "@/components/ui/Card";
@@ -8,13 +7,9 @@ import { Card } from "@/components/ui/Card";
 export default function ManagePreferencesPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!token) {
-      setError("Invalid link. Please check your email for the correct management link.");
-    }
-  }, [token]);
+  const error = token
+    ? null
+    : "Invalid link. Please check your email for the correct management link.";
 
   return (
     <div className="min-h-screen bg-gray-50">
