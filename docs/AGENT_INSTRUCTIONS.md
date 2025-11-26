@@ -184,16 +184,14 @@ All API routes use helper functions from `src/lib/api-helpers.ts`:
 
 ### Making Code Changes
 1. Edit source files
-2. Rebuild Docker image: `docker compose build tahoak-web`
-3. Restart container: `docker compose up -d tahoak-web`
-4. Wait for "Ready" message in logs
-5. Hard refresh browser (Ctrl+Shift+R)
+2. Confirm `tahoak-web` dev server is running (`docker compose logs -f tahoak-web`)
+3. Hot reload should apply changes automatically; if not, restart the container: `docker compose restart tahoak-web`
+4. Hard refresh browser (Ctrl+Shift+R) if UI looks cached
 
 ### Database Changes
 1. Update `prisma/schema.prisma`
 2. Create migration: `npx prisma migrate dev --name description`
-3. Rebuild image (includes Prisma client generation)
-4. Container will regenerate Prisma client on startup
+3. Restart the web container to pick up the updated Prisma client: `docker compose restart tahoak-web`
 
 ### Testing Locally (Alternative)
 If you want hot-reload without Docker:
