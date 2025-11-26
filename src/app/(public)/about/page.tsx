@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
@@ -23,7 +22,7 @@ export default function AboutPage() {
               recurring community events.
             </p>
             <p className="text-gray-700 leading-relaxed">
-              Rather than prioritizing "what's closest" or "highest SEO," we focus on <strong>real
+              Rather than prioritizing &quot;what&apos;s closest&quot; or &quot;highest SEO,&quot; we focus on <strong>real
               relationships to the neighborhood</strong>: where owners live, where activities actually
               happen, and who explicitly focuses on and invests in our community.
             </p>
@@ -33,7 +32,7 @@ export default function AboutPage() {
           <Card className="p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Inclusion Criteria</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              We include entities that meet our definition of "local":
+              We include entities that meet our definition of &quot;local&quot;:
             </p>
             <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4 ml-4">
               <li>
@@ -80,7 +79,7 @@ export default function AboutPage() {
           <Card className="p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Feedback & Inquiries</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
-              Have questions, suggestions, or want to report an issue? We'd love to hear from you.
+              Have questions, suggestions, or want to report an issue? We&apos;d love to hear from you.
             </p>
             <Button href="/contact" className="w-full sm:w-auto">
               Contact Us
