@@ -19,7 +19,11 @@ async function handleRequest(request: NextRequest) {
     const path = request.nextUrl.pathname.replace("/api/umami/", "");
     
     // Build the Umami API URL
-    const umamiUrl = `${internalUrl}/api/${path}${request.nextUrl.search}`;
+    // The script calls /api/umami/api/send, so path will be "api/send"
+    // We need to forward to umami:3000/api/send (not /api/api/send)
+    const umamiUrl = `${internalUrl}/${path}${request.nextUrl.search}`;
+    
+    console.log(`[Umami Proxy] ${request.method} ${request.nextUrl.pathname} -> ${umamiUrl}`);
     
     // Forward the request to Umami
     const method = request.method;
