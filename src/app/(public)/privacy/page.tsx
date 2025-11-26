@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -11,8 +13,8 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Introduction</h2>
             <p className="text-gray-700 leading-relaxed">
-              TahOak Park Collective ("we," "our," or "us") is committed to protecting your privacy.
-              This Privacy Policy explains how we collect, use, disclose, and safeguard your
+              TahOak Park Collective (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your
+              privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your
               information when you use our Platform.
             </p>
           </section>
@@ -39,7 +41,7 @@ export default function PrivacyPage() {
             <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
               <li>Provide, maintain, and improve the Platform</li>
               <li>Process and manage your account and entity listings</li>
-              <li>Send you email updates (if you've subscribed with double opt-in)</li>
+              <li>Send you email updates (if you&apos;ve subscribed with double opt-in)</li>
               <li>Respond to your inquiries and requests</li>
               <li>Protect against fraudulent or unauthorized activity</li>
               <li>Comply with legal obligations</li>
@@ -100,7 +102,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">9. Children's Privacy</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">9. Children&apos;s Privacy</h2>
             <p className="text-gray-700 leading-relaxed">
               Our Platform is not intended for children under 13. We do not knowingly collect
               personal information from children under 13.
@@ -111,7 +113,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Changes to This Policy</h2>
             <p className="text-gray-700 leading-relaxed">
               We may update this Privacy Policy from time to time. We will notify you of any changes
-              by posting the new Privacy Policy on this page and updating the "Last updated" date.
+              by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
             </p>
           </section>
 
@@ -119,9 +121,9 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">11. Contact Us</h2>
             <p className="text-gray-700 leading-relaxed">
               If you have questions about this Privacy Policy, please{" "}
-              <a href="/contact" className="text-indigo-600 hover:text-indigo-800 font-medium">
+              <Link href="/contact" className="text-indigo-600 hover:text-indigo-800 font-medium">
                 contact us
-              </a>
+              </Link>
               .
             </p>
           </section>
