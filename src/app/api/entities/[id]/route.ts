@@ -15,7 +15,7 @@ export async function GET(
     const entity = await prisma.entity.findUnique({
       where: { id },
       include: {
-        category: true,
+        categories: true,
         owner: {
           select: {
             id: true,
@@ -44,23 +44,15 @@ export async function GET(
         : null,
     };
 
-    // Translate category if present
-    if (entity.category) {
-      translatedEntity.category = {
-        ...entity.category,
-        name: getTranslatedField(
-          entity.category.nameTranslations,
-          locale,
-          entity.category.name
-        ),
-        description: entity.category.description
-          ? getTranslatedField(
-              entity.category.descriptionTranslations,
-              locale,
-              entity.category.description
-            )
+    // Translate categories if present
+    if (entity.categories && Array.isArray(entity.categories)) {
+      translatedEntity.categories = entity.categories.map((cat: any) => ({
+        ...cat,
+        name: getTranslatedField(cat.nameTranslations, locale, cat.name),
+        description: cat.description
+          ? getTranslatedField(cat.descriptionTranslations, locale, cat.description)
           : null,
-      };
+      }));
     }
 
     // Translate tags if present
@@ -98,7 +90,7 @@ export async function PUT(
     try {
       const { id } = await params;
       const body = await request.json();
-      const { name, description, address, phone, website, categoryId, status, entityType, coverageArea } = body;
+      const { name, description, address, phone, website, categoryIds, status, entityType, socialMedia } = body;
 
       // Check if entity exists
       const existingEntity = await prisma.entity.findUnique({
@@ -124,9 +116,30 @@ export async function PUT(
       if (address !== undefined) updateData.address = address;
       if (phone !== undefined) updateData.phone = phone;
       if (website !== undefined) updateData.website = website;
-      if (categoryId !== undefined) updateData.categoryId = categoryId || null;
+      // Handle categories (many-to-many)
+      let categoriesUpdate: any = undefined;
+      if (categoryIds !== undefined) {
+        categoriesUpdate = {
+          set: categoryIds.map((id: string) => ({ id })),
+        };
+      }
       if (entityType !== undefined) updateData.entityType = entityType;
-      if (coverageArea !== undefined) updateData.coverageArea = coverageArea;
+      
+      // Handle social media - clean empty values or set to null if explicitly cleared
+      if (socialMedia !== undefined) {
+        if (socialMedia === null) {
+          updateData.socialMedia = null;
+        } else if (typeof socialMedia === 'object') {
+          // Clean social media - remove empty values
+          const cleaned: any = {};
+          for (const [key, value] of Object.entries(socialMedia)) {
+            if (value && typeof value === 'string' && value.trim()) {
+              cleaned[key] = value.trim();
+            }
+          }
+          updateData.socialMedia = Object.keys(cleaned).length > 0 ? cleaned : null;
+        }
+      }
 
       // Status changes: Admin only
       if (status !== undefined) {
@@ -141,9 +154,12 @@ export async function PUT(
       if (isAdmin) {
         const entity = await prisma.entity.update({
           where: { id },
-          data: updateData,
+          data: {
+            ...updateData,
+            ...(categoriesUpdate && { categories: categoriesUpdate }),
+          },
           include: {
-            category: true,
+            categories: true,
             owner: {
               select: {
                 id: true,

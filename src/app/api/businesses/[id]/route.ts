@@ -12,7 +12,7 @@ export async function GET(
     const business = await prisma.entity.findUnique({
       where: { id },
       include: {
-        category: true,
+        categories: true,
         owner: {
           select: {
             id: true,
@@ -84,7 +84,7 @@ export async function PUT(
         where: { id },
         data: updateData,
         include: {
-          category: true,
+          categories: true,
           owner: {
             select: {
               id: true,

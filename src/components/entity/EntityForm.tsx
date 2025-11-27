@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
-import { EntityWithRelations, ApiResponse, Category, EntityTagWithTag } from "@/types";
+import { EntityWithRelations, ApiResponse, Category, EntityTagWithTag, SocialMediaLinks } from "@/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -10,8 +10,7 @@ import { ENTITY_TYPES, ENTITY_TYPE_LABELS } from "@/lib/constants";
 import type { EntityType } from "@/lib/prismaEnums";
 import { TagSelector } from "@/components/tags/TagSelector";
 import { ImageManager } from "@/components/images/ImageManager";
-import { COVERAGE_AREA_OPTIONS } from "@/lib/coverage-areas";
-import { geocodeAddress, getCoverageArea } from "@/lib/geocoding";
+import { geocodeAddress } from "@/lib/geocoding";
 
 interface EntityFormProps {
   entity?: EntityWithRelations;
@@ -37,6 +36,18 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate }: EntityFormProp
   const [entityType, setEntityType] = useState<EntityType>("COMMERCE");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [tagLoading, setTagLoading] = useState(false);
+  
+  // Social media state
+  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>({
+    facebook: "",
+    instagram: "",
+    twitter: "",
+    linkedin: "",
+    yelp: "",
+    tiktok: "",
+    youtube: "",
+    threads: "",
+  });
 
   // Load categories and populate form if editing
   useEffect(() => {
@@ -63,6 +74,20 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate }: EntityFormProp
       setWebsite(entity.website || "");
       setCategoryId(entity.categoryId || "");
       setEntityType(entity.entityType || "COMMERCE");
+      // Load social media
+      if (entity.socialMedia && typeof entity.socialMedia === 'object') {
+        const social = entity.socialMedia as SocialMediaLinks;
+        setSocialMedia({
+          facebook: social.facebook || "",
+          instagram: social.instagram || "",
+          twitter: social.twitter || "",
+          linkedin: social.linkedin || "",
+          yelp: social.yelp || "",
+          tiktok: social.tiktok || "",
+          youtube: social.youtube || "",
+          threads: social.threads || "",
+        });
+      }
       // Load tags
       if (entity.tags) {
         const tagIds = (entity.tags as EntityTagWithTag[]).map(et => et.tag.id);
@@ -97,6 +122,21 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate }: EntityFormProp
         new URL(website);
       } catch {
         return "Please enter a valid website URL (e.g., https://example.com)";
+      }
+    }
+
+    // Validate social media URLs
+    const socialPlatforms: (keyof SocialMediaLinks)[] = [
+      "facebook", "instagram", "twitter", "linkedin", "yelp", "tiktok", "youtube", "threads"
+    ];
+    for (const platform of socialPlatforms) {
+      const url = socialMedia[platform];
+      if (url && url.trim()) {
+        try {
+          new URL(url);
+        } catch {
+          return `Please enter a valid ${platform} URL (e.g., https://${platform}.com/...)`;
+        }
       }
     }
 
@@ -147,6 +187,22 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate }: EntityFormProp
     }
   };
 
+  // Helper function to clean social media links - remove empty values
+  const cleanSocialMedia = (social: SocialMediaLinks): SocialMediaLinks | undefined => {
+    const cleaned: SocialMediaLinks = {};
+    const platforms: (keyof SocialMediaLinks)[] = [
+      "facebook", "instagram", "twitter", "linkedin", "yelp", "tiktok", "youtube", "threads"
+    ];
+    
+    for (const platform of platforms) {
+      if (social[platform] && social[platform]?.trim()) {
+        cleaned[platform] = social[platform]?.trim();
+      }
+    }
+    
+    return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -161,6 +217,8 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate }: EntityFormProp
     setLoading(true);
 
     try {
+      const cleanedSocialMedia = cleanSocialMedia(socialMedia);
+      
       const payload = {
         name: name.trim(),
         description: description.trim() || undefined,
@@ -169,6 +227,7 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate }: EntityFormProp
         website: website.trim() || undefined,
         categoryId: categoryId || undefined,
         entityType,
+        socialMedia: cleanedSocialMedia,
       };
 
       let response: Response;
@@ -312,6 +371,81 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate }: EntityFormProp
             disabled={loading}
             placeholder="https://example.com"
           />
+        </div>
+
+        {/* Social Media Links */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Social Media Links
+          </label>
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input
+                type="url"
+                label="Facebook"
+                value={socialMedia.facebook || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, facebook: e.target.value })}
+                disabled={loading}
+                placeholder="https://facebook.com/yourpage"
+              />
+              <Input
+                type="url"
+                label="Instagram"
+                value={socialMedia.instagram || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, instagram: e.target.value })}
+                disabled={loading}
+                placeholder="https://instagram.com/yourpage"
+              />
+              <Input
+                type="url"
+                label="Twitter"
+                value={socialMedia.twitter || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, twitter: e.target.value })}
+                disabled={loading}
+                placeholder="https://twitter.com/yourpage"
+              />
+              <Input
+                type="url"
+                label="LinkedIn"
+                value={socialMedia.linkedin || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, linkedin: e.target.value })}
+                disabled={loading}
+                placeholder="https://linkedin.com/company/yourpage"
+              />
+              <Input
+                type="url"
+                label="Yelp"
+                value={socialMedia.yelp || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, yelp: e.target.value })}
+                disabled={loading}
+                placeholder="https://yelp.com/biz/yourpage"
+              />
+              <Input
+                type="url"
+                label="TikTok"
+                value={socialMedia.tiktok || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, tiktok: e.target.value })}
+                disabled={loading}
+                placeholder="https://tiktok.com/@yourpage"
+              />
+              <Input
+                type="url"
+                label="YouTube"
+                value={socialMedia.youtube || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, youtube: e.target.value })}
+                disabled={loading}
+                placeholder="https://youtube.com/@yourchannel"
+              />
+              <Input
+                type="url"
+                label="Threads"
+                value={socialMedia.threads || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, threads: e.target.value })}
+                disabled={loading}
+                placeholder="https://threads.net/@yourpage"
+              />
+            </div>
+          </div>
         </div>
 
         <div>

@@ -51,3 +51,5 @@ export async function getEntityTypeLabel(entityType: EntityType, locale: string)
   return labels[entityType] || entityType;
 }
 
+
+

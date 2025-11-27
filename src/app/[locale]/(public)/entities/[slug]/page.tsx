@@ -13,7 +13,7 @@ async function getEntityBySlug(slug: string, locale: string): Promise<EntityWith
         status: BUSINESS_STATUS.ACTIVE, // Only show active entities publicly
       },
       include: {
-        category: true,
+        categories: true,
         owner: {
           select: {
             id: true,
@@ -42,23 +42,23 @@ async function getEntityBySlug(slug: string, locale: string): Promise<EntityWith
         : null,
     };
 
-    // Translate category if present
-    if (entity.category) {
-      translatedEntity.category = {
-        ...entity.category,
+    // Translate categories if present
+    if (entity.categories && Array.isArray(entity.categories)) {
+      translatedEntity.categories = entity.categories.map((cat: any) => ({
+        ...cat,
         name: getTranslatedField(
-          entity.category.nameTranslations,
+          cat.nameTranslations,
           locale,
-          entity.category.name
+          cat.name
         ),
-        description: entity.category.description
+        description: cat.description
           ? getTranslatedField(
-              entity.category.descriptionTranslations,
+              cat.descriptionTranslations,
               locale,
-              entity.category.description
+              cat.description
             )
           : null,
-      };
+      }));
     }
 
     // Translate tags if present

@@ -18,12 +18,14 @@ export function BusinessCard({ business }: BusinessCardProps) {
           {business.name}
         </h3>
 
-        {/* Category Tag */}
-        {business.category && (
+        {/* Category Tags */}
+        {business.categories?.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className="px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md whitespace-nowrap">
-              {business.category.name}
-            </span>
+            {business.categories.map((cat: any) => (
+              <span key={cat.id} className="px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md whitespace-nowrap">
+                {cat.name}
+              </span>
+            ))}
           </div>
         )}
 

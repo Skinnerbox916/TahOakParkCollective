@@ -74,8 +74,10 @@ export function FeaturedBusiness({ rotationInterval = 8000 }: FeaturedBusinessPr
       
       <div className="mb-4">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">{entity.name}</h3>
-        {entity.category && (
-          <p className="text-indigo-600 font-medium">{entity.category.name}</p>
+        {entity.categories?.length > 0 && (
+          <p className="text-indigo-600 font-medium">
+            {entity.categories.map((cat: any) => cat.name).join(", ")}
+          </p>
         )}
       </div>
 

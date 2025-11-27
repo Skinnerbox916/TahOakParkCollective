@@ -49,3 +49,5 @@ export function getLocaleFromRequest(request: NextRequest): string {
   return routing.defaultLocale;
 }
 
+
+

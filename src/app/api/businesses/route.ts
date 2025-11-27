@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     const businesses = await prisma.entity.findMany({
       where,
       include: {
-        category: true,
+        categories: true,
         owner: {
           select: {
             id: true,
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
           ownerId: finalOwnerId,
         },
         include: {
-          category: true,
+          categories: true,
           owner: {
             select: {
               id: true,

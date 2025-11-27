@@ -66,11 +66,11 @@ export function EntityDetail({ entity }: EntityDetailProps) {
               <span className="inline-block px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded">
                 {entityTypeLabels[entity.entityType as EntityType]}
               </span>
-              {entity.category && (
-                <span className="inline-block px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded">
-                  {entity.category.name}
+              {entity.categories?.map((cat: any) => (
+                <span key={cat.id} className="inline-block px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded">
+                  {cat.name}
                 </span>
-              )}
+              ))}
             </div>
             
             {/* Tags */}

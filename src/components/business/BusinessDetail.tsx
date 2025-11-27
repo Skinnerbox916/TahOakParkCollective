@@ -38,11 +38,11 @@ export function BusinessDetail({ business }: BusinessDetailProps) {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {business.name}
             </h1>
-            {business.category && (
-              <span className="inline-block px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded mb-3">
-                {business.category.name}
+            {business.categories?.map((cat: any) => (
+              <span key={cat.id} className="inline-block px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded mb-3 mr-2">
+                {cat.name}
               </span>
-            )}
+            ))}
           </div>
         </div>
       </div>

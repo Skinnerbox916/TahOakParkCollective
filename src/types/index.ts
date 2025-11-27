@@ -15,7 +15,7 @@ export type PendingChangeWithEntity = PendingChange & {
 
 export type EntityWithRelations = Prisma.EntityGetPayload<{
   include: {
-    category: true;
+    categories: true;
     owner: true;
     tags: {
       include: {
@@ -76,6 +76,9 @@ export interface SocialMediaLinks {
   twitter?: string;
   linkedin?: string;
   yelp?: string;
+  tiktok?: string;
+  youtube?: string;
+  threads?: string;
 }
 
 export interface EntityFormData {
@@ -84,9 +87,8 @@ export interface EntityFormData {
   address?: string;
   phone?: string;
   website?: string;
-  categoryId?: string;
+  categoryIds?: string[];
   entityType?: EntityType;
   hours?: BusinessHours;
   socialMedia?: SocialMediaLinks;
-  coverageArea?: string;
 }

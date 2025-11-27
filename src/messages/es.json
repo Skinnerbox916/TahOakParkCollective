@@ -305,7 +305,9 @@
     "loadingMap": "Cargando mapa...",
     "noEntitiesWithLocations": "No se encontraron entidades con ubicaciones",
     "addLocationData": "Agrega datos de ubicación para ver entidades en el mapa",
-    "viewDetails": "Ver Detalles →"
+    "viewDetails": "Ver Detalles →",
+    "noEntitiesFound": "No se encontraron entidades",
+    "tryAdjustingSearch": "Intenta ajustar tu búsqueda o filtros para encontrar lo que buscas."
   },
   "claim": {
     "title": "Reclamar una Entidad",

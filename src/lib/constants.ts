@@ -20,16 +20,9 @@ export const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
   SERVICE_PROVIDER: "Service Provider",
 };
 
-export const DEFAULT_CATEGORIES = [
-  { name: "Restaurants", slug: "restaurants", description: "Dining establishments" },
-  { name: "Retail", slug: "retail", description: "Retail shops and stores" },
-  { name: "Services", slug: "services", description: "Professional and personal services" },
-  { name: "Entertainment", slug: "entertainment", description: "Entertainment venues" },
-  { name: "Healthcare", slug: "healthcare", description: "Healthcare providers" },
-  { name: "Education", slug: "education", description: "Educational institutions" },
-  { name: "Automotive", slug: "automotive", description: "Auto services and dealerships" },
-  { name: "Home & Garden", slug: "home-garden", description: "Home improvement and garden centers" },
-];
+// NOTE: Categories are managed in the database, not hardcoded here.
+// See prisma/seed.ts for the canonical category list.
+// Use the /api/categories endpoint to fetch categories.
 
 // Local Tier constants (legacy Business terminology)
 export const LOCAL_TIERS: { value: LocalTier; label: string }[] = [

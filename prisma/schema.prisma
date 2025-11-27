@@ -51,8 +51,7 @@ model Entity {
   website                 String?
   latitude                Float?
   longitude               Float?
-  categoryId              String?
-  category                Category?       @relation(fields: [categoryId], references: [id])
+  categories              Category[]
   entityType              EntityType      @default(COMMERCE)
   status                  BusinessStatus  @default(PENDING)
   featured                Boolean         @default(false)
@@ -67,14 +66,12 @@ model Entity {
   pendingChanges      PendingChange[]
   spotCheckDate       DateTime?
   verificationContact String?
-  coverageArea        String?       // OAK_PARK or TAHOE_PARK
   
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
   @@index([slug])
   @@index([status])
-  @@index([categoryId])
   @@index([ownerId])
   @@index([featured])
   @@index([entityType])

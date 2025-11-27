@@ -18,7 +18,7 @@ export async function GET(
         status: BUSINESS_STATUS.ACTIVE, // Only return active businesses for public API
       },
       include: {
-        category: true,
+        categories: true,
         owner: {
           select: {
             id: true,

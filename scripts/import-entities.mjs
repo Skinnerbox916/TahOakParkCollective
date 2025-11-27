@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -6,7 +8,12 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const prisma = new PrismaClient();
+// Set up Prisma with pg adapter
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 // Helper to generate slug from name
 function slugify(text) {
@@ -26,32 +33,32 @@ function mapEntityType(jsonType) {
     'ADVOCACY': 'ADVOCACY',
     'PUBLIC_SPACE': 'PUBLIC_SPACE',
     'NON_PROFIT': 'NON_PROFIT',
+    'EVENT': 'EVENT',
+    'SERVICE_PROVIDER': 'SERVICE_PROVIDER',
   };
   return mapping[jsonType] || 'COMMERCE';
 }
 
-// Map category name to category slug
-const categoryNameToSlug = {
-  'Elected Official': 'elected-official',
-  'Government Office': 'government-office',
-  'Neighborhood Association': 'neighborhood-association',
-  'Business Improvement District': 'business-improvement-district',
-  'Community Group': 'community-group',
-  'Park': 'park',
-  'Library': 'library',
-  'Community Center': 'community-center',
-  'Social Services': 'social-services',
-  'Community Health': 'community-health',
-  'Education': 'education',
-  'Spiritual': 'spiritual',
-};
-
 async function main() {
-  console.log('Importing entities...');
+  console.log('Importing entities...\n');
   
   // Read JSON file
   const jsonPath = join(__dirname, '..', 'entity_load.json');
   const entitiesData = JSON.parse(readFileSync(jsonPath, 'utf-8'));
+  
+  // Fetch all categories from database (source of truth)
+  const allCategories = await prisma.category.findMany({
+    select: { id: true, name: true, slug: true },
+  });
+  console.log(`Found ${allCategories.length} categories in database\n`);
+  
+  // Build lookup maps (by name and by slug for flexibility)
+  const categoryByName = {};
+  const categoryBySlug = {};
+  for (const cat of allCategories) {
+    categoryByName[cat.name.toLowerCase()] = cat;
+    categoryBySlug[cat.slug] = cat;
+  }
   
   // Get or create system user
   let systemUser = await prisma.user.findFirst({
@@ -66,21 +73,26 @@ async function main() {
         roles: ['ADMIN'],
       },
     });
-    console.log('✓ Created system user');
+    console.log('✓ Created system user\n');
   }
   
   // Import each entity
+  let imported = 0;
+  let skipped = 0;
+  
   for (const entityData of entitiesData) {
     const slug = slugify(entityData.name);
     const entityType = mapEntityType(entityData.entity_type);
     
-    // Find category by name
-    const categorySlug = categoryNameToSlug[entityData.category];
+    // Find category by name (case-insensitive) or slug
     let category = null;
-    if (categorySlug) {
-      category = await prisma.category.findUnique({
-        where: { slug: categorySlug },
-      });
+    if (entityData.category) {
+      const categoryName = entityData.category.toLowerCase();
+      category = categoryByName[categoryName] || categoryBySlug[slugify(entityData.category)];
+      
+      if (!category) {
+        console.log(`  ⚠ Category not found: "${entityData.category}" for ${entityData.name}`);
+      }
     }
     
     // Check if entity already exists
@@ -89,11 +101,12 @@ async function main() {
     });
     
     if (existing) {
-      console.log(`⚠ Entity already exists: ${entityData.name}`);
+      console.log(`  ⚠ Already exists: ${entityData.name}`);
+      skipped++;
       continue;
     }
     
-    // Create entity
+    // Create entity with categories (many-to-many)
     await prisma.entity.create({
       data: {
         name: entityData.name,
@@ -102,9 +115,9 @@ async function main() {
         address: entityData.address || null,
         phone: null,
         website: null,
-        latitude: null, // PO Boxes can't be geocoded
+        latitude: null,
         longitude: null,
-        categoryId: category?.id || null,
+        categories: category ? { connect: [{ id: category.id }] } : undefined,
         entityType,
         status: 'ACTIVE',
         featured: false,
@@ -112,10 +125,11 @@ async function main() {
       },
     });
     
-    console.log(`✓ Imported: ${entityData.name} (${entityType})`);
+    console.log(`  ✓ Imported: ${entityData.name} (${entityType}${category ? `, ${category.name}` : ''})`);
+    imported++;
   }
   
-  console.log('Entities imported successfully!');
+  console.log(`\nImport complete: ${imported} imported, ${skipped} skipped`);
 }
 
 main()
@@ -126,4 +140,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

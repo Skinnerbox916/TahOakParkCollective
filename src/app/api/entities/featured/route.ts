@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         status: BUSINESS_STATUS.ACTIVE,
       },
       include: {
-        category: true,
+        categories: true,
         owner: {
           select: {
             id: true,

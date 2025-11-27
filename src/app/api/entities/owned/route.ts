@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
           ownerId: user.id,
         },
         include: {
-          category: true,
+          categories: true,
           owner: {
             select: {
               id: true,
@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest) {
         where: { id },
         data: updateData,
         include: {
-          category: true,
+          categories: true,
           owner: {
             select: {
               id: true,

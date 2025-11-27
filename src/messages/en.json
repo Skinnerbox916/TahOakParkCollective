@@ -305,7 +305,9 @@
     "loadingMap": "Loading map...",
     "noEntitiesWithLocations": "No entities with locations found",
     "addLocationData": "Add location data to see entities on the map",
-    "viewDetails": "View Details →"
+    "viewDetails": "View Details →",
+    "noEntitiesFound": "No entities found",
+    "tryAdjustingSearch": "Try adjusting your search or filters to find what you're looking for."
   },
   "claim": {
     "title": "Claim an Entity",

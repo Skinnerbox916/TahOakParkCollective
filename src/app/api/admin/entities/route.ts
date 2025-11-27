@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (categoryId) {
-        where.categoryId = categoryId;
+        where.categories = { some: { id: categoryId } };
       }
 
       if (entityType) {
@@ -62,9 +62,7 @@ export async function GET(request: NextRequest) {
         // Add category ID search if we found matching categories
         if (matchingCategoryIds.length > 0) {
           searchConditions.push({
-            categoryId: {
-              in: matchingCategoryIds,
-            },
+            categories: { some: { id: { in: matchingCategoryIds } } },
           });
         }
 
@@ -74,7 +72,7 @@ export async function GET(request: NextRequest) {
       const entities = await prisma.entity.findMany({
         where,
         include: {
-          category: true,
+          categories: true,
           owner: {
             select: {
               id: true,
@@ -131,7 +129,7 @@ export async function PUT(request: NextRequest) {
         where: { id },
         data: updateData,
         include: {
-          category: true,
+          categories: true,
           owner: {
             select: {
               id: true,

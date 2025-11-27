@@ -8,6 +8,9 @@ const SOCIAL_PLATFORMS = [
   { key: "twitter", label: "Twitter", icon: "🐦" },
   { key: "linkedin", label: "LinkedIn", icon: "💼" },
   { key: "yelp", label: "Yelp", icon: "⭐" },
+  { key: "tiktok", label: "TikTok", icon: "🎵" },
+  { key: "youtube", label: "YouTube", icon: "▶️" },
+  { key: "threads", label: "Threads", icon: "🧵" },
 ];
 
 export function SocialMediaLinks({ socialMedia }: SocialMediaLinksProps) {

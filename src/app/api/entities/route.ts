@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       where.entityType = entityType;
     }
 
-    // Category Logic
+    // Category Logic (many-to-many)
     let finalCategoryId = categoryId || null;
     if (!finalCategoryId && category) {
       const categoryBySlug = await prisma.category.findUnique({
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       }
     }
     if (finalCategoryId) {
-      where.categoryId = finalCategoryId;
+      where.categories = { some: { id: finalCategoryId } };
     }
 
     // Search Logic
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       });
 
       if (matchingCategoryIds.length > 0) {
-        searchConditions.push({ categoryId: { in: matchingCategoryIds } });
+        searchConditions.push({ categories: { some: { id: { in: matchingCategoryIds } } } });
       }
 
       where.OR = searchConditions;
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     const entities = await prisma.entity.findMany({
       where,
       include: {
-        category: true,
+        categories: true,
         owner: {
           select: {
             id: true,
@@ -131,23 +131,15 @@ export async function GET(request: NextRequest) {
           : null,
       };
 
-      // Translate category if present
-      if (entity.category) {
-        translatedEntity.category = {
-          ...entity.category,
-          name: getTranslatedField(
-            entity.category.nameTranslations,
-            locale,
-            entity.category.name
-          ),
-          description: entity.category.description
-            ? getTranslatedField(
-                entity.category.descriptionTranslations,
-                locale,
-                entity.category.description
-              )
+      // Translate categories if present
+      if (entity.categories && Array.isArray(entity.categories)) {
+        translatedEntity.categories = entity.categories.map((cat: any) => ({
+          ...cat,
+          name: getTranslatedField(cat.nameTranslations, locale, cat.name),
+          description: cat.description
+            ? getTranslatedField(cat.descriptionTranslations, locale, cat.description)
             : null,
-        };
+        }));
       }
 
       // Translate tags if present
@@ -187,14 +179,11 @@ export async function POST(request: NextRequest) {
   return withAuth(async (user) => {
     try {
       const body = await request.json();
-      const { name, description, address, phone, website, categoryId, ownerId, entityType, coverageArea } = body;
+      const { name, description, address, phone, website, categoryIds, ownerId, entityType, socialMedia } = body;
 
       if (!name) {
         return createErrorResponse("Entity name is required", 400);
       }
-
-      // Optional: Validate coverage area if coordinates are provided
-      // We can use geometry-based validation if needed in the future
 
       // Determine the owner ID
       let finalOwnerId = user.id;
@@ -237,6 +226,18 @@ export async function POST(request: NextRequest) {
 
       const finalEntityType = entityType || ENTITY_TYPE.COMMERCE;
 
+      // Clean social media - remove empty values
+      let cleanedSocialMedia = null;
+      if (socialMedia && typeof socialMedia === 'object') {
+        const cleaned: any = {};
+        for (const [key, value] of Object.entries(socialMedia)) {
+          if (value && typeof value === 'string' && value.trim()) {
+            cleaned[key] = value.trim();
+          }
+        }
+        cleanedSocialMedia = Object.keys(cleaned).length > 0 ? cleaned : null;
+      }
+
       const entity = await prisma.entity.create({
         data: {
           name,
@@ -245,14 +246,14 @@ export async function POST(request: NextRequest) {
           address,
           phone,
           website,
-          categoryId: categoryId || null,
+          categories: categoryIds?.length ? { connect: categoryIds.map((id: string) => ({ id })) } : undefined,
           entityType: finalEntityType,
           status,
           ownerId: finalOwnerId,
-          coverageArea: coverageArea || null,
+          socialMedia: cleanedSocialMedia,
         },
         include: {
-          category: true,
+          categories: true,
           owner: {
             select: {
               id: true,

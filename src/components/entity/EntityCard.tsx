@@ -60,11 +60,11 @@ export function EntityCard({ entity }: EntityCardProps) {
           <span className="px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-md whitespace-nowrap">
             {entityTypeLabels[entity.entityType as EntityType]}
           </span>
-          {entity.category && (
-            <span className="px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md whitespace-nowrap">
-              {entity.category.name}
+          {entity.categories?.map((cat: any) => (
+            <span key={cat.id} className="px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md whitespace-nowrap">
+              {cat.name}
             </span>
-          )}
+          ))}
         </div>
 
         {/* Tags */}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ApiResponse, Category } from "@/types";
+import { ApiResponse, Category, SocialMediaLinks } from "@/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -38,6 +38,18 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
   const [ownerId, setOwnerId] = useState("");
   const [status, setStatus] = useState<BusinessStatus>(BUSINESS_STATUS.PENDING);
   const [entityType, setEntityType] = useState<EntityType>(ENTITY_TYPE.COMMERCE);
+  
+  // Social media state
+  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>({
+    facebook: "",
+    instagram: "",
+    twitter: "",
+    linkedin: "",
+    yelp: "",
+    tiktok: "",
+    youtube: "",
+    threads: "",
+  });
 
   // Load categories and users
   useEffect(() => {
@@ -86,6 +98,21 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
       }
     }
 
+    // Validate social media URLs
+    const socialPlatforms: (keyof SocialMediaLinks)[] = [
+      "facebook", "instagram", "twitter", "linkedin", "yelp", "tiktok", "youtube", "threads"
+    ];
+    for (const platform of socialPlatforms) {
+      const url = socialMedia[platform];
+      if (url && url.trim()) {
+        try {
+          new URL(url);
+        } catch {
+          return `Please enter a valid ${platform} URL (e.g., https://${platform}.com/...)`;
+        }
+      }
+    }
+
     return null;
   };
 
@@ -103,6 +130,24 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
     setLoading(true);
 
     try {
+      // Helper function to clean social media links - remove empty values
+      const cleanSocialMedia = (social: SocialMediaLinks): SocialMediaLinks | undefined => {
+        const cleaned: SocialMediaLinks = {};
+        const platforms: (keyof SocialMediaLinks)[] = [
+          "facebook", "instagram", "twitter", "linkedin", "yelp", "tiktok", "youtube", "threads"
+        ];
+        
+        for (const platform of platforms) {
+          if (social[platform] && social[platform]?.trim()) {
+            cleaned[platform] = social[platform]?.trim();
+          }
+        }
+        
+        return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+      };
+
+      const cleanedSocialMedia = cleanSocialMedia(socialMedia);
+
       const payload = {
         name: name.trim(),
         description: description.trim() || undefined,
@@ -113,6 +158,7 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
         ownerId,
         status,
         entityType,
+        socialMedia: cleanedSocialMedia,
       };
 
       const response = await fetch("/api/entities", {
@@ -241,6 +287,81 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
             disabled={loading}
             placeholder="https://example.com"
           />
+        </div>
+
+        {/* Social Media Links */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Social Media Links
+          </label>
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input
+                type="url"
+                label="Facebook"
+                value={socialMedia.facebook || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, facebook: e.target.value })}
+                disabled={loading}
+                placeholder="https://facebook.com/yourpage"
+              />
+              <Input
+                type="url"
+                label="Instagram"
+                value={socialMedia.instagram || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, instagram: e.target.value })}
+                disabled={loading}
+                placeholder="https://instagram.com/yourpage"
+              />
+              <Input
+                type="url"
+                label="Twitter"
+                value={socialMedia.twitter || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, twitter: e.target.value })}
+                disabled={loading}
+                placeholder="https://twitter.com/yourpage"
+              />
+              <Input
+                type="url"
+                label="LinkedIn"
+                value={socialMedia.linkedin || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, linkedin: e.target.value })}
+                disabled={loading}
+                placeholder="https://linkedin.com/company/yourpage"
+              />
+              <Input
+                type="url"
+                label="Yelp"
+                value={socialMedia.yelp || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, yelp: e.target.value })}
+                disabled={loading}
+                placeholder="https://yelp.com/biz/yourpage"
+              />
+              <Input
+                type="url"
+                label="TikTok"
+                value={socialMedia.tiktok || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, tiktok: e.target.value })}
+                disabled={loading}
+                placeholder="https://tiktok.com/@yourpage"
+              />
+              <Input
+                type="url"
+                label="YouTube"
+                value={socialMedia.youtube || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, youtube: e.target.value })}
+                disabled={loading}
+                placeholder="https://youtube.com/@yourchannel"
+              />
+              <Input
+                type="url"
+                label="Threads"
+                value={socialMedia.threads || ""}
+                onChange={(e) => setSocialMedia({ ...socialMedia, threads: e.target.value })}
+                disabled={loading}
+                placeholder="https://threads.net/@yourpage"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
