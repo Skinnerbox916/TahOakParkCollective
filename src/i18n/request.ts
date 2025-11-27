@@ -1,7 +1,9 @@
 import { getRequestConfig } from 'next-intl/server';
-import { routing } from './routing';
 
 export default getRequestConfig(async ({ requestLocale }) => {
+  // Import routing lazily to avoid circular dependency issues
+  const { routing } = await import('./routing');
+  
   // This typically corresponds to the `[locale]` segment
   let locale = await requestLocale;
 

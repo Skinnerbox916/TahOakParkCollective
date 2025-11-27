@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth, withRole } from "@/lib/api-helpers";
 import { ROLE, TagCategory } from "@/lib/prismaEnums";
+import { getLocaleFromRequest } from "@/lib/api-locale";
+import { getTranslatedField } from "@/lib/translations";
 
 export async function GET(request: NextRequest) {
   try {
+    const locale = getLocaleFromRequest(request);
     const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get("category") as TagCategory | null;
     const search = searchParams.get("search");
@@ -29,7 +32,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return createSuccessResponse(tags);
+    // Map tags to include translated names
+    const translatedTags = tags.map((tag) => ({
+      ...tag,
+      name: getTranslatedField(tag.nameTranslations, locale, tag.name),
+    }));
+
+    return createSuccessResponse(translatedTags);
   } catch (error) {
     console.error("Error fetching tags:", error);
     return createErrorResponse("Failed to fetch tags", 500);

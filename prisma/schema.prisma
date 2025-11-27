@@ -26,37 +26,41 @@ model User {
 }
 
 model Category {
-  id          String      @id @default(cuid())
-  name        String      @unique
-  slug        String      @unique
-  description String?
-  featured    Boolean     @default(false)
-  entityTypes EntityType[]
-  entities    Entity[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id                   String      @id @default(cuid())
+  name                 String      @unique
+  nameTranslations     Json?       // JSON: { "en": "...", "es": "..." }
+  slug                 String      @unique
+  description          String?
+  descriptionTranslations Json?    // JSON: { "en": "...", "es": "..." }
+  featured             Boolean     @default(false)
+  entityTypes          EntityType[]
+  entities             Entity[]
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
 }
 
 model Entity {
-  id            String          @id @default(cuid())
-  name          String
-  slug          String          @unique
-  description   String?         @db.Text
-  address       String?
-  phone         String?
-  website       String?
-  latitude      Float?
-  longitude     Float?
-  categoryId    String?
-  category      Category?       @relation(fields: [categoryId], references: [id])
-  entityType    EntityType      @default(COMMERCE)
-  status        BusinessStatus  @default(PENDING)
-  featured      Boolean         @default(false)
-  images        Json?           // Array of image URLs
-  hours         Json?           // Business hours structure
-  socialMedia   Json?           // Social media links
-  ownerId       String
-  owner         User            @relation(fields: [ownerId], references: [id])
+  id                      String          @id @default(cuid())
+  name                    String
+  nameTranslations        Json?           // JSON: { "en": "...", "es": "..." }
+  slug                    String          @unique
+  description             String?         @db.Text
+  descriptionTranslations Json?           // JSON: { "en": "...", "es": "..." }
+  address                 String?
+  phone                   String?
+  website                 String?
+  latitude                Float?
+  longitude               Float?
+  categoryId              String?
+  category                Category?       @relation(fields: [categoryId], references: [id])
+  entityType              EntityType      @default(COMMERCE)
+  status                  BusinessStatus  @default(PENDING)
+  featured                Boolean         @default(false)
+  images                  Json?           // Array of image URLs
+  hours                   Json?           // Business hours structure
+  socialMedia             Json?           // Social media links
+  ownerId                 String
+  owner                   User            @relation(fields: [ownerId], references: [id])
   
   // New MVP fields
   tags                EntityTag[]
@@ -79,13 +83,14 @@ model Entity {
 // New Models for MVP
 
 model Tag {
-  id          String      @id @default(cuid())
-  name        String      @unique
-  slug        String      @unique
-  category    TagCategory
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  entities    EntityTag[]
+  id              String      @id @default(cuid())
+  name            String      @unique
+  nameTranslations Json?      // JSON: { "en": "...", "es": "..." }
+  slug            String      @unique
+  category        TagCategory
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  entities        EntityTag[]
   
   @@index([category])
 }

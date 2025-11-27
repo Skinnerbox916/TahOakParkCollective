@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { useTranslations, useLocale } from "next-intl";
 import { ApiResponse } from "@/types";
 
 interface Category {
@@ -16,11 +17,13 @@ interface Category {
 export function FeaturedCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const t = useTranslations("home");
+  const locale = useLocale();
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/categories");
+        const response = await fetch(`/api/categories?locale=${locale}`);
         const data: ApiResponse<Category[]> = await response.json();
         if (data.success && data.data) {
           setCategories(data.data);
@@ -33,7 +36,7 @@ export function FeaturedCategories() {
     };
 
     fetchCategories();
-  }, []);
+  }, [locale]);
 
   if (isLoading) {
     return (
@@ -61,7 +64,7 @@ export function FeaturedCategories() {
   if (categoriesWithEntities.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        <p>No categories with entities yet.</p>
+        <p>{t("noCategoriesYet")}</p>
       </div>
     );
   }
@@ -78,7 +81,7 @@ export function FeaturedCategories() {
             {category.name}
           </h3>
           <p className="text-sm text-gray-600">
-            {category.entityCount} {category.entityCount === 1 ? "entity" : "entities"}
+            {category.entityCount} {category.entityCount === 1 ? t("entity") : t("entities")}
           </p>
         </Link>
       ))}

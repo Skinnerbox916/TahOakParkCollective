@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ENTITY_TYPES } from "@/lib/constants";
+import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 import type { EntityType } from "@/lib/prismaEnums";
 import type { Category } from "@prisma/client";
 import { TagBadge } from "@/components/tags/TagBadge";
@@ -45,6 +47,10 @@ export function SearchFilters({
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const [tagSearch, setTagSearch] = useState("");
   const [showTags, setShowTags] = useState(false);
+  const t = useTranslations("search");
+  const tForms = useTranslations("forms");
+  const tCommon = useTranslations("common");
+  const entityTypeLabels = useEntityTypeLabels();
   
   const hasActiveFilters =
     localSearchQuery || selectedCategory || selectedEntityType || selectedTags.length > 0;
@@ -117,7 +123,7 @@ export function SearchFilters({
         <div>
           <Input
             type="text"
-            placeholder="Search entities..."
+            placeholder={t("searchPlaceholder")}
             value={localSearchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full"
@@ -129,7 +135,7 @@ export function SearchFilters({
           {/* Entity Type Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Entity Type
+              {t("entityType")}
             </label>
             <select
               value={selectedEntityType}
@@ -138,10 +144,10 @@ export function SearchFilters({
               }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="">All Types</option>
+              <option value="">{t("allTypes")}</option>
               {ENTITY_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
-                  {type.label}
+                  {entityTypeLabels[type.value]}
                 </option>
               ))}
             </select>
@@ -150,14 +156,14 @@ export function SearchFilters({
           {/* Category Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
+              {t("category")}
             </label>
             <select
               value={selectedCategory}
               onChange={(e) => onCategoryChange(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="">All Categories</option>
+              <option value="">{t("allCategories")}</option>
               {filteredCategories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -171,14 +177,14 @@ export function SearchFilters({
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="block text-sm font-medium text-gray-700">
-              Tags
+              {t("tags")}
             </label>
             <button
               type="button"
               onClick={() => setShowTags(!showTags)}
               className="text-xs text-indigo-600 hover:text-indigo-700"
             >
-              {showTags ? "Hide" : "Show"} tags
+              {showTags ? t("hideTags") : t("showTags")}
             </button>
           </div>
           
@@ -204,7 +210,7 @@ export function SearchFilters({
             <div className="border border-gray-200 rounded-lg p-3 max-h-64 overflow-y-auto">
               <input
                 type="text"
-                placeholder="Search tags..."
+                placeholder={t("searchTags")}
                 value={tagSearch}
                 onChange={(e) => setTagSearch(e.target.value)}
                 className="w-full mb-3 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -249,7 +255,7 @@ export function SearchFilters({
             <div className="flex flex-wrap gap-2">
               {localSearchQuery && (
                 <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
-                  Search: {localSearchQuery}
+                  {tCommon("search")}: {localSearchQuery}
                 </span>
               )}
               {selectedCategory && (
@@ -260,7 +266,7 @@ export function SearchFilters({
               )}
               {selectedEntityType && (
                 <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
-                  {ENTITY_TYPES.find((t) => t.value === selectedEntityType)?.label}
+                  {entityTypeLabels[selectedEntityType]}
                 </span>
               )}
               {selectedTagsData.map((tag) => (
@@ -277,7 +283,7 @@ export function SearchFilters({
               size="sm"
               onClick={onClearFilters}
             >
-              Clear
+              {tCommon("clear")}
             </Button>
           </div>
         )}

@@ -1,25 +1,32 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { EntityWithRelations, EntityTagWithTag } from "@/types";
 import { formatPhoneNumber } from "@/lib/utils";
-import { ENTITY_TYPE_LABELS } from "@/lib/constants";
+import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 import type { EntityType, TagCategory } from "@/lib/prismaEnums";
 import { BusinessHours } from "../business/BusinessHours";
 import { SocialMediaLinks } from "../business/SocialMediaLinks";
 import { TagBadge } from "@/components/tags/TagBadge";
+
+// Loading component for map
+function MapLoading() {
+  const t = useTranslations("entity");
+  return (
+    <div className="w-full h-[400px] bg-gray-100 rounded-lg flex items-center justify-center">
+      <p className="text-gray-500">{t("loadingMap")}</p>
+    </div>
+  );
+}
 
 // Dynamically import map component to avoid SSR issues
 const EntityMap = dynamic(
   () => import("@/components/search/EntityMap").then((mod) => mod.EntityMap),
   {
     ssr: false,
-    loading: () => (
-      <div className="w-full h-[400px] bg-gray-100 rounded-lg flex items-center justify-center">
-        <p className="text-gray-500">Loading map...</p>
-      </div>
-    ),
+    loading: () => <MapLoading />,
   }
 );
 
@@ -28,6 +35,9 @@ interface EntityDetailProps {
 }
 
 export function EntityDetail({ entity }: EntityDetailProps) {
+  const t = useTranslations("entity");
+  const tCommon = useTranslations("common");
+  const entityTypeLabels = useEntityTypeLabels();
   const hasLocation = entity.latitude && entity.longitude;
   const mapCenter = hasLocation
     ? ([entity.latitude!, entity.longitude!] as [number, number])
@@ -54,7 +64,7 @@ export function EntityDetail({ entity }: EntityDetailProps) {
             </h1>
             <div className="flex flex-wrap gap-2 mb-3">
               <span className="inline-block px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded">
-                {ENTITY_TYPE_LABELS[entity.entityType as EntityType]}
+                {entityTypeLabels[entity.entityType as EntityType]}
               </span>
               {entity.category && (
                 <span className="inline-block px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded">
@@ -90,7 +100,7 @@ export function EntityDetail({ entity }: EntityDetailProps) {
           {entity.description && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                About
+                {t("about")}
               </h2>
               <p className="text-gray-700 whitespace-pre-line">
                 {entity.description}
@@ -102,7 +112,7 @@ export function EntityDetail({ entity }: EntityDetailProps) {
           {hasLocation && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Location
+                {t("location")}
               </h2>
               <EntityMap
                 entities={[entity]}
@@ -116,12 +126,12 @@ export function EntityDetail({ entity }: EntityDetailProps) {
           {entity.images && typeof entity.images === 'object' && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Photos
+                {t("photos")}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(entity.images as any).hero && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-500">Cover Image</p>
+                    <p className="text-sm font-medium text-gray-500">{t("coverImage")}</p>
                     <img
                       src={(entity.images as any).hero}
                       alt={`${entity.name} - Cover`}
@@ -131,7 +141,7 @@ export function EntityDetail({ entity }: EntityDetailProps) {
                 )}
                 {(entity.images as any).logo && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-500">Logo</p>
+                    <p className="text-sm font-medium text-gray-500">{t("logo")}</p>
                     <img
                       src={(entity.images as any).logo}
                       alt={`${entity.name} - Logo`}
@@ -149,13 +159,13 @@ export function EntityDetail({ entity }: EntityDetailProps) {
           {/* Contact Information */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Contact
+              {t("contact")}
             </h2>
             <div className="space-y-3">
               {entity.address && (
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-1">
-                    Address
+                    {t("address")}
                   </p>
                   <p className="text-gray-900">{entity.address}</p>
                 </div>
@@ -163,7 +173,7 @@ export function EntityDetail({ entity }: EntityDetailProps) {
               {entity.phone && (
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-1">
-                    Phone
+                    {t("phone")}
                   </p>
                   <a
                     href={`tel:${entity.phone}`}
@@ -176,7 +186,7 @@ export function EntityDetail({ entity }: EntityDetailProps) {
               {entity.website && (
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-1">
-                    Website
+                    {t("website")}
                   </p>
                   <a
                     href={entity.website}
@@ -206,32 +216,32 @@ export function EntityDetail({ entity }: EntityDetailProps) {
           {/* Claim Entity */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Own This Business?
+              {t("ownThisBusiness")}
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              Claim this listing to manage your business information.
+              {t("claimDescription")}
             </p>
             <Link
               href={`/claim?entityId=${entity.id}`}
               className="inline-block w-full text-center px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium mb-3"
             >
-              Claim This Entity
+              {t("claimThisEntity")}
             </Link>
           </div>
 
           {/* Report Issue */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Found an Issue?
+              {t("foundAnIssue")}
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              See incorrect information? Let us know.
+              {t("reportDescription")}
             </p>
             <Link
               href={`/report?entityId=${entity.id}`}
               className="inline-block w-full text-center px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
             >
-              Report an Issue
+              {t("reportAnIssue")}
             </Link>
           </div>
         </div>

@@ -1,146 +1,361 @@
-# Internationalization (i18n) Implementation Plan
+# Complete Bilingual Implementation Plan
 
 ## Overview
-Implement full i18n support for English (en) and Spanish (es) using `next-intl`, with locale-based URL routing (`/{locale}/...`), automatic browser detection, and a manual language switcher.
+Complete the bilingual (English/Spanish) implementation for TahOak Park Collective by translating all remaining hardcoded text, updating components, moving pages to locale routing, and establishing a foundation for future multi-language and user content translation support.
 
-## Important: Next.js 16 Proxy Approach
-This project uses Next.js 16, where `middleware` has been renamed to `proxy`. We will use `proxy.ts` instead of `middleware.ts` and the new Next.js 16 proxy API.
+## Current State Assessment
+
+### ✅ Already Implemented
+- Basic i18n infrastructure (`src/i18n/config.ts`, `src/i18n/routing.ts`) ✅
+- Translation files for core pages (home, about, contact, terms, privacy, auth, search basics) ✅
+- Locale-aware layout (`src/app/[locale]/layout.tsx`) ✅
+- Language switcher component exists ✅
+- Some pages already using translations under `[locale]/(public)/` ✅
+- Navbar and Footer using translations ✅
+- Auth forms (LoginForm, RegisterForm) using translations ✅
+- Proxy.ts exists and handles locale routing ✅
+
+### ❌ Issues Identified
+1. **Components with hardcoded English text** not using translations
+2. **Missing translation keys** in JSON files for various UI elements
+3. **Duplicate pages** - pages exist both in `(public)/` and `[locale]/(public)/` directories
+4. **Pages not using locale routing** - many pages (claim, report, suggest, subscribe, businesses detail) are not under `[locale]/` structure
+5. **Component-level hardcoded strings** that need translation keys
 
 ## Implementation Steps
 
-### 1. Install and Configure next-intl
-- Install `next-intl` package
-- Create i18n configuration file at `src/i18n/config.ts` with locale definitions (en, es)
-- Create routing configuration at `src/i18n/routing.ts` for locale-aware navigation
-- Create message files structure: `src/messages/en.json` and `src/messages/es.json`
+### Phase 1: Add Missing Translation Keys
 
-### 2. Update Next.js Configuration
-- Modify `next.config.ts` to support next-intl plugin
-- **Rename `src/middleware.ts` to `src/proxy.ts`** and update to use Next.js 16 proxy API:
-  - Export `proxy` function instead of `middleware`
-  - Use new proxy function signature: `export function proxy(request: NextRequest)`
-  - Integrate next-intl's locale detection with existing next-auth logic
-  - Proxy should:
-    - Detect locale from Accept-Language header (fallback to en)
-    - Redirect root `/` to `/{locale}` based on detection
-    - Preserve locale in URL for all routes
-    - Work alongside existing next-auth `withAuth` wrapper
-    - Handle both authentication checks and locale routing
+#### Task 1.1: Update Search Namespace
+**Files:** `src/messages/en.json`, `src/messages/es.json`
 
-### 3. Restructure App Directory for Locale Routing
-- Create `src/app/[locale]/layout.tsx` to wrap all locale-specific routes
-- Move existing pages under `[locale]` route group:
-  - `(public)/page.tsx` → `[locale]/(public)/page.tsx`
-  - `(public)/about/page.tsx` → `[locale]/(public)/about/page.tsx`
-  - `(public)/terms/page.tsx` → `[locale]/(public)/terms/page.tsx`
-  - `(public)/privacy/page.tsx` → `[locale]/(public)/privacy/page.tsx`
-  - `(public)/contact/page.tsx` → `[locale]/(public)/contact/page.tsx`
-  - `(public)/search/page.tsx` → Already exists, verify structure
-  - `auth/signin/page.tsx` → `[locale]/auth/signin/page.tsx`
-  - `auth/signup/page.tsx` → `[locale]/auth/signup/page.tsx`
-  - `auth/error/page.tsx` → `[locale]/auth/error/page.tsx`
-  - `auth/unauthorized/page.tsx` → `[locale]/auth/unauthorized/page.tsx`
-- Update root `layout.tsx` to remove locale-specific content (move to `[locale]/layout.tsx`)
+Add missing keys to `search` namespace:
+- `subtitle`: "Discover local businesses and organizations in your community" / "Descubre negocios y organizaciones locales en tu comunidad"
+- `searching`: "Searching..." / "Buscando..."
+- `found`: "{count} {count, plural, one {entity} other {entities}} found" / "{count} {count, plural, one {entidad} other {entidades}} encontradas"
+- `showList`: "Show List" / "Mostrar Lista"
+- `showMap`: "Show Map" / "Mostrar Mapa"
+- `allTypes`: "All Types" / "Todos los Tipos"
+- `allCategories`: "All Categories" / "Todas las Categorías"
+- `tags`: "Tags" / "Etiquetas"
+- `searchTags`: "Search tags..." / "Buscar etiquetas..."
+- `hideTags`: "Hide tags" / "Ocultar etiquetas"
+- `showTags`: "Show tags" / "Mostrar etiquetas"
+- `noCategoriesYet`: "No categories with entities yet." / "Aún no hay categorías con entidades."
+- `loadingMap`: "Loading map..." / "Cargando mapa..."
 
-### 4. Create Translation Files
-Create comprehensive translation files covering:
-- **Common UI** (`common` namespace): buttons, labels, navigation
-- **Navigation** (`nav` namespace): navbar links, menu items
-- **Footer** (`footer` namespace): footer content
-- **Home** (`home` namespace): homepage content
-- **About** (`about` namespace): about page content
-- **Terms** (`terms` namespace): terms of use content
-- **Privacy** (`privacy` namespace): privacy policy content
-- **Contact** (`contact` namespace): contact form and page
-- **Auth** (`auth` namespace): sign in, sign up, error messages
-- **Forms** (`forms` namespace): form labels, placeholders, validation messages
-- **Errors** (`errors` namespace): error messages, validation errors
-- **Search** (`search` namespace): search page (already partially exists)
+#### Task 1.2: Update Home/Common Namespaces
+**Files:** `src/messages/en.json`, `src/messages/es.json`
 
-### 5. Update Components for i18n
-- **Navbar** (`src/components/layout/Navbar.tsx`):
-  - Replace hardcoded text with `useTranslations('nav')` and `useTranslations('common')`
-  - Add language switcher component that preserves current route
-- **Footer** (`src/components/layout/Footer.tsx`):
-  - Replace hardcoded text with translations
-- **Language Switcher Component**:
-  - Create `src/components/layout/LanguageSwitcher.tsx`
-  - Toggle between en/es
-  - Preserve current route path when switching
-  - Use `useRouter` from `@/i18n/routing` for locale-aware navigation
-- **Form Components**:
-  - Update `LoginForm.tsx`, `RegisterForm.tsx` with translations
-  - Update all form components to use translated labels and error messages
-  - Update validation messages in forms
+Add to `home` namespace:
+- `learnMore`: "Learn more →" / "Saber más →"
+- `entity`: "entity" / "entidad"
+- `entities`: "entities" / "entidades"
+- `noEntitiesFound`: "No entities found" / "No se encontraron entidades"
+- `tryAdjustingSearch`: "Try adjusting your search or filters to find what you're looking for." / "Intenta ajustar tu búsqueda o filtros para encontrar lo que buscas."
 
-### 6. Update Static Pages
-Convert all static pages to use translations:
-- Home page (`[locale]/(public)/page.tsx`)
-- About page (`[locale]/(public)/about/page.tsx`)
-- Terms page (`[locale]/(public)/terms/page.tsx`)
-- Privacy page (`[locale]/(public)/privacy/page.tsx`)
-- Contact page (`[locale]/(public)/contact/page.tsx`)
-- Auth pages (`[locale]/auth/*`)
+### Phase 2: Update Components to Use Translations
 
-### 7. Update Error Handling
-- Translate API error responses where possible
-- Update error messages in components to use translations
-- Ensure validation messages are translated
+#### Task 2.1: Update OmniSearch Component
+**File:** `src/components/home/OmniSearch.tsx`
+- Add `useTranslations('home')` or `useTranslations('search')`
+- Replace "Search businesses..." placeholder with `t('searchPlaceholder')` or appropriate key
+- Replace "Search" button text with `tCommon('search')`
+- Update router import to use `@/i18n/routing` if needed
 
-### 8. Update Links Throughout Application
-- Replace `next/link` with locale-aware links where needed
-- Use `Link` from `@/i18n/routing` or ensure `href` includes locale prefix
-- Update internal navigation to preserve locale
+#### Task 2.2: Update FeaturedCategories Component
+**File:** `src/components/home/FeaturedCategories.tsx`
+- Add `useTranslations('home')`
+- Replace "No categories with entities yet." with `t('noCategoriesYet')`
+- Replace "entity"/"entities" with translated versions using pluralization
+- Update `Link` import to use `@/i18n/routing` for locale-aware routing
 
-### 9. Testing and Verification
-- Verify locale detection from browser
-- Test language switcher preserves routes
-- Verify all translated content displays correctly
-- Test that user-generated content (business names, descriptions) remains untranslated
-- Ensure admin and portal routes work with locale routing
+#### Task 2.3: Update FeaturedBusiness Component
+**File:** `src/components/home/FeaturedBusiness.tsx`
+- Add `useTranslations('home')`
+- Replace "Featured" badge text with translation
+- Replace "Learn more →" with `t('learnMore')`
+- Update `Link` to use locale-aware routing from `@/i18n/routing`
 
-## Key Files to Modify/Create
+#### Task 2.4: Update SearchFilters Component
+**File:** `src/components/search/SearchFilters.tsx`
+- Add `useTranslations('search')` and `useTranslations('forms')`
+- Replace "Search entities..." placeholder
+- Replace "Entity Type" label with `t('entityType')`
+- Replace "All Types" option with `t('allTypes')`
+- Replace "Category" label with `t('category')`
+- Replace "All Categories" option with `t('allCategories')`
+- Replace "Tags" label with `t('tags')`
+- Replace "Show tags"/"Hide tags" button text
+- Replace "Search tags..." placeholder
+- Replace "Clear" button with `tCommon('clear')`
 
-### New Files:
-- `src/i18n/config.ts` - i18n configuration
-- `src/i18n/routing.ts` - Routing utilities
-- `src/messages/en.json` - English translations
-- `src/messages/es.json` - Spanish translations
-- `src/components/layout/LanguageSwitcher.tsx` - Language switcher component
-- `src/proxy.ts` - **NEW** (replaces middleware.ts with Next.js 16 proxy API)
+#### Task 2.5: Update EntityList Component
+**File:** `src/components/entity/EntityList.tsx`
+- Add `useTranslations('search')`
+- Replace "No entities found" heading with `t('noEntitiesFound')`
+- Replace "Try adjusting your search..." description with `t('tryAdjustingSearch')`
 
-### Modified Files:
-- `package.json` - Add next-intl dependency
-- `next.config.ts` - Add next-intl plugin
-- `src/middleware.ts` → **RENAME TO** `src/proxy.ts` - Update to Next.js 16 proxy API with locale detection and routing
-- `src/app/layout.tsx` - Simplify (move locale-specific to [locale]/layout.tsx)
-- `src/app/[locale]/layout.tsx` - Create locale-aware root layout
-- All pages under `(public)`, `auth` - Move to `[locale]` and add translations
-- `src/components/layout/Navbar.tsx` - Add translations and language switcher
-- `src/components/layout/Footer.tsx` - Add translations
-- All form components - Add translations
-- All static pages - Add translations
+#### Task 2.6: Update EntityMap Component (if needed)
+**File:** `src/components/search/EntityMap.tsx`
+- Check for any hardcoded UI text
+- Add translations if needed
 
-## Proxy Implementation Details
+### Phase 3: Resolve Duplicate Pages
 
-The `proxy.ts` file will need to:
-1. Use Next.js 16 proxy API: `export function proxy(request: NextRequest)`
-2. Integrate with next-auth's `withAuth` wrapper (may need to adapt approach)
-3. Handle locale detection using next-intl's `createMiddleware` or manual detection
-4. Redirect root `/` to `/{locale}` based on browser Accept-Language header
-5. Preserve locale in all route redirects
-6. Maintain existing authentication checks for admin/portal routes
+#### Task 3.1: Audit Duplicate Pages
+**Action:** Identify all pages that exist in both `(public)/` and `[locale]/(public)/`:
+- `(public)/search/page.tsx` vs `[locale]/(public)/search/page.tsx`
+- `(public)/about/page.tsx` vs `[locale]/(public)/about/page.tsx`
+- `(public)/page.tsx` vs `[locale]/(public)/page.tsx`
 
-**Note:** Since next-auth uses `withAuth` middleware wrapper, we may need to:
-- Either adapt the proxy to work with next-auth's approach
-- Or handle auth checks differently in the proxy
-- Or use next-intl's middleware helper and combine with next-auth logic
+#### Task 3.2: Create Redirect Strategy
+**Options:**
+- Option A: Remove `(public)/` versions and update proxy.ts to redirect to locale versions
+- Option B: Create redirect pages in `(public)/` that redirect to locale versions
+
+**Recommended:** Update proxy.ts to handle redirects automatically
+
+### Phase 4: Move Remaining Pages Under Locale Structure
+
+#### Task 4.1: Move Business/Entity Detail Pages
+**Files to move:**
+- `src/app/(public)/businesses/[slug]/page.tsx` → `src/app/[locale]/(public)/businesses/[slug]/page.tsx`
+- `src/app/(public)/entities/[slug]/page.tsx` → `src/app/[locale]/(public)/entities/[slug]/page.tsx`
+
+**For each moved page:**
+- Add `useTranslations()` hooks
+- Replace hardcoded text with translation keys
+- Update all `Link` components to use `Link` from `@/i18n/routing`
+- Update `generateMetadata` to support locale
+
+#### Task 4.2: Move Claim Pages
+**Files to move:**
+- `src/app/(public)/claim/page.tsx` → `src/app/[locale]/(public)/claim/page.tsx`
+- `src/app/(public)/public/claim/verify/page.tsx` → `src/app/[locale]/(public)/claim/verify/page.tsx`
+
+**Add translations:**
+- Create `claim` namespace in translation files
+- Translate all form labels, buttons, success/error messages
+
+#### Task 4.3: Move Report Page
+**File to move:**
+- `src/app/(public)/report/page.tsx` → `src/app/[locale]/(public)/report/page.tsx`
+
+**Add translations:**
+- Create `report` namespace in translation files
+- Translate all form fields, submission messages
+
+#### Task 4.4: Move Suggest Page
+**File to move:**
+- `src/app/(public)/suggest/page.tsx` → `src/app/[locale]/(public)/suggest/page.tsx`
+
+**Add translations:**
+- Create `suggest` namespace in translation files
+- Translate all form fields, submission messages
+
+#### Task 4.5: Move Subscribe Pages
+**Files to move:**
+- `src/app/(public)/subscribe/page.tsx` → `src/app/[locale]/(public)/subscribe/page.tsx`
+- `src/app/(public)/subscribe/verify/page.tsx` → `src/app/[locale]/(public)/subscribe/verify/page.tsx`
+- `src/app/(public)/subscribe/manage/page.tsx` → `src/app/[locale]/(public)/subscribe/manage/page.tsx`
+
+**Add translations:**
+- Create `subscribe` namespace in translation files
+- Translate all form fields, verification messages, manage page content
+
+#### Task 4.6: Add Translation Namespaces for New Pages
+**Files:** `src/messages/en.json`, `src/messages/es.json`
+
+Create new namespaces:
+- `claim`: Title, description, form labels, buttons, success/error messages
+- `report`: Title, description, form fields, submission messages
+- `suggest`: Title, description, form fields, submission messages
+- `subscribe`: Title, description, form fields, verification messages, manage page content
+- `entity` or `businessDetail`: Detail page labels, contact info labels, "View on Map", "Share", etc.
+
+### Phase 5: Fix Search Page
+
+#### Task 5.1: Update Search Page Translations
+**File:** `src/app/[locale]/(public)/search/page.tsx`
+- Fix missing translation keys (searching, found, showList, showMap, subtitle)
+- Ensure all text uses translations
+- Verify locale-aware routing works correctly
+
+### Phase 6: Update Links and Navigation
+
+#### Task 6.1: Audit All Links
+**Action:** Search codebase for `next/link` imports
+- Replace with `Link` from `@/i18n/routing` where needed
+- Ensure hrefs don't hardcode locale
+- Fix any programmatic navigation to use router from `@/i18n/routing`
+
+### Phase 7: Admin and Portal Pages Decision
+
+#### Task 7.1: Decide on Admin/Portal Translation Strategy
+**Question:** Should admin/portal pages be bilingual?
+
+**If yes:**
+- Move admin pages under `[locale]/(admin)/` structure
+- Move portal pages under `[locale]/(portal)/` structure
+- Add admin/portal translation namespaces
+- Update all admin/portal components to use translations
+
+**If no:**
+- Leave admin/portal pages as English-only
+- Document this decision in plan
+
+**Recommendation:** Start with English-only for admin/portal (admins can use English), focus on public-facing pages first.
+
+### Phase 8: Testing and Verification
+
+#### Task 8.1: Comprehensive Testing Checklist
+- [ ] All public-facing pages accessible at `/{locale}/...` URLs
+- [ ] Language switcher works on all pages
+- [ ] All UI text translates correctly
+- [ ] No hardcoded English text visible in Spanish mode
+- [ ] Links preserve locale when navigating
+- [ ] Search functionality works in both languages
+- [ ] Forms display translated labels and validation messages
+- [ ] Duplicate pages redirect correctly
+- [ ] Entity detail pages work with locale routing
+- [ ] Browser locale detection works correctly
+
+## Key Files Reference
+
+### Translation Files (to update):
+- `src/messages/en.json` - Add missing keys
+- `src/messages/es.json` - Add Spanish translations
+
+### Components to Update:
+- `src/components/home/OmniSearch.tsx`
+- `src/components/home/FeaturedCategories.tsx`
+- `src/components/home/FeaturedBusiness.tsx`
+- `src/components/search/SearchFilters.tsx`
+- `src/components/entity/EntityList.tsx`
+- `src/components/search/EntityMap.tsx` (if needed)
+
+### Pages to Move/Update:
+- `src/app/(public)/businesses/[slug]/page.tsx`
+- `src/app/(public)/entities/[slug]/page.tsx`
+- `src/app/(public)/claim/page.tsx`
+- `src/app/(public)/report/page.tsx`
+- `src/app/(public)/suggest/page.tsx`
+- `src/app/(public)/subscribe/page.tsx` (+ subpages)
+- `src/app/(public)/public/claim/verify/page.tsx`
+
+### Already Completed (verify these):
+- `src/components/layout/Navbar.tsx` ✅
+- `src/components/layout/Footer.tsx` ✅
+- `src/components/layout/LanguageSwitcher.tsx` ✅
+- `src/components/auth/LoginForm.tsx` ✅
+- `src/components/auth/RegisterForm.tsx` ✅
+- `src/app/[locale]/(public)/page.tsx` ✅
+- `src/app/[locale]/(public)/about/page.tsx` ✅
+- `src/app/[locale]/(public)/contact/page.tsx` ✅
+- `src/app/[locale]/(public)/terms/page.tsx` ✅
+- `src/app/[locale]/(public)/privacy/page.tsx` ✅
+- `src/app/[locale]/auth/signin/page.tsx` ✅
+- `src/app/[locale]/auth/signup/page.tsx` ✅
+
+## Proxy Implementation Notes
+
+**Current:** `src/proxy.ts` already exists and handles locale routing ✅
+
+**If updates needed:**
+- Ensure proxy.ts redirects `(public)/` routes to `[locale]/(public)/` versions
+- Update hardcoded locale regex if needed: `/^\/(en|es)/`
+
+## Future Considerations: Multiple Languages & User Content Translations
+
+Given the project's small scale (~50-100 entities, ~30k residents, maintained in spare time), we'll use a **simplified approach**:
+
+### Adding More Languages (Keep It Simple)
+
+**Current approach is acceptable:** The hardcoded locale array in `src/i18n/routing.ts` is fine for 2-3 languages. Adding a new language later requires:
+- Adding locale to array in `routing.ts` (e.g., `locales: ['en', 'es', 'fr']`)
+- Creating new translation JSON file (`src/messages/fr.json`)
+- Optionally updating proxy.ts regex (currently hardcoded to `/^\/(en|es)/`)
+
+**No need for environment variables or complex configuration** - simplicity and maintainability are priorities for this scale.
+
+### Translating User Content (JSON Field Approach) - Future Phase
+
+**Decision: Use JSON fields instead of translation tables**
+
+Given the scale constraints:
+- ~50-100 entities maximum
+- Maintained by volunteers in spare time
+- No high traffic expectations
+- Prioritize simplicity and maintainability
+
+**Schema Changes (Future Phase):**
+Add JSON translation fields to Prisma schema:
+- `Entity`: Add `nameTranslations` and `descriptionTranslations` JSON fields
+- `Category`: Add `nameTranslations` and `descriptionTranslations` JSON fields
+- `Tag`: Add `nameTranslations` JSON field
+- Keep existing `name`/`description` fields as fallback/default locale (en)
+
+**Structure:**
+```json
+{
+  "en": "Coffee Shop",
+  "es": "Cafetería"
+}
+```
+
+**Benefits for this scale:**
+- Simple implementation (no new tables/migrations)
+- Easier for admins (single entity record)
+- Performance is fine at this scale
+- Easier to maintain and understand
+- Direct Prisma access without complex joins
+
+### Implementation Steps for User Content Translations (Future Phase)
+
+**Database Schema Updates:**
+- Add JSON fields to Entity, Category, Tag models in Prisma schema
+- Create migration that preserves existing data (treat current `name`/`description` as default/en locale)
+- Keep existing fields as fallback
+
+**API Updates:**
+- Modify `/api/entities`, `/api/categories`, `/api/tags` to accept `?locale=` parameter
+- Return translated content when available, fallback to default locale
+- Update entity detail endpoints to return translations
+- Helper function to extract translated value: `getTranslatedField(obj.translations, locale, fallback)`
+
+**Component Updates:**
+- Entity detail pages display translated name/description based on current locale
+- Category/Tag displays use translations when available
+- Search results show translated content
+- Fallback to default locale if translation missing
+- Use locale from `useLocale()` hook or URL parameter
+
+**Admin/Portal UI:**
+- Add translation management forms for business owners and admins
+- Simple interface to add/edit translations per locale
+- Show current translations and allow adding new ones
+- Validate JSON structure
+- Allow owners to translate their own entity listings
+- Allow admins to translate categories and tags
+
+**Migration Strategy:**
+- Existing `name` and `description` fields become the default/en locale
+- Migration script: Copy existing values to `nameTranslations.en` and `descriptionTranslations.en`
+- Keep original fields for backward compatibility during transition
+- Eventually deprecate original fields once all content has translations
+
+**Considerations:**
+- User-generated content (entity names, descriptions) should be translatable
+- Category and tag names should be translatable
+- Maintain existing data as default/en locale during migration
+- Consider UI for bulk translation or import/export
 
 ## Notes
-- User-generated content (business descriptions, names) will remain in original language
-- No database schema changes required
-- Existing `[locale]` routes should be verified and integrated
-- Proxy must handle both auth and locale routing
-- Next.js 16 proxy runtime is `nodejs` (not edge runtime)
-- Use Next.js codemod if needed: `npx @next/codemod@canary middleware-to-proxy .`
 
+- User-generated content (business names, descriptions) currently remains untranslated (Phase 1)
+- Category names and tags from database currently remain untranslated (Phase 1)
+- Future phases will add support for translating user content using JSON fields
+- The duplicate `(public)/` directory structure suggests the migration to locale routing was incomplete
+- Next.js 16 proxy runtime is `nodejs` (not edge runtime)
+- Proxy already exists and handles locale routing ✅

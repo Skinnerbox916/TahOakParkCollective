@@ -4,9 +4,12 @@ import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-
 import { BUSINESS_STATUS, ROLE, ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { BusinessStatus, EntityType } from "@/lib/prismaEnums";
 import { expandSearchQuery, getMatchingCategories } from "@/lib/keyword-search";
+import { getLocaleFromRequest } from "@/lib/api-locale";
+import { getTranslatedField } from "@/lib/translations";
 
 export async function GET(request: NextRequest) {
   try {
+    const locale = getLocaleFromRequest(request);
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status") as BusinessStatus | null;
     const categoryId = searchParams.get("categoryId");
@@ -117,7 +120,60 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return createSuccessResponse(entities);
+    // Map entities to include translated content
+    const translatedEntities = entities.map((entity) => {
+      // Translate entity name and description
+      const translatedEntity = {
+        ...entity,
+        name: getTranslatedField(entity.nameTranslations, locale, entity.name),
+        description: entity.description
+          ? getTranslatedField(entity.descriptionTranslations, locale, entity.description)
+          : null,
+      };
+
+      // Translate category if present
+      if (entity.category) {
+        translatedEntity.category = {
+          ...entity.category,
+          name: getTranslatedField(
+            entity.category.nameTranslations,
+            locale,
+            entity.category.name
+          ),
+          description: entity.category.description
+            ? getTranslatedField(
+                entity.category.descriptionTranslations,
+                locale,
+                entity.category.description
+              )
+            : null,
+        };
+      }
+
+      // Translate tags if present
+      if (entity.tags && Array.isArray(entity.tags)) {
+        translatedEntity.tags = entity.tags.map((entityTag: any) => {
+          if (entityTag.tag) {
+            return {
+              ...entityTag,
+              tag: {
+                ...entityTag.tag,
+                name: getTranslatedField(
+                  entityTag.tag.nameTranslations,
+                  locale,
+                  entityTag.tag.name
+                ),
+              },
+            };
+          }
+          return entityTag;
+        });
+      }
+
+      return translatedEntity;
+    });
+
+    return createSuccessResponse(translatedEntities);
   } catch (error: any) {
     console.error("Error fetching entities:", error);
     return createErrorResponse(

@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/routing";
 import { useSession } from "next-auth/react";
 
 interface SidebarProps {
@@ -40,7 +39,9 @@ export function Sidebar({ type }: SidebarProps) {
         </h2>
         <ul className="space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+            // Remove locale prefix for comparison (pathname includes locale, href does not)
+            const pathWithoutLocale = pathname.replace(/^\/(en|es)/, "") || "/";
+            const isActive = pathWithoutLocale === item.href || pathWithoutLocale.startsWith(item.href + "/");
             return (
               <li key={item.href}>
                 <Link

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useSession, signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { ROLE } from "@/lib/prismaEnums";
 import { RoleBadges } from "@/components/admin/RoleBadge";
 
@@ -10,6 +11,8 @@ export function UserMenu() {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("common");
+  const tNav = useTranslations("nav");
 
   const isAdmin = session?.user?.roles?.includes(ROLE.ADMIN) ?? false;
   const isBusinessOwner = (session?.user?.roles?.includes(ROLE.BUSINESS_OWNER) ?? false) || isAdmin;
@@ -44,14 +47,14 @@ export function UserMenu() {
     return null;
   }
 
-  const userDisplayName = session.user.name || session.user.email || "User";
+  const userDisplayName = session.user.name || session.user.email || t("user");
 
   return (
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        aria-label="User menu"
+        aria-label={t("userMenu") || "User menu"}
         aria-expanded={isOpen}
       >
         <div className="flex items-center space-x-2">
@@ -82,7 +85,7 @@ export function UserMenu() {
           {/* User Info Header */}
           <div className="px-4 py-3 border-b border-gray-200">
             <p className="text-sm font-medium text-gray-900 truncate">
-              {session.user.name || "User"}
+              {session.user.name || t("user")}
             </p>
             <p className="text-xs text-gray-500 truncate">
               {session.user.email}
@@ -103,7 +106,7 @@ export function UserMenu() {
                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 <span className="mr-3">⚙️</span>
-                Admin Panel
+                {tNav("admin")} {tNav("dashboard")}
               </Link>
             )}
             {isBusinessOwner && (
@@ -113,7 +116,7 @@ export function UserMenu() {
                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 <span className="mr-3">🏢</span>
-                Business Portal
+                {t("businessPortal")}
               </Link>
             )}
           </div>
@@ -128,7 +131,7 @@ export function UserMenu() {
               className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
               <span className="mr-3">🚪</span>
-              Sign Out
+              {t("signOut")}
             </button>
           </div>
         </div>

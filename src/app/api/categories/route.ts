@@ -1,9 +1,12 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
+import { getLocaleFromRequest } from "@/lib/api-locale";
+import { getTranslatedField } from "@/lib/translations";
 
 export async function GET(request: NextRequest) {
   try {
+    const locale = getLocaleFromRequest(request);
     const entityType = request.nextUrl.searchParams.get("entityType");
     
     const where: any = {};
@@ -33,12 +36,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Add entity count to each category
+    // Add entity count and translated fields to each category
     const categoriesWithCounts = categories.map((category) => ({
       id: category.id,
-      name: category.name,
+      name: getTranslatedField(category.nameTranslations, locale, category.name),
       slug: category.slug,
-      description: category.description,
+      description: category.description
+        ? getTranslatedField(category.descriptionTranslations, locale, category.description)
+        : null,
       featured: category.featured,
       entityTypes: category.entityTypes || [],
       entityCount: category._count?.entities || 0,

@@ -31,19 +31,33 @@ export async function PUT(request: NextRequest) {
   return withRole([ROLE.ADMIN], async () => {
     try {
       const body = await request.json();
-      const { id, featured } = body;
+      const { id, featured, nameTranslations, descriptionTranslations } = body;
 
       if (!id) {
         return createErrorResponse("Category ID is required", 400);
       }
 
-      if (featured === undefined) {
-        return createErrorResponse("Featured field is required", 400);
+      const updateData: any = {};
+      
+      if (featured !== undefined) {
+        updateData.featured = Boolean(featured);
+      }
+      
+      if (nameTranslations !== undefined) {
+        updateData.nameTranslations = nameTranslations;
+      }
+      
+      if (descriptionTranslations !== undefined) {
+        updateData.descriptionTranslations = descriptionTranslations;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        return createErrorResponse("At least one field (featured, nameTranslations, descriptionTranslations) is required", 400);
       }
 
       const category = await prisma.category.update({
         where: { id },
-        data: { featured: Boolean(featured) },
+        data: updateData,
         include: {
           _count: {
             select: {

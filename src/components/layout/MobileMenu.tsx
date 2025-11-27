@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useSession, signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { ROLE } from "@/lib/prismaEnums";
 
 interface MobileMenuProps {
@@ -12,6 +13,12 @@ interface MobileMenuProps {
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { data: session } = useSession();
+  const t = useTranslations("common");
+  const tNav = useTranslations("nav");
+  const tSuggest = useTranslations("suggest");
+  const tReport = useTranslations("report");
+  const tClaim = useTranslations("claim");
+  const tSubscribe = useTranslations("subscribe");
 
   const isAdmin = session?.user?.roles?.includes(ROLE.ADMIN) ?? false;
   const isBusinessOwner = (session?.user?.roles?.includes(ROLE.BUSINESS_OWNER) ?? false) || isAdmin;
@@ -57,11 +64,11 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t("menu")}</h2>
             <button
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Close menu"
+              aria-label={t("closeMenu")}
             >
               <svg
                 className="w-6 h-6 text-gray-600"
@@ -87,35 +94,35 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 onClick={onClose}
                 className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                Directory
+                {t("directory")}
               </Link>
               <Link
                 href="/suggest"
                 onClick={onClose}
                 className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                Suggest Entity
+                {tSuggest("title")}
               </Link>
               <Link
                 href="/report"
                 onClick={onClose}
                 className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                Report Issue
+                {tReport("title")}
               </Link>
               <Link
                 href="/claim"
                 onClick={onClose}
                 className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                Claim Entity
+                {tClaim("title")}
               </Link>
               <Link
                 href="/subscribe"
                 onClick={onClose}
                 className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                Subscribe
+                {tSubscribe("title")}
               </Link>
 
               {session ? (
@@ -126,7 +133,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       onClick={onClose}
                       className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
                     >
-                      Admin Panel
+                      {tNav("admin")} {tNav("dashboard")}
                     </Link>
                   )}
                   {isBusinessOwner && (
@@ -135,7 +142,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       onClick={onClose}
                       className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
                     >
-                      Business Portal
+                      {t("businessPortal")}
                     </Link>
                   )}
                 </>
@@ -146,14 +153,14 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     onClick={onClose}
                     className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    Sign In
+                    {t("signIn")}
                   </Link>
                   <Link
                     href="/auth/signup"
                     onClick={onClose}
                     className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    Sign Up
+                    {t("signUp")}
                   </Link>
                 </>
               )}
@@ -165,7 +172,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             <div className="border-t border-gray-200 p-4">
               <div className="mb-3">
                 <p className="text-sm font-medium text-gray-900">
-                  {session.user?.name || "User"}
+                  {session.user?.name || t("user")}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {session.user?.email}
@@ -178,7 +185,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 }}
                 className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               >
-                Sign Out
+                {t("signOut")}
               </button>
             </div>
           )}

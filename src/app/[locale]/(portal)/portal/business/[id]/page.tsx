@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { BusinessForm } from "@/components/business/BusinessForm";
-import { EntityWithRelations, ApiResponse } from "@/types";
+import { BusinessWithRelations, ApiResponse } from "@/types";
 import { Card } from "@/components/ui/Card";
 
 export default function EditBusinessPage() {
   const params = useParams();
   const router = useRouter();
-  const [business, setBusiness] = useState<EntityWithRelations | null>(null);
+  const [business, setBusiness] = useState<BusinessWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +27,7 @@ export default function EditBusinessPage() {
 
       try {
         const response = await fetch(`/api/businesses/${params.id}`);
-        const data: ApiResponse<EntityWithRelations> = await response.json();
+        const data: ApiResponse<BusinessWithRelations> = await response.json();
 
         if (!response.ok || !data.success) {
           throw new Error(data.error || "Failed to fetch business");

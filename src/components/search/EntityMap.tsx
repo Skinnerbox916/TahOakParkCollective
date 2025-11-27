@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { EntityWithRelations } from "@/types";
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polygon } from "react-leaflet";
 import L from "leaflet";
@@ -139,6 +140,8 @@ export function EntityMap({
   center = [polyBounds.getCenter().lat, polyBounds.getCenter().lng] as [number, number],
   zoom = 12,
 }: EntityMapProps) {
+  const t = useTranslations("search");
+  
   // Filter entities to only those within polygon boundary AND with location data
   const entitiesInBounds = entities.filter((e) => {
     if (!e.latitude || !e.longitude) return false;
@@ -153,8 +156,8 @@ export function EntityMap({
     return (
       <div className="w-full h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
         <div className="text-center text-gray-500">
-          <p className="text-lg mb-2">No entities with locations found</p>
-          <p className="text-sm">Add location data to see entities on the map</p>
+          <p className="text-lg mb-2">{t("noEntitiesWithLocations")}</p>
+          <p className="text-sm">{t("addLocationData")}</p>
         </div>
       </div>
     );
@@ -216,7 +219,7 @@ export function EntityMap({
                     href={`/entities/${entity.slug}`}
                     className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                   >
-                    View Details →
+                    {t("viewDetails")}
                   </a>
                 </div>
               </Popup>

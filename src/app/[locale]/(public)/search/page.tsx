@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { SearchFilters } from "@/components/search/SearchFilters";
 import { EntityList } from "@/components/entity/EntityList";
 import { Button } from "@/components/ui/Button";
@@ -14,16 +14,22 @@ import { ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { EntityType } from "@/lib/prismaEnums";
 import { SACRAMENTO_CENTER, DEFAULT_ZOOM } from "@/lib/map";
 
+// Loading component for map that uses translations
+function MapLoading() {
+  const t = useTranslations('search');
+  return (
+    <div className="w-full h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
+      <p className="text-gray-500">{t('loadingMap')}</p>
+    </div>
+  );
+}
+
 // Dynamically import map component to avoid SSR issues with Leaflet
 const EntityMap = dynamic(
   () => import("@/components/search/EntityMap").then((mod) => mod.EntityMap),
   {
     ssr: false,
-    loading: () => (
-      <div className="w-full h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
-        <p className="text-gray-500">Loading map...</p>
-      </div>
-    ),
+    loading: () => <MapLoading />,
   }
 );
 
@@ -33,6 +39,7 @@ function SearchPageContent() {
   const urlParams = parseSearchParams(searchParams);
   const t = useTranslations('search');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
 
   const [searchQuery, setSearchQuery] = useState(urlParams.q || "");
   const [selectedCategory, setSelectedCategory] = useState(
@@ -57,7 +64,7 @@ function SearchPageContent() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await fetch("/api/categories");
+        const response = await fetch(`/api/categories?locale=${locale}`);
         const data = await response.json();
         if (data.success && data.data) {
           setCategories(data.data);
@@ -79,7 +86,7 @@ function SearchPageContent() {
 
     async function fetchTags() {
       try {
-        const response = await fetch("/api/tags");
+        const response = await fetch(`/api/tags?locale=${locale}`);
         const data = await response.json();
         if (data.success && data.data) {
           setTags(data.data as Tag[]);
@@ -92,7 +99,7 @@ function SearchPageContent() {
     fetchCategories();
     fetchTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [locale]);
 
   // Debounced search function
   const debouncedSearch = useCallback(
@@ -105,15 +112,16 @@ function SearchPageContent() {
         setIsLoading(true);
         setError(null);
 
-        const queryParams = new URLSearchParams();
-        if (params.q) queryParams.set("q", params.q);
-        if (params.category) queryParams.set("category", params.category);
-        if (params.entityType) queryParams.set("entityType", params.entityType);
+      const queryParams = new URLSearchParams();
+      if (params.q) queryParams.set("q", params.q);
+      if (params.category) queryParams.set("category", params.category);
+      if (params.entityType) queryParams.set("entityType", params.entityType);
+      queryParams.set("locale", locale);
 
-        const response = await fetch(`/api/entities?${queryParams.toString()}`);
-        const data = await response.json();
+      const response = await fetch(`/api/entities?${queryParams.toString()}`);
+      const data = await response.json();
 
-        if (data.success && data.data) {
+      if (data.success && data.data) {
           setAllEntities(data.data); // Store all entities
           // Tag filtering happens in useEffect below
         } else {
@@ -139,7 +147,7 @@ function SearchPageContent() {
       category: selectedCategory,
       entityType: selectedEntityType,
     });
-  }, [searchQuery, selectedCategory, selectedEntityType, debouncedSearch]);
+  }, [searchQuery, selectedCategory, selectedEntityType, debouncedSearch, locale]);
 
   // Filter entities by selected tags (client-side)
   useEffect(() => {
@@ -243,7 +251,7 @@ function SearchPageContent() {
         <div className="flex items-center justify-between mb-4">
           <div className="text-sm text-gray-600">
             {isLoading ? (
-              <span>{tCommon('searching')}</span>
+              <span>{t('searching')}</span>
             ) : error ? (
               <span className="text-red-600">{error}</span>
             ) : (

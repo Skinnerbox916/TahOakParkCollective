@@ -1,6 +1,9 @@
-import Link from "next/link";
+"use client";
+
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { EntityWithRelations, EntityTagWithTag } from "@/types";
-import { ENTITY_TYPE_LABELS } from "@/lib/constants";
+import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 import { truncate } from "@/lib/utils";
 import type { EntityType } from "@/lib/prismaEnums";
 import { TagBadge } from "@/components/tags/TagBadge";
@@ -10,6 +13,9 @@ interface EntityCardProps {
 }
 
 export function EntityCard({ entity }: EntityCardProps) {
+  const t = useTranslations("search");
+  const tCommon = useTranslations("common");
+  const entityTypeLabels = useEntityTypeLabels();
   // Get first 3 tags
   const tags = (entity.tags as EntityTagWithTag[] || []).slice(0, 3);
   const images = entity.images as Record<string, string> | null;
@@ -52,7 +58,7 @@ export function EntityCard({ entity }: EntityCardProps) {
         {/* Category & Type Badges */}
         <div className="flex flex-wrap gap-2 mb-3">
           <span className="px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded-md whitespace-nowrap">
-            {ENTITY_TYPE_LABELS[entity.entityType as EntityType]}
+            {entityTypeLabels[entity.entityType as EntityType]}
           </span>
           {entity.category && (
             <span className="px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md whitespace-nowrap">
@@ -75,7 +81,7 @@ export function EntityCard({ entity }: EntityCardProps) {
             ))}
             {entity.tags.length > 3 && (
               <span className="text-xs text-gray-500 self-center">
-                +{entity.tags.length - 3} more
+                +{entity.tags.length - 3} {tCommon("more")}
               </span>
             )}
           </div>
@@ -107,7 +113,7 @@ export function EntityCard({ entity }: EntityCardProps) {
         {/* Footer */}
         <div className="mt-auto pt-4 border-t border-gray-200">
           <span className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-            View Details →
+            {t("viewDetails")}
           </span>
         </div>
       </div>
