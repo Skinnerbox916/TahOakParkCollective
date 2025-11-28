@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/routing";
 import { EntityForm } from "@/components/entity/EntityForm";
 import { EntityWithRelations, ApiResponse } from "@/types";
 import { Card } from "@/components/ui/Card";
+import { usePortalTranslations } from "@/lib/admin-translations";
 
 export default function PortalEditEntityPage() {
   const params = useParams();
@@ -13,11 +14,12 @@ export default function PortalEditEntityPage() {
   const [entity, setEntity] = useState<EntityWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const tPortal = usePortalTranslations("entity");
 
   useEffect(() => {
     async function fetchEntity() {
       if (!params.id || typeof params.id !== "string") {
-        setError("Invalid entity ID");
+        setError(tPortal("invalidId"));
         setLoading(false);
         return;
       }
@@ -30,13 +32,13 @@ export default function PortalEditEntityPage() {
         const data: ApiResponse<EntityWithRelations> = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.error || "Failed to fetch entity");
+          throw new Error(data.error || tPortal("errorLoading"));
         }
 
         setEntity(data.data!);
       } catch (err) {
         console.error("Error fetching entity:", err);
-        setError(err instanceof Error ? err.message : "Failed to load entity");
+        setError(err instanceof Error ? err.message : tPortal("errorLoading"));
       } finally {
         setLoading(false);
       }
@@ -48,10 +50,12 @@ export default function PortalEditEntityPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Entity</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+          {tPortal("editTitle")}
+        </h1>
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading entity...</p>
+            <p className="text-gray-500">{tPortal("loading")}</p>
           </div>
         </Card>
       </div>
@@ -61,14 +65,16 @@ export default function PortalEditEntityPage() {
   if (error || !entity) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Entity</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+          {tPortal("editTitle")}
+        </h1>
         <Card className="bg-red-50 border-red-200">
-          <p className="text-red-600">{error || "Entity not found"}</p>
+          <p className="text-red-600">{error || tPortal("notFound")}</p>
           <button
             onClick={() => router.push("/portal/dashboard")}
             className="mt-4 text-sm text-indigo-600 hover:text-indigo-700"
           >
-            ← Back to Dashboard
+            {tPortal("back")}
           </button>
         </Card>
       </div>
@@ -81,7 +87,9 @@ export default function PortalEditEntityPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Entity</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">
+        {tPortal("editTitle")}
+      </h1>
       <EntityForm
         entity={entity}
         onSuccess={() => router.push("/portal/dashboard")}

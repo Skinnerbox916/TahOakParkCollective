@@ -3,16 +3,20 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/routing";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { EntityWithRelations, ApiResponse } from "@/types";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { usePortalTranslations } from "@/lib/admin-translations";
 
 export default function PortalDashboard() {
   const [entities, setEntities] = useState<EntityWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const tPortal = usePortalTranslations("dashboard");
+  const tCommon = useTranslations("common");
 
   useEffect(() => {
     async function fetchEntities() {
@@ -39,7 +43,7 @@ export default function PortalDashboard() {
   }, []);
 
   const handleDelete = async (entityId: string, entityName: string) => {
-    if (!confirm(`Are you sure you want to delete "${entityName}"? This action cannot be undone.`)) {
+    if (!confirm(tPortal("deleteConfirm", { name: entityName }))) {
       return;
     }
 
@@ -57,27 +61,27 @@ export default function PortalDashboard() {
       setEntities((prev) => prev.filter((e) => e.id !== entityId));
     } catch (err) {
       console.error("Error deleting entity:", err);
-      alert(err instanceof Error ? err.message : "Failed to delete entity");
+      alert(err instanceof Error ? err.message : tPortal("errorLoading"));
     }
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">My Entities</h1>
-        <Button href="/portal/entity">Add Entity</Button>
+        <h1 className="text-3xl font-bold text-gray-900">{tPortal("title")}</h1>
+        <Button href="/portal/entity">{tPortal("addEntity")}</Button>
       </div>
 
       {error && (
         <Card className="mb-6 bg-red-50 border-red-200">
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600">{error || tPortal("errorLoading")}</p>
         </Card>
       )}
 
       {loading ? (
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading entities...</p>
+            <p className="text-gray-500">{tPortal("loading")}</p>
           </div>
         </Card>
       ) : entities.length === 0 ? (
@@ -85,12 +89,12 @@ export default function PortalDashboard() {
           <div className="text-center py-12">
             <div className="text-gray-400 text-6xl mb-4">🏢</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No entities yet
+              {tPortal("emptyHeading")}
             </h3>
             <p className="text-gray-600 mb-6">
-              Get started by adding your first entity to the directory.
+              {tPortal("emptyDescription")}
             </p>
-            <Button href="/portal/entity">Add Your First Entity</Button>
+            <Button href="/portal/entity">{tPortal("addFirst")}</Button>
           </div>
         </Card>
       ) : (
@@ -106,7 +110,7 @@ export default function PortalDashboard() {
 
               {entity.category && (
                 <p className="text-sm text-gray-600 mb-2">
-                  <span className="font-medium">Category:</span> {entity.category.name}
+                  <span className="font-medium">{tPortal("categoryLabel")}</span> {entity.category.name}
                 </p>
               )}
 
@@ -124,7 +128,7 @@ export default function PortalDashboard() {
                     size="sm"
                     className="flex-1"
                   >
-                    View
+                    {tPortal("view")}
                   </Button>
                   <Button
                     href={`/portal/entity/${entity.id}`}
@@ -132,7 +136,7 @@ export default function PortalDashboard() {
                     size="sm"
                     className="flex-1"
                   >
-                    Edit
+                    {tPortal("edit")}
                   </Button>
                 </div>
                 <Button
@@ -141,7 +145,7 @@ export default function PortalDashboard() {
                   size="sm"
                   className="w-full"
                 >
-                  Delete
+                  {tPortal("delete")}
                 </Button>
               </div>
             </Card>

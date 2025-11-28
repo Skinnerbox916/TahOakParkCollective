@@ -5,9 +5,10 @@ import { Link } from "@/i18n/routing";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ApiResponse } from "@/types";
+import { useAdminTranslations } from "@/lib/admin-translations";
 
 interface Stats {
-  businesses: {
+  entities: {
     total: number;
     active: number;
     pending: number;
@@ -16,7 +17,7 @@ interface Stats {
   users: {
     total: number;
     user: number;
-    businessOwner: number;
+    entityOwner: number;
     admin: number;
   };
   pendingApprovals: number;
@@ -26,6 +27,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t: tDashboard } = useAdminTranslations("dashboard");
 
   useEffect(() => {
     async function fetchStats() {
@@ -52,7 +54,9 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+          {tDashboard("title")}
+        </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -68,9 +72,11 @@ export default function AdminDashboard() {
   if (error || !stats) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+          {tDashboard("title")}
+        </h1>
         <Card>
-          <p className="text-red-600">{error || "Failed to load statistics"}</p>
+          <p className="text-red-600">{error || tDashboard("loadError")}</p>
         </Card>
       </div>
     );
@@ -78,7 +84,9 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">
+        {tDashboard("title")}
+      </h1>
 
       {/* Quick Actions */}
       {stats.pendingApprovals > 0 && (
@@ -86,14 +94,16 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-1">
-                {stats.pendingApprovals} Pending Approval{stats.pendingApprovals !== 1 ? "s" : ""}
+                {tDashboard("pendingApprovalsHeading", {
+                  count: stats.pendingApprovals,
+                })}
               </h2>
               <p className="text-sm text-gray-600">
-                Review and approve pending entity listings
+                {tDashboard("pendingApprovalsDescription")}
               </p>
             </div>
             <Button href="/admin/entities?status=PENDING">
-              Review Pending
+              {tDashboard("reviewPending")}
             </Button>
           </div>
         </Card>
@@ -101,89 +111,122 @@ export default function AdminDashboard() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Total Businesses */}
+        {/* Total Entities */}
         <Card>
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Total Businesses</h3>
-          <p className="text-3xl font-bold text-gray-900">{stats.businesses.total}</p>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">
+            {tDashboard("totalEntities")}
+          </h3>
+          <p className="text-3xl font-bold text-gray-900">{stats.entities.total}</p>
           <div className="mt-2 text-xs text-gray-600 space-y-1">
             <div className="flex justify-between">
-              <span>Active:</span>
-              <span className="font-medium text-green-600">{stats.businesses.active}</span>
+              <span>{tDashboard("active")}:</span>
+              <span className="font-medium text-green-600">
+                {stats.entities.active}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span>Pending:</span>
-              <span className="font-medium text-yellow-600">{stats.businesses.pending}</span>
+              <span>{tDashboard("pending")}:</span>
+              <span className="font-medium text-yellow-600">
+                {stats.entities.pending}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span>Inactive:</span>
-              <span className="font-medium text-gray-600">{stats.businesses.inactive}</span>
+              <span>{tDashboard("inactive")}:</span>
+              <span className="font-medium text-gray-600">
+                {stats.entities.inactive}
+              </span>
             </div>
           </div>
         </Card>
 
         {/* Total Users */}
         <Card>
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Total Users</h3>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">
+            {tDashboard("totalUsers")}
+          </h3>
           <p className="text-3xl font-bold text-gray-900">{stats.users.total}</p>
           <div className="mt-2 text-xs text-gray-600 space-y-1">
             <div className="flex justify-between">
-              <span>Users:</span>
+              <span>{tDashboard("users")}:</span>
               <span className="font-medium">{stats.users.user}</span>
             </div>
             <div className="flex justify-between">
-              <span>Business Owners:</span>
-              <span className="font-medium">{stats.users.businessOwner}</span>
+              <span>{tDashboard("entityOwners")}:</span>
+              <span className="font-medium">
+                {stats.users.entityOwner}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span>Admins:</span>
+              <span>{tDashboard("admins")}:</span>
               <span className="font-medium">{stats.users.admin}</span>
             </div>
           </div>
         </Card>
 
-        {/* Active Businesses */}
+        {/* Active Entities */}
         <Card>
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Active Businesses</h3>
-          <p className="text-3xl font-bold text-green-600">{stats.businesses.active}</p>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">
+            {tDashboard("activeEntities")}
+          </h3>
+          <p className="text-3xl font-bold text-green-600">{stats.entities.active}</p>
           <Link
             href="/admin/entities?status=ACTIVE"
             className="text-sm text-indigo-600 hover:text-indigo-700 mt-2 inline-block"
           >
-            View all →
+            {tDashboard("viewAll")}
           </Link>
         </Card>
 
         {/* Pending Approvals */}
         <Card>
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Pending Approvals</h3>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">
+            {tDashboard("pendingApprovalsHeading", {
+              count: stats.pendingApprovals,
+            })}
+          </h3>
           <p className="text-3xl font-bold text-yellow-600">{stats.pendingApprovals}</p>
           <Link
             href="/admin/entities?status=PENDING"
             className="text-sm text-indigo-600 hover:text-indigo-700 mt-2 inline-block"
           >
-            Review now →
+            {tDashboard("reviewNow")}
           </Link>
         </Card>
       </div>
 
       {/* Quick Links */}
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        {tDashboard("quickLinksTitle")}
+      </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card padding="sm" className="hover:shadow-md transition-shadow">
           <Link href="/admin/entities" className="block">
-            <h3 className="font-semibold text-gray-900 mb-1">Manage Entities</h3>
-            <p className="text-sm text-gray-600">View, edit, and approve entity listings</p>
+            <h3 className="font-semibold text-gray-900 mb-1">
+              {tDashboard("manageEntities")}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {tDashboard("manageEntitiesDescription")}
+            </p>
           </Link>
         </Card>
         <Card padding="sm" className="hover:shadow-md transition-shadow">
           <Link href="/admin/users" className="block">
-            <h3 className="font-semibold text-gray-900 mb-1">Manage Users</h3>
-            <p className="text-sm text-gray-600">View users and manage roles</p>
+            <h3 className="font-semibold text-gray-900 mb-1">
+              {tDashboard("manageUsers")}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {tDashboard("manageUsersDescription")}
+            </p>
           </Link>
         </Card>
         <Card padding="sm" className="hover:shadow-md transition-shadow">
           <Link href="/" className="block">
-            <h3 className="font-semibold text-gray-900 mb-1">View Directory</h3>
-            <p className="text-sm text-gray-600">See the public-facing directory</p>
+            <h3 className="font-semibold text-gray-900 mb-1">
+              {tDashboard("viewDirectory")}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {tDashboard("viewDirectoryDescription")}
+            </p>
           </Link>
         </Card>
       </div>

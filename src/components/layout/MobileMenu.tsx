@@ -5,12 +5,17 @@ import { Link } from "@/i18n/routing";
 import { useSession, signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { ROLE } from "@/lib/prismaEnums";
+import { publicNavItems } from "@/lib/navigation";
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+/**
+ * Mobile menu for public pages.
+ * Dashboard pages (admin/portal) use DashboardSidebar instead.
+ */
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { data: session } = useSession();
   const t = useTranslations("common");
@@ -21,7 +26,19 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const tSubscribe = useTranslations("subscribe");
 
   const isAdmin = session?.user?.roles?.includes(ROLE.ADMIN) ?? false;
-  const isBusinessOwner = (session?.user?.roles?.includes(ROLE.BUSINESS_OWNER) ?? false) || isAdmin;
+  const isEntityOwner = (session?.user?.roles?.includes(ROLE.ENTITY_OWNER) ?? false) || isAdmin;
+
+  // Translation lookup for public nav items
+  const getNavLabel = (labelKey: string) => {
+    switch (labelKey) {
+      case "directory": return t("directory");
+      case "suggest": return tSuggest("title");
+      case "report": return tReport("title");
+      case "claim": return tClaim("title");
+      case "subscribe": return tSubscribe("title");
+      default: return labelKey;
+    }
+  };
 
   // Close menu on ESC key
   useEffect(() => {
@@ -53,6 +70,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       <div
         className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Menu Panel */}
@@ -60,6 +78,9 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         className={`fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("menu")}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -89,44 +110,21 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           {/* Navigation Links */}
           <nav className="flex-1 overflow-y-auto py-4">
             <div className="space-y-1">
-              <Link
-                href="/"
-                onClick={onClose}
-                className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                {t("directory")}
-              </Link>
-              <Link
-                href="/suggest"
-                onClick={onClose}
-                className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                {tSuggest("title")}
-              </Link>
-              <Link
-                href="/report"
-                onClick={onClose}
-                className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                {tReport("title")}
-              </Link>
-              <Link
-                href="/claim"
-                onClick={onClose}
-                className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                {tClaim("title")}
-              </Link>
-              <Link
-                href="/subscribe"
-                onClick={onClose}
-                className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
-              >
-                {tSubscribe("title")}
-              </Link>
+              {/* Public navigation items from shared config */}
+              {publicNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  {getNavLabel(item.labelKey)}
+                </Link>
+              ))}
 
-              {session ? (
-                <>
+              {/* Dashboard links for authenticated users */}
+              {session && (
+                <div className="border-t border-gray-200 mt-4 pt-4">
                   {isAdmin && (
                     <Link
                       href="/admin/dashboard"
@@ -136,7 +134,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       {tNav("admin")} {tNav("dashboard")}
                     </Link>
                   )}
-                  {isBusinessOwner && (
+                  {isEntityOwner && (
                     <Link
                       href="/portal/dashboard"
                       onClick={onClose}
@@ -145,9 +143,12 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       {t("businessPortal")}
                     </Link>
                   )}
-                </>
-              ) : (
-                <>
+                </div>
+              )}
+
+              {/* Auth links for unauthenticated users */}
+              {!session && (
+                <div className="border-t border-gray-200 mt-4 pt-4">
                   <Link
                     href="/auth/signin"
                     onClick={onClose}
@@ -162,7 +163,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   >
                     {t("signUp")}
                   </Link>
-                </>
+                </div>
               )}
             </div>
           </nav>

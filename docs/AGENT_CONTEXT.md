@@ -30,7 +30,7 @@ TahOak Park Collective is a hyper-local business directory for Sacramento neighb
 2. ❌ Create database query scripts or diagnostic files - use direct `docker exec` commands instead
 3. ❌ Hardcode category/tag/entity lists in code
 4. ❌ Define the same data in multiple places
-5. ❌ Run Prisma commands from host (use Docker)
+5. ❌ Run `npm install` or `npx` commands from host — always use `docker exec tahoak-web`
 6. ❌ Skip searching existing code before creating new files
 7. ❌ Make schema changes without updating ALL consuming code
 
@@ -50,6 +50,7 @@ TahOak Park Collective is a hyper-local business directory for Sacramento neighb
 - **Entity Type** = What it IS (COMMERCE, CIVIC, etc.) — one per entity
 - **Categories** = What it's ABOUT (Food & Drink, etc.) — **many per entity**
 - Relationship: Entities ↔ Categories is many-to-many
+- **Translations:** Entity `name` and `description` support bilingual translations via `nameTranslations` and `descriptionTranslations` JSON fields (format: `{"en": "...", "es": "..."}`). If translations are not provided, the system falls back to the base `name` and `description` fields.
 
 ---
 
@@ -61,12 +62,18 @@ TahOak Park Collective is a hyper-local business directory for Sacramento neighb
 | Bootstrap seed | `prisma/seed.ts` |
 | TypeScript types | `src/types/index.ts` |
 | API routes | `src/app/api/` |
+| Entity display config | `src/lib/entityDisplayConfig.ts` |
 
 ---
 
 ## Commands (Always in Docker)
 
+**All commands must run inside the Docker container, not on the host machine.**
+
 ```bash
+# Install npm packages
+docker exec tahoak-web npm install <package-name>
+
 # Migrations
 docker exec tahoak-web npx prisma migrate dev --name <name>
 
@@ -82,6 +89,8 @@ docker restart tahoak-web
 # Logs
 docker logs tahoak-web --tail 50
 ```
+
+**Why Docker?** The app uses an isolated `node_modules` volume. Packages installed on the host won't be available to the running container.
 
 ---
 
@@ -106,9 +115,9 @@ docker exec tahoak-db psql -U tahoak -d tahoak_db -c "SELECT status, COUNT(*) FR
 
 ---
 
-## Current Categories (14)
+## Current Categories (13)
 
-Food & Drink, Shopping, Beauty & Personal Care, Health & Wellness, Pets, Home & Auto, Professional Services, Arts & Culture, Kids & Education, Community & Faith, Social Services, Government, Parks & Public Spaces, Events
+Food & Drink, Shopping, Beauty & Personal Care, Health & Wellness, Pets, Home & Auto, Professional Services, Arts & Culture, Kids & Education, Community & Faith, Social Services, Government, Parks
 
 ---
 
@@ -129,3 +138,5 @@ Food & Drink, Shopping, Beauty & Personal Care, Health & Wellness, Pets, Home & 
 ---
 
 > **Need more detail?** See [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) for tech stack, project structure, troubleshooting, and API reference.
+
+> **Adding entities?** See [ENTITY_ADDITION_RUNBOOK.md](./ENTITY_ADDITION_RUNBOOK.md) for step-by-step instructions on adding entities via direct database insertion.

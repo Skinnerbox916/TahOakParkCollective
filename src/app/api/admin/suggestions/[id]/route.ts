@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
-import { ROLE, SuggestionStatus, BUSINESS_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
+import { ROLE, SuggestionStatus, ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
 
 export async function PUT(
   request: NextRequest,
@@ -52,7 +52,7 @@ export async function PUT(
             description: suggestion.description,
             address: suggestion.address,
             website: suggestion.website,
-            status: BUSINESS_STATUS.ACTIVE, // Approved immediately
+            status: ENTITY_STATUS.ACTIVE, // Approved immediately
             entityType: ENTITY_TYPE.COMMERCE, // Default, admin can change later
             ownerId: user.id, // Assigned to admin initially
           },

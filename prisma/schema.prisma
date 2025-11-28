@@ -53,7 +53,7 @@ model Entity {
   longitude               Float?
   categories              Category[]
   entityType              EntityType      @default(COMMERCE)
-  status                  BusinessStatus  @default(PENDING)
+  status                  EntityStatus    @default(PENDING)
   featured                Boolean         @default(false)
   images                  Json?           // Array of image URLs
   hours                   Json?           // Business hours structure
@@ -200,7 +200,7 @@ model MagicLink {
 enum Role {
   USER
   ADMIN
-  BUSINESS_OWNER
+  ENTITY_OWNER
 }
 
 enum EntityType {
@@ -213,7 +213,7 @@ enum EntityType {
   SERVICE_PROVIDER
 }
 
-enum BusinessStatus {
+enum EntityStatus {
   ACTIVE
   PENDING
   INACTIVE

@@ -2,13 +2,18 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+/**
+ * LocaleLayout provides i18n context only.
+ * Navigation is handled by route-group-specific layouts:
+ * - (public) routes use PublicNavbar + Footer
+ * - (admin) routes use DashboardShell
+ * - (portal) routes use DashboardShell
+ */
 export default async function LocaleLayout({
   children,
   params,
@@ -32,11 +37,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <Navbar />
-      <div className="flex-1">
-        {children}
-      </div>
-      <Footer />
+      {children}
     </NextIntlClientProvider>
   );
 }

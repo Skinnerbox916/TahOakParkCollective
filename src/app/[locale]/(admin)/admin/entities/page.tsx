@@ -3,14 +3,18 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { EntityTable } from "@/components/admin/EntityTable";
+import { EntityTagModal } from "@/components/admin/EntityTagModal";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { EntityWithRelations, ApiResponse } from "@/types";
-import { BUSINESS_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
-import type { BusinessStatus, EntityType } from "@/lib/prismaEnums";
+import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
+import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import type { Category } from "@/types";
 import { ENTITY_TYPES } from "@/lib/constants";
+import { useAdminTranslations } from "@/lib/admin-translations";
+import { useTranslations } from "next-intl";
+import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 
 function AdminEntitiesContent() {
   const searchParams = useSearchParams();
@@ -19,16 +23,20 @@ function AdminEntitiesContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<EntityWithRelations | null>(null);
 
   // Filter state
-  const [statusFilter, setStatusFilter] = useState<BusinessStatus | "">(
-    (searchParams.get("status") as BusinessStatus) || ""
+  const [statusFilter, setStatusFilter] = useState<EntityStatus | "">(
+    (searchParams.get("status") as EntityStatus) || ""
   );
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [categoryFilter, setCategoryFilter] = useState(searchParams.get("categoryId") || "");
   const [entityTypeFilter, setEntityTypeFilter] = useState<EntityType | "">(
     (searchParams.get("entityType") as EntityType) || ""
   );
+  const { t: tEntities, tStatus } = useAdminTranslations("entities");
+  const tCommon = useTranslations("common");
+  const entityTypeLabels = useEntityTypeLabels();
 
   useEffect(() => {
     async function fetchCategories() {
@@ -75,7 +83,7 @@ function AdminEntitiesContent() {
     fetchEntities();
   }, [statusFilter, searchQuery, categoryFilter, entityTypeFilter]);
 
-  const handleStatusChange = async (entityId: string, newStatus: BusinessStatus) => {
+  const handleStatusChange = async (entityId: string, newStatus: EntityStatus) => {
     try {
       const response = await fetch("/api/admin/entities", {
         method: "PUT",
@@ -176,12 +184,38 @@ function AdminEntitiesContent() {
     router.push(`/admin/entities?${params.toString()}`);
   };
 
+  const handleTagManage = (entityId: string) => {
+    const entity = entities.find((e) => e.id === entityId);
+    setSelectedEntity(entity || null);
+  };
+
+  const handleTagChange = async (entityId: string) => {
+    try {
+      // Refresh the entity data from the API
+      const response = await fetch(`/api/admin/entities?status=${statusFilter || ""}&search=${searchQuery || ""}&categoryId=${categoryFilter || ""}&entityType=${entityTypeFilter || ""}`);
+      const data: ApiResponse<EntityWithRelations[]> = await response.json();
+
+      if (response.ok && data.success && data.data) {
+        setEntities(data.data);
+        // Update selected entity if modal is open
+        if (selectedEntity) {
+          const updatedEntity = data.data.find((e) => e.id === entityId);
+          if (updatedEntity) {
+            setSelectedEntity(updatedEntity);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error refreshing entity data:", err);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Manage Entities</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{tEntities("page.title")}</h1>
         <Button href="/admin/entities/new">
-          Add New Entity
+          {tEntities("page.addButton")}
         </Button>
       </div>
 
@@ -191,7 +225,7 @@ function AdminEntitiesContent() {
           <div>
             <Input
               type="text"
-              placeholder="Search entities..."
+              placeholder={tEntities("page.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -204,13 +238,13 @@ function AdminEntitiesContent() {
           <div>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as BusinessStatus | "")}
+              onChange={(e) => setStatusFilter(e.target.value as EntityStatus | "")}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              <option value="">All Statuses</option>
-              <option value={BUSINESS_STATUS.ACTIVE}>Active</option>
-              <option value={BUSINESS_STATUS.PENDING}>Pending</option>
-              <option value={BUSINESS_STATUS.INACTIVE}>Inactive</option>
+              <option value="">{tEntities("page.allStatuses")}</option>
+              <option value={ENTITY_STATUS.ACTIVE}>{tStatus(ENTITY_STATUS.ACTIVE)}</option>
+              <option value={ENTITY_STATUS.PENDING}>{tStatus(ENTITY_STATUS.PENDING)}</option>
+              <option value={ENTITY_STATUS.INACTIVE}>{tStatus(ENTITY_STATUS.INACTIVE)}</option>
             </select>
           </div>
           <div>
@@ -219,7 +253,7 @@ function AdminEntitiesContent() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              <option value="">All Categories</option>
+              <option value="">{tEntities("page.allCategories")}</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -233,17 +267,17 @@ function AdminEntitiesContent() {
               onChange={(e) => setEntityTypeFilter(e.target.value as EntityType | "")}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              <option value="">All Types</option>
+              <option value="">{tEntities("page.allTypes")}</option>
               {ENTITY_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
-                  {type.label}
+                  {entityTypeLabels[type.value as EntityType]}
                 </option>
               ))}
             </select>
           </div>
           <div>
             <Button onClick={handleFilterChange} className="w-full">
-              Apply Filters
+              {tEntities("page.applyFilters")}
             </Button>
           </div>
         </div>
@@ -252,7 +286,7 @@ function AdminEntitiesContent() {
       {/* Error State */}
       {error && (
         <Card className="mb-6 bg-red-50 border-red-200">
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600">{error || tEntities("page.errorLoading")}</p>
         </Card>
       )}
 
@@ -260,7 +294,7 @@ function AdminEntitiesContent() {
       {loading ? (
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading entities...</p>
+            <p className="text-gray-500">{tEntities("page.loading")}</p>
           </div>
         </Card>
       ) : (
@@ -271,23 +305,33 @@ function AdminEntitiesContent() {
             onFeaturedChange={handleFeaturedChange}
             onEntityTypeChange={handleEntityTypeChange}
             onDelete={handleDelete}
+            onTagManage={handleTagManage}
           />
         </Card>
       )}
+
+      {/* Tag Management Modal */}
+      <EntityTagModal
+        entity={selectedEntity}
+        onClose={() => setSelectedEntity(null)}
+        onTagChange={handleTagChange}
+      />
     </div>
   );
 }
 
 export default function AdminEntities() {
+  const { t: tEntities } = useAdminTranslations("entities");
+  const tCommon = useTranslations("common");
   return (
     <Suspense fallback={
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Manage Entities</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{tEntities("page.title")}</h1>
         </div>
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading...</p>
+            <p className="text-gray-500">{tCommon("loading")}</p>
           </div>
         </Card>
       </div>

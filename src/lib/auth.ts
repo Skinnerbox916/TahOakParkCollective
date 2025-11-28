@@ -37,10 +37,10 @@ export async function isAdmin() {
   }
 }
 
-export async function isBusinessOwner() {
+export async function isEntityOwner() {
   try {
     const user = await requireAuth();
-    return (user.roles?.includes(ROLE.BUSINESS_OWNER) ?? false) || (user.roles?.includes(ROLE.ADMIN) ?? false);
+    return (user.roles?.includes(ROLE.ENTITY_OWNER) ?? false) || (user.roles?.includes(ROLE.ADMIN) ?? false);
   } catch {
     return false;
   }

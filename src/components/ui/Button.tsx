@@ -1,5 +1,6 @@
 import { ButtonHTMLAttributes, ReactNode } from "react";
 import { Link } from "@/i18n/routing";
+import { cn } from "@/lib/utils";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "outline";
@@ -26,15 +27,15 @@ const sizeClasses = {
 export function Button({
   variant = "primary",
   size = "md",
-  className = "",
+  className,
   href,
   target,
   rel,
   children,
   ...props
 }: ButtonProps) {
-  const baseClasses = "inline-block font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed";
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  const baseClasses = "inline-block font-medium rounded-lg transition-colors focus-ring disabled:opacity-50 disabled:cursor-not-allowed";
+  const classes = cn(baseClasses, variantClasses[variant], sizeClasses[size], className);
 
   if (href) {
     return (

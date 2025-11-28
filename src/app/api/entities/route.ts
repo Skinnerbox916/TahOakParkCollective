@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { BUSINESS_STATUS, ROLE, ENTITY_TYPE } from "@/lib/prismaEnums";
-import type { BusinessStatus, EntityType } from "@/lib/prismaEnums";
+import { ENTITY_STATUS, ROLE, ENTITY_TYPE } from "@/lib/prismaEnums";
+import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import { expandSearchQuery, getMatchingCategories } from "@/lib/keyword-search";
 import { getLocaleFromRequest } from "@/lib/api-locale";
 import { getTranslatedField } from "@/lib/translations";
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   try {
     const locale = getLocaleFromRequest(request);
     const searchParams = request.nextUrl.searchParams;
-    const status = searchParams.get("status") as BusinessStatus | null;
+    const status = searchParams.get("status") as EntityStatus | null;
     const categoryId = searchParams.get("categoryId");
     const category = searchParams.get("category"); 
     const entityType = searchParams.get("entityType") as EntityType | null;
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       where.status = status;
     } else {
       // Default to only active entities for public
-      where.status = BUSINESS_STATUS.ACTIVE;
+      where.status = ENTITY_STATUS.ACTIVE;
     }
 
     if (featured) {
@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
 
       const status = user.roles.includes(ROLE.ADMIN) && body.status 
         ? body.status 
-        : BUSINESS_STATUS.PENDING;
+        : ENTITY_STATUS.PENDING;
 
       const finalEntityType = entityType || ENTITY_TYPE.COMMERCE;
 

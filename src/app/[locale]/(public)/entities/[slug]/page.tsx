@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { BUSINESS_STATUS } from "@/lib/prismaEnums";
+import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { EntityDetail } from "@/components/entity/EntityDetail";
 import { getTranslatedField } from "@/lib/translations";
 import type { EntityWithRelations } from "@/types";
@@ -10,7 +10,7 @@ async function getEntityBySlug(slug: string, locale: string): Promise<EntityWith
     const entity = await prisma.entity.findFirst({
       where: {
         slug,
-        status: BUSINESS_STATUS.ACTIVE, // Only show active entities publicly
+        status: ENTITY_STATUS.ACTIVE, // Only show active entities publicly
       },
       include: {
         categories: true,

@@ -40,8 +40,7 @@ Categories define **what an entity is about** (for user discovery). Entities can
 | Community & Faith | `community-faith` | Neighborhood groups, non-profits, churches, mutual aid | ADVOCACY, NON_PROFIT |
 | Social Services | `social-services` | Food banks, health clinics, homeless services | NON_PROFIT |
 | Government | `government` | Elected officials, city offices, public services | CIVIC |
-| Parks & Public Spaces | `parks-public` | Parks, libraries, community centers, rec facilities | PUBLIC_SPACE |
-| Events | `events` | Recurring community events, markets, meetups | EVENT |
+| Parks | `parks` | Parks, gardens, plazas, outdoor recreation spaces | PUBLIC_SPACE |
 
 ---
 
@@ -56,9 +55,31 @@ Categories define **what an entity is about** (for user discovery). Entities can
 |--------|-------------|------------|
 | Dance studio | COMMERCE | Arts & Culture, Health & Wellness, Kids & Education |
 | Church with food pantry | NON_PROFIT | Community & Faith, Social Services |
-| Comedy night at a bar | EVENT | Arts & Culture, Events |
+| Comedy night at a bar | EVENT | Arts & Culture |
 | City councilmember | CIVIC | Government |
 | Neighborhood association | ADVOCACY | Community & Faith |
+
+---
+
+## Profile Display by Entity Type
+
+Entity types determine how profiles are rendered on the detail page. The layout and sections shown are configured in `src/lib/entityDisplayConfig.ts`.
+
+| Entity Type | Map Display | Hours Section | Profile Image (if no map) | Notes |
+|-------------|-------------|---------------|---------------------------|-------|
+| COMMERCE | Yes (if coordinates) | Yes | No | Standard business layout |
+| SERVICE_PROVIDER | Yes (if coordinates) | Yes | Yes (if no location) | Home-based services may not have locations |
+| CIVIC | Yes (if coordinates) | No | Yes (if no location) | Elected officials typically use profile image |
+| PUBLIC_SPACE | Yes (if coordinates) | No | No | Parks/plazas typically always open |
+| NON_PROFIT | Yes (if coordinates) | Yes | No | Standard layout |
+| EVENT | Yes (if coordinates) | Yes | Yes (if no location) | Events may have varying locations |
+| ADVOCACY | Yes (if coordinates) | Yes | No | Standard layout |
+
+**Key Behaviors:**
+- **Map vs Profile Image**: Entities without coordinates won't show a map. CIVIC, SERVICE_PROVIDER, and EVENT entities will show a large profile image (from `hero` field) instead when no location is available.
+- **Hours Section**: Not displayed for CIVIC (elected officials/offices) and PUBLIC_SPACE (parks are typically always open).
+- **Image Display**: The `hero` image is displayed prominently. For entities without maps, it may be shown as a large profile photo (500px for CIVIC, 400px for others).
+- **Configuration**: All display rules are configurable in `src/lib/entityDisplayConfig.ts` - see that file to customize layouts per entity type.
 
 ---
 

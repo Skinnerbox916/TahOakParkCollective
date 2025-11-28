@@ -1,33 +1,33 @@
-import { BusinessWithRelations } from "@/types";
+import { EntityWithRelations } from "@/types";
 
 // Default center for Sacramento area
 export const SACRAMENTO_CENTER: [number, number] = [38.5816, -121.4944];
 export const DEFAULT_ZOOM = 12;
 
 export function calculateMapBounds(
-  businesses: BusinessWithRelations[]
+  entities: EntityWithRelations[]
 ): { center: [number, number]; zoom: number } | null {
-  const businessesWithLocation = businesses.filter(
-    (b) => b.latitude && b.longitude
+  const entitiesWithLocation = entities.filter(
+    (e) => e.latitude && e.longitude
   );
 
-  if (businessesWithLocation.length === 0) {
+  if (entitiesWithLocation.length === 0) {
     return null;
   }
 
-  if (businessesWithLocation.length === 1) {
+  if (entitiesWithLocation.length === 1) {
     return {
       center: [
-        businessesWithLocation[0].latitude!,
-        businessesWithLocation[0].longitude!,
+        entitiesWithLocation[0].latitude!,
+        entitiesWithLocation[0].longitude!,
       ],
       zoom: 15,
     };
   }
 
   // Calculate bounds
-  const lats = businessesWithLocation.map((b) => b.latitude!);
-  const lngs = businessesWithLocation.map((b) => b.longitude!);
+  const lats = entitiesWithLocation.map((e) => e.latitude!);
+  const lngs = entitiesWithLocation.map((e) => e.longitude!);
 
   const minLat = Math.min(...lats);
   const maxLat = Math.max(...lats);

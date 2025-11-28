@@ -1,7 +1,7 @@
 import type { Entity, Category, User, Prisma, Tag, EntityTag, PendingChange } from "@prisma/client";
-import type { Role, BusinessStatus, EntityType, TagCategory, ChangeType, ChangeStatus } from "@/lib/prismaEnums";
+import type { Role, EntityStatus, EntityType, TagCategory, ChangeType, ChangeStatus } from "@/lib/prismaEnums";
 
-export type { Entity, Category, User, Role, BusinessStatus, EntityType, Tag, EntityTag, TagCategory, PendingChange, ChangeType, ChangeStatus };
+export type { Entity, Category, User, Role, EntityStatus, EntityType, Tag, EntityTag, TagCategory, PendingChange, ChangeType, ChangeStatus };
 
 export type EntityTagWithTag = EntityTag & { tag: Tag };
 
@@ -24,9 +24,6 @@ export type EntityWithRelations = Prisma.EntityGetPayload<{
     };
   };
 }>;
-
-// Alias for legacy code that uses Business terminology
-export type BusinessWithRelations = EntityWithRelations;
 
 // For suggestion pages
 export type SuggestionWithEntity = {

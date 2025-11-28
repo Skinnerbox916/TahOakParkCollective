@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { TagCategory } from "@/lib/prismaEnums";
 import { TagBadge } from "./TagBadge";
 
@@ -16,6 +17,7 @@ interface TagSelectorProps {
 }
 
 export function TagSelector({ selectedTagIds, onChange }: TagSelectorProps) {
+  const t = useTranslations("tags");
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +52,7 @@ export function TagSelector({ selectedTagIds, onChange }: TagSelectorProps) {
     return acc;
   }, {} as Record<string, Tag[]>);
 
-  if (loading) return <div className="text-sm text-gray-500">Loading tags...</div>;
+  if (loading) return <div className="text-sm text-gray-500">{t("loading")}</div>;
 
   return (
     <div className="space-y-4">

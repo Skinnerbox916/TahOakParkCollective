@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
-import { ROLE, BUSINESS_STATUS } from "@/lib/prismaEnums";
+import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
 
 export async function GET(request: NextRequest) {
   return withRole([ROLE.ADMIN], async (user) => {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       // Find stale entities
       const staleEntities = await prisma.entity.findMany({
         where: {
-          status: BUSINESS_STATUS.ACTIVE,
+          status: ENTITY_STATUS.ACTIVE,
           OR: [
             { spotCheckDate: null },
             { spotCheckDate: { lt: sixMonthsAgo } }
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         
         const allActive = await prisma.entity.findMany({
            where: {
-             status: BUSINESS_STATUS.ACTIVE,
+             status: ENTITY_STATUS.ACTIVE,
              NOT: {
                id: { in: staleIds }
              }

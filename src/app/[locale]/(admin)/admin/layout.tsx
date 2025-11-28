@@ -1,6 +1,7 @@
 import { redirect } from "@/i18n/routing";
 import { requireRole } from "@/lib/auth";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { DashboardShell } from "@/components/layout/DashboardShell";
+import { adminNavItems } from "@/lib/navigation";
 
 export default async function AdminLayout({
   children,
@@ -14,12 +15,9 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        <Sidebar type="admin" />
-        <main className="flex-1 p-6">{children}</main>
-      </div>
-    </div>
+    <DashboardShell type="admin" navItems={adminNavItems}>
+      {children}
+    </DashboardShell>
   );
 }
 

@@ -1,19 +1,19 @@
 export const ROLE = {
   USER: "USER",
   ADMIN: "ADMIN",
-  BUSINESS_OWNER: "BUSINESS_OWNER",
+  ENTITY_OWNER: "ENTITY_OWNER",
 } as const;
 
 export type Role = (typeof ROLE)[keyof typeof ROLE];
 
-export const BUSINESS_STATUS = {
+export const ENTITY_STATUS = {
   ACTIVE: "ACTIVE",
   PENDING: "PENDING",
   INACTIVE: "INACTIVE",
 } as const;
 
-export type BusinessStatus =
-  (typeof BUSINESS_STATUS)[keyof typeof BUSINESS_STATUS];
+export type EntityStatus =
+  (typeof ENTITY_STATUS)[keyof typeof ENTITY_STATUS];
 
 export const ENTITY_TYPE = {
   COMMERCE: "COMMERCE",

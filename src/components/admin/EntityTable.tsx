@@ -2,30 +2,39 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { EntityWithRelations } from "@/types";
+import { useTranslations } from "next-intl";
+import { EntityWithRelations, EntityTagWithTag } from "@/types";
 import { StatusBadge } from "./StatusBadge";
 import { Button } from "@/components/ui/Button";
-import { BUSINESS_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
-import type { BusinessStatus, EntityType } from "@/lib/prismaEnums";
+import { Dropdown } from "@/components/ui/Dropdown";
+import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
+import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import { ApiResponse } from "@/types";
-import { formatPhoneNumber } from "@/lib/utils";
-import { ENTITY_TYPE_LABELS, ENTITY_TYPES } from "@/lib/constants";
+import { formatPhoneNumber, cn } from "@/lib/utils";
+import { ENTITY_TYPES } from "@/lib/constants";
+import { useAdminTranslations } from "@/lib/admin-translations";
+import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 
 interface EntityTableProps {
   entities: EntityWithRelations[];
-  onStatusChange?: (entityId: string, newStatus: BusinessStatus) => Promise<void>;
+  onStatusChange?: (entityId: string, newStatus: EntityStatus) => Promise<void>;
   onFeaturedChange?: (entityId: string, featured: boolean) => Promise<void>;
   onEntityTypeChange?: (entityId: string, entityType: EntityType) => Promise<void>;
   onDelete?: (entityId: string) => Promise<void>;
+  onTagManage?: (entityId: string) => void;
 }
 
-export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEntityTypeChange, onDelete }: EntityTableProps) {
+export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEntityTypeChange, onDelete, onTagManage }: EntityTableProps) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
   const [updatingEntityType, setUpdatingEntityType] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const { t: tEntities, tStatus } = useAdminTranslations("entities");
+  const tCommon = useTranslations("common");
+  const entityTypeLabels = useEntityTypeLabels();
 
-  const handleStatusChange = async (entityId: string, newStatus: BusinessStatus) => {
+  const handleStatusChange = async (entityId: string, newStatus: EntityStatus) => {
     if (!onStatusChange) return;
     
     setUpdating(entityId);
@@ -33,7 +42,7 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
       await onStatusChange(entityId, newStatus);
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update entity status");
+      alert(tEntities("alerts.statusError"));
     } finally {
       setUpdating(null);
     }
@@ -47,7 +56,7 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
       await onFeaturedChange(entityId, !currentFeatured);
     } catch (error) {
       console.error("Error toggling featured:", error);
-      alert("Failed to update featured status");
+      alert(tEntities("alerts.featuredError"));
     } finally {
       setTogglingFeatured(null);
     }
@@ -61,7 +70,7 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
       await onEntityTypeChange(entityId, newType);
     } catch (error) {
       console.error("Error updating entity type:", error);
-      alert("Failed to update entity type");
+      alert(tEntities("alerts.typeError"));
     } finally {
       setUpdatingEntityType(null);
     }
@@ -70,7 +79,7 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
   const handleDelete = async (entityId: string) => {
     if (!onDelete) return;
     
-    if (!confirm("Are you sure you want to delete this entity? This action cannot be undone.")) {
+    if (!confirm(tEntities("alerts.deleteConfirm"))) {
       return;
     }
 
@@ -79,7 +88,7 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
       await onDelete(entityId);
     } catch (error) {
       console.error("Error deleting entity:", error);
-      alert("Failed to delete entity");
+      alert(tEntities("alerts.deleteError"));
     } finally {
       setDeleting(null);
     }
@@ -88,7 +97,7 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
   if (entities.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No entities found</p>
+        <p className="text-gray-500">{tEntities("noEntities")}</p>
       </div>
     );
   }
@@ -98,36 +107,39 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
+            <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {tEntities("columns.name")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Type
+            <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {tEntities("columns.type")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Category
+            <th className="hidden lg:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {tEntities("columns.category")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
+            <th className="hidden lg:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {tEntities("columns.tags")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Featured
+            <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {tEntities("columns.status")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Owner
+            <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {tEntities("columns.featured")}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
+            <th className="hidden lg:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {tEntities("columns.owner")}
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
+            <th className="hidden xl:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {tEntities("columns.created")}
+            </th>
+            <th className="px-3 lg:px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {tEntities("columns.actions")}
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {entities.map((entity) => (
             <tr key={entity.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-3 lg:px-4 py-3 whitespace-nowrap">
                 <div>
                   <Link
                     href={`/entities/${entity.slug}`}
@@ -141,35 +153,65 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
                   )}
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-3 lg:px-4 py-3 whitespace-nowrap">
                 {onEntityTypeChange ? (
                   <select
                     value={entity.entityType}
                     onChange={(e) => handleEntityTypeChange(entity.id, e.target.value as EntityType)}
                     disabled={updatingEntityType === entity.id}
-                    className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[140px]"
+                    className={cn(
+                      "text-xs border border-gray-300 rounded px-2 py-1 focus-ring min-w-[140px]",
+                      updatingEntityType === entity.id && "opacity-50 cursor-not-allowed"
+                    )}
                   >
                     {ENTITY_TYPES.map((type) => (
                       <option key={type.value} value={type.value}>
-                        {type.label}
+                        {entityTypeLabels[type.value as EntityType]}
                       </option>
                     ))}
                   </select>
                 ) : (
                   <span className="text-sm text-gray-700">
-                    {ENTITY_TYPE_LABELS[entity.entityType as EntityType]}
+                    {entityTypeLabels[entity.entityType as EntityType]}
                   </span>
                 )}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="hidden lg:table-cell px-3 lg:px-4 py-3 whitespace-nowrap">
                 <span className="text-sm text-gray-900">
                   {entity.category?.name || "—"}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="hidden lg:table-cell px-3 lg:px-4 py-3">
+                {(() => {
+                  const tags = (entity.tags as EntityTagWithTag[] || []);
+                  if (tags.length === 0) {
+                    return <span className="text-sm text-gray-500">—</span>;
+                  }
+                  if (tags.length <= 2) {
+                    return (
+                      <div className="flex flex-wrap gap-1">
+                        {tags.map((et) => (
+                          <span
+                            key={et.id}
+                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800"
+                          >
+                            {et.tag.name}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return (
+                    <span className="text-sm text-gray-700">
+                      {tags.slice(0, 2).map((et) => et.tag.name).join(", ")} +{tags.length - 2}
+                    </span>
+                  );
+                })()}
+              </td>
+              <td className="px-3 lg:px-4 py-3 whitespace-nowrap">
                 <StatusBadge status={entity.status} />
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-3 lg:px-4 py-3 whitespace-nowrap">
                 {onFeaturedChange ? (
                   <label className="inline-flex items-center cursor-pointer">
                     <input
@@ -177,19 +219,16 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
                       checked={entity.featured || false}
                       onChange={() => handleFeaturedToggle(entity.id, entity.featured || false)}
                       disabled={togglingFeatured === entity.id}
-                      className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
+                      className="form-checkbox h-5 w-5 text-indigo-600 rounded focus-ring"
                     />
-                    <span className="ml-2 text-sm text-gray-700">
-                      {entity.featured ? "Featured" : "Not Featured"}
-                    </span>
                   </label>
                 ) : (
                   <span className="text-sm text-gray-700">
-                    {entity.featured ? "Yes" : "No"}
+                    {entity.featured ? tCommon("yes") : tCommon("no")}
                   </span>
                 )}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="hidden lg:table-cell px-3 lg:px-4 py-3 whitespace-nowrap">
                 <div className="text-sm text-gray-900">
                   {entity.owner?.name || entity.owner?.email || "—"}
                 </div>
@@ -199,54 +238,102 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
                   </div>
                 )}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td className="hidden xl:table-cell px-3 lg:px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                 {new Date(entity.createdAt).toLocaleDateString()}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div className="flex items-center justify-end gap-2">
-                  {entity.status === BUSINESS_STATUS.PENDING && onStatusChange && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => handleStatusChange(entity.id, BUSINESS_STATUS.ACTIVE)}
-                        disabled={updating === entity.id}
-                      >
-                        {updating === entity.id ? "..." : "Approve"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => handleStatusChange(entity.id, BUSINESS_STATUS.INACTIVE)}
-                        disabled={updating === entity.id}
-                      >
-                        {updating === entity.id ? "..." : "Reject"}
-                      </Button>
-                    </>
-                  )}
-                  {entity.status !== BUSINESS_STATUS.PENDING && onStatusChange && (
-                    <select
-                      value={entity.status}
-                      onChange={(e) => handleStatusChange(entity.id, e.target.value as BusinessStatus)}
+              <td className="px-3 lg:px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                {entity.status === ENTITY_STATUS.PENDING && onStatusChange ? (
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => handleStatusChange(entity.id, ENTITY_STATUS.ACTIVE)}
                       disabled={updating === entity.id}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                      <option value={BUSINESS_STATUS.ACTIVE}>Active</option>
-                      <option value={BUSINESS_STATUS.PENDING}>Pending</option>
-                      <option value={BUSINESS_STATUS.INACTIVE}>Inactive</option>
-                    </select>
-                  )}
-                  {onDelete && (
+                      {updating === entity.id ? tCommon("loading") : tEntities("actions.approve")}
+                    </Button>
                     <Button
                       size="sm"
                       variant="danger"
-                      onClick={() => handleDelete(entity.id)}
-                      disabled={deleting === entity.id}
+                      onClick={() => handleStatusChange(entity.id, ENTITY_STATUS.INACTIVE)}
+                      disabled={updating === entity.id}
                     >
-                      {deleting === entity.id ? "..." : "Delete"}
+                      {updating === entity.id ? tCommon("loading") : tEntities("actions.reject")}
                     </Button>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <Dropdown
+                    align="right"
+                    trigger={
+                      <Button size="sm" variant="outline">
+                        {tEntities("actions.menu")}
+                      </Button>
+                    }
+                    onOpenChange={(open) => setOpenDropdown(open ? entity.id : null)}
+                  >
+                    {entity.status !== ENTITY_STATUS.PENDING && onStatusChange && (
+                      <div className="py-1">
+                        <label className="block px-4 py-2 text-sm text-gray-700">
+                          <span className="block mb-1">
+                            {tEntities("dropdown.statusLabel")}
+                          </span>
+                          <select
+                            value={entity.status}
+                            onChange={(e) => {
+                              handleStatusChange(entity.id, e.target.value as EntityStatus);
+                              setOpenDropdown(null);
+                            }}
+                            disabled={updating === entity.id}
+                            className={cn(
+                              "w-full text-xs border border-gray-300 rounded px-2 py-1 focus-ring",
+                              updating === entity.id && "opacity-50 cursor-not-allowed"
+                            )}
+                          >
+                            <option value={ENTITY_STATUS.ACTIVE}>
+                              {tStatus(ENTITY_STATUS.ACTIVE)}
+                            </option>
+                            <option value={ENTITY_STATUS.PENDING}>
+                              {tStatus(ENTITY_STATUS.PENDING)}
+                            </option>
+                            <option value={ENTITY_STATUS.INACTIVE}>
+                              {tStatus(ENTITY_STATUS.INACTIVE)}
+                            </option>
+                          </select>
+                        </label>
+                      </div>
+                    )}
+                    {onTagManage && (
+                      <button
+                        onClick={() => {
+                          onTagManage(entity.id);
+                          setOpenDropdown(null);
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        {tEntities("actions.manageTags")}
+                      </button>
+                    )}
+                    {onDelete && (
+                      <div className="border-t border-gray-200 py-1">
+                        <button
+                          onClick={() => {
+                            handleDelete(entity.id);
+                            setOpenDropdown(null);
+                          }}
+                          disabled={deleting === entity.id}
+                          className={cn(
+                            "flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors",
+                            deleting === entity.id && "opacity-50 cursor-not-allowed"
+                          )}
+                        >
+                        {deleting === entity.id
+                          ? tEntities("actions.deleting")
+                          : tEntities("actions.delete")}
+                        </button>
+                      </div>
+                    )}
+                  </Dropdown>
+                )}
               </td>
             </tr>
           ))}

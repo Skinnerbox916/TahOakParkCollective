@@ -49,17 +49,31 @@ export async function POST(request: NextRequest) {
   return withRole([ROLE.ADMIN], async (user) => {
     try {
       const body = await request.json();
-      const { name, category } = body;
+      const { name, nameTranslations, category } = body;
 
-      if (!name || !category) {
-        return createErrorResponse("Name and category are required", 400);
+      // Validate required fields
+      if (!category) {
+        return createErrorResponse("Category is required", 400);
       }
 
       if (!Object.values(TagCategory).includes(category)) {
         return createErrorResponse("Invalid category", 400);
       }
 
-      const slug = name
+      // Validate nameTranslations if provided
+      if (nameTranslations) {
+        if (typeof nameTranslations !== 'object' || !nameTranslations.en || !nameTranslations.es) {
+          return createErrorResponse("Both English and Spanish translations required in nameTranslations", 400);
+        }
+      }
+
+      // Use English from nameTranslations if provided, otherwise use name
+      const englishName = nameTranslations?.en || name;
+      if (!englishName) {
+        return createErrorResponse("Name or nameTranslations.en is required", 400);
+      }
+
+      const slug = englishName
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)+/g, "");
@@ -74,7 +88,8 @@ export async function POST(request: NextRequest) {
 
       const tag = await prisma.tag.create({
         data: {
-          name,
+          name: englishName, // Fallback field
+          nameTranslations: nameTranslations || null,
           slug,
           category,
         },

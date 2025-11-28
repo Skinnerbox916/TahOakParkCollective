@@ -34,7 +34,7 @@
     "user": "Usuario",
     "userMenu": "Menú de usuario",
     "adminPanel": "Panel de Administración",
-    "businessPortal": "Portal de Negocios",
+    "businessPortal": "Portal de Entidades",
     "menu": "Menú",
     "closeMenu": "Cerrar menú",
     "directory": "Directorio",
@@ -45,7 +45,7 @@
     "about": "Acerca de",
     "contact": "Contacto",
     "search": "Buscar",
-    "businesses": "Negocios",
+    "businesses": "Entidades",
     "dashboard": "Panel",
     "admin": "Administrador",
     "portal": "Portal"
@@ -65,12 +65,12 @@
   },
   "home": {
     "welcome": "Bienvenido a TahOak Park Collective",
-    "subtitle": "Descubre negocios locales en tu comunidad",
+    "subtitle": "Descubre entidades locales en tu comunidad",
     "browseByCategory": "Explorar por Categoría",
-    "viewAllBusinesses": "Ver Todos los Negocios",
-    "featuredBusiness": "Negocio Destacado",
+    "viewAllBusinesses": "Ver Todas las Entidades",
+    "featuredBusiness": "Entidad Destacada",
     "exploreOnMap": "Explorar en el Mapa",
-    "exploreOnMapDescription": "Ver todos los negocios en un mapa interactivo",
+    "exploreOnMapDescription": "Ver todas las entidades en un mapa interactivo",
     "learnMore": "Saber más →",
     "featured": "Destacado",
     "entity": "entidad",
@@ -279,8 +279,8 @@
   },
   "search": {
     "title": "Buscar",
-    "subtitle": "Descubre negocios y organizaciones locales en tu comunidad",
-    "searchPlaceholder": "Buscar negocios, organizaciones...",
+    "subtitle": "Descubre entidades y organizaciones locales en tu comunidad",
+    "searchPlaceholder": "Buscar entidades, organizaciones...",
     "noResults": "No se encontraron resultados",
     "loading": "Cargando...",
     "error": "Error al cargar resultados",
@@ -414,15 +414,163 @@
     "noLocation": "No hay ubicación disponible",
     "tags": "Etiquetas",
     "location": "Ubicación",
+    "photo": "Foto",
     "photos": "Fotos",
     "coverImage": "Imagen de Portada",
     "logo": "Logo",
     "ownThisBusiness": "¿Eres el Propietario?",
-    "claimDescription": "Reclama este listado para gestionar la información de tu negocio.",
+    "claimDescription": "Reclama este listado para gestionar la información de tu entidad.",
     "claimThisEntity": "Reclamar esta Entidad",
     "foundAnIssue": "¿Encontraste un Problema?",
     "reportDescription": "¿Ves información incorrecta? Háznoslo saber.",
     "reportAnIssue": "Reportar un Problema"
+  },
+  "tags": {
+    "pageTitle": "Gestión de Etiquetas",
+    "pageDescription": "Crea y gestiona etiquetas para entidades. Las etiquetas ayudan a categorizar negocios por identidad, amabilidad y servicios.",
+    "loading": "Cargando etiquetas...",
+    "createNewTag": "Crear Nueva Etiqueta",
+    "tagNameEnglish": "Nombre de Etiqueta (Inglés)",
+    "tagNameSpanish": "Nombre de Etiqueta (Español)",
+    "translateToSpanish": "Traducir al Español",
+    "translateToEnglish": "Traducir al Inglés",
+    "bothLanguagesRequired": "Se requieren traducciones en inglés y español",
+    "category": "Categoría",
+    "creating": "Creando...",
+    "createTag": "Crear Etiqueta",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "deleteConfirmation": "¿Estás seguro de que quieres eliminar esta etiqueta? Esto la eliminará de todas las entidades.",
+    "name": "Nombre",
+    "preview": "Vista Previa",
+    "actions": "Acciones",
+    "failedToCreate": "Error al crear etiqueta",
+    "failedToDelete": "Error al eliminar etiqueta"
+  },
+  "admin": {
+    "sidebar": {
+      "sectionTitle": "Administración",
+      "dashboard": "Panel",
+      "entities": "Entidades",
+      "quickAdd": "Agregar Rápido",
+      "pendingChanges": "Cambios Pendientes",
+      "spotChecks": "Verificaciones",
+      "suggestions": "Sugerencias",
+      "issueReports": "Reportes de Problemas",
+      "subscribers": "Suscriptores",
+      "analytics": "Analítica",
+      "tags": "Etiquetas",
+      "users": "Usuarios"
+    },
+    "dashboard": {
+      "title": "Panel de Administración",
+      "pendingApprovalsHeading": "{count} aprobación{count, plural, one {} other {es}} pendiente{count, plural, one {} other {s}}",
+      "pendingApprovalsDescription": "Revisa y aprueba listados de entidades pendientes",
+      "reviewPending": "Revisar pendientes",
+      "totalEntities": "Total de Entidades",
+      "activeEntities": "Entidades Activas",
+      "totalUsers": "Total de Usuarios",
+      "active": "Activas",
+      "pending": "Pendientes",
+      "inactive": "Inactivas",
+      "users": "Usuarios",
+      "entityOwners": "Propietarios de Entidades",
+      "admins": "Administradores",
+      "viewAll": "Ver todo →",
+      "reviewNow": "Revisar ahora →",
+      "quickLinksTitle": "Accesos Directos",
+      "manageEntities": "Gestionar Entidades",
+      "manageEntitiesDescription": "Ver, editar y aprobar listados de entidades",
+      "manageUsers": "Gestionar Usuarios",
+      "manageUsersDescription": "Ver usuarios y administrar roles",
+      "viewDirectory": "Ver Directorio",
+      "viewDirectoryDescription": "Ver el directorio público",
+      "loadError": "Error al cargar las estadísticas"
+    },
+    "common": {
+      "status": {
+        "ACTIVE": "Activa",
+        "PENDING": "Pendiente",
+        "INACTIVE": "Inactiva"
+      },
+      "roles": {
+        "USER": "Usuario",
+        "ADMIN": "Administrador",
+        "ENTITY_OWNER": "Propietario de Entidad"
+      }
+    },
+    "entities": {
+      "noEntities": "No se encontraron entidades",
+      "columns": {
+        "name": "Nombre",
+        "type": "Tipo",
+        "category": "Categoría",
+        "tags": "Etiquetas",
+        "status": "Estado",
+        "featured": "Destacado",
+        "owner": "Propietario",
+        "created": "Creado",
+        "actions": "Acciones"
+      },
+      "alerts": {
+        "statusError": "Error al actualizar el estado de la entidad",
+        "featuredError": "Error al actualizar el estado destacado",
+        "typeError": "Error al actualizar el tipo de entidad",
+        "deleteConfirm": "¿Seguro que quieres eliminar esta entidad? Esta acción no se puede deshacer.",
+        "deleteError": "Error al eliminar la entidad"
+      },
+      "actions": {
+        "approve": "Aprobar",
+        "reject": "Rechazar",
+        "menu": "Acciones",
+        "manageTags": "Administrar etiquetas",
+        "delete": "Eliminar",
+        "deleting": "Eliminando..."
+      },
+      "dropdown": {
+        "statusLabel": "Estado"
+      },
+      "page": {
+        "title": "Gestionar Entidades",
+        "addButton": "Agregar Nueva Entidad",
+        "searchPlaceholder": "Buscar entidades...",
+        "allStatuses": "Todos los estados",
+        "allCategories": "Todas las categorías",
+        "allTypes": "Todos los tipos",
+        "applyFilters": "Aplicar filtros",
+        "loading": "Cargando entidades...",
+        "errorLoading": "Error al cargar las entidades"
+      }
+    }
+  },
+  "portal": {
+    "sidebar": {
+      "sectionTitle": "Portal de Negocios",
+      "dashboard": "Panel",
+      "myBusiness": "Mi Negocio"
+    },
+    "dashboard": {
+      "title": "Mis Entidades",
+      "addEntity": "Agregar Entidad",
+      "loading": "Cargando entidades...",
+      "errorLoading": "Error al cargar las entidades",
+      "emptyHeading": "Aún no hay entidades",
+      "emptyDescription": "Comienza agregando tu primera entidad al directorio.",
+      "addFirst": "Agrega tu primera entidad",
+      "view": "Ver",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "categoryLabel": "Categoría:",
+      "deleteConfirm": "¿Seguro que quieres eliminar \"{name}\"? Esta acción no se puede deshacer."
+    },
+    "entity": {
+      "editTitle": "Editar Entidad",
+      "loading": "Cargando entidad...",
+      "invalidId": "ID de entidad inválido",
+      "errorLoading": "Error al cargar la entidad",
+      "notFound": "Entidad no encontrada",
+      "back": "← Volver al panel"
+    }
   }
 }
 

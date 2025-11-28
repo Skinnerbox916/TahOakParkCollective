@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
-import { BUSINESS_STATUS } from "@/lib/prismaEnums";
+import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
 import { getTranslatedField } from "@/lib/translations";
 
@@ -15,7 +15,7 @@ export async function GET(
     const entity = await prisma.entity.findFirst({
       where: {
         slug,
-        status: BUSINESS_STATUS.ACTIVE, // Only return active entities for public API
+        status: ENTITY_STATUS.ACTIVE, // Only return active entities for public API
       },
       include: {
         categories: true,

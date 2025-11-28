@@ -15,6 +15,7 @@ Before starting, ensure you have:
 
 ### 1.1 Receive Entity Name
 - User provides entity name (e.g., "Sac City Brews")
+- **Important:** The user-provided name is unverified. Always use the official name obtained from research in Step 1.2, not the user-provided name.
 - Confirm location/area if not clear
 
 ### 1.2 Research Entity
@@ -23,8 +24,9 @@ Use web search to gather:
 - **Contact:** Address, phone, website
 - **Location:** Address (required for physical locations)
 - **Categories:** What categories apply (use category names, not IDs yet)
+  - **⚠️ Important:** If the entity doesn't fit neatly into any existing categories, **STOP** and ask the user for guidance before proceeding. Do not force-fit entities into inappropriate categories.
 - **Tags:** Identity, friendliness, amenity tags that apply
-- **Hours:** Business hours (convert to 24-hour format) - Note: For gyms/studios with class schedules, skip hours and note "Visit website for current class schedules and hours" in description
+- **Hours:** Business hours (convert to 24-hour format) - Note: For gyms, dance studios, yoga studios, fitness classes, and similar entities with class schedules, skip hours and note "Visit website for current class schedules and hours" in description. For schools and other entities with standard operating hours, use NULL if hours are not readily available.
 - **Social Media:** Facebook, Instagram, Twitter, etc. (optional - use NULL if not found)
 - **Images:** Public image URLs (optional)
 
@@ -32,6 +34,7 @@ Use web search to gather:
 **Determine if coordinates are required:**
 - **Required:** Storefronts, parks, public spaces, physical locations people visit
 - **Not required:** Mobile services, home-based businesses, freelancers without physical locations
+- **Special case - CIVIC entities:** Elected officials and government offices may not have locations in the coverage area. For these entities, provide a hero image instead - it will be displayed as a large profile photo (see Profile Display Note below)
 
 **If coordinates are required:**
 1. Use Nominatim (OpenStreetMap) to geocode the address - this matches the system's geocoding utility:
@@ -52,7 +55,41 @@ Use web search to gather:
 - The map component filters out entities without coordinates automatically
 - Coordinates should be within the TahOak Park Collective coverage area (the map will only display entities within the boundary polygon)
 
-### 1.3 Validate Data Against Form
+**Profile Display Note:**
+- Entities without coordinates won't show a map on their profile page
+- **CIVIC entities** (elected officials) without coordinates will display a large profile image (from `hero` field) instead of a map - ensure a hero image is provided
+- **SERVICE_PROVIDER** and **EVENT** entities without coordinates may also show profile images
+- **Hours section** is not displayed for CIVIC and PUBLIC_SPACE entity types
+- See [ENTITY_TYPES_AND_CATEGORIES.md](./ENTITY_TYPES_AND_CATEGORIES.md) for full profile display behavior by entity type
+
+### 1.3 Collect Translations (Optional but Recommended)
+
+**For Spanish-speaking community members, provide Spanish translations:**
+
+- **Name Translation:** Spanish version of the entity name
+- **Description Translation:** Spanish version of the description
+
+**Format:** JSON object with `en` and `es` keys:
+```json
+{
+  "en": "English text",
+  "es": "Spanish text"
+}
+```
+
+**When to translate:**
+- ✅ **Always translate:** Entity names (especially if they have Spanish names or are well-known in Spanish)
+- ✅ **Recommended:** Descriptions for community-facing entities
+- ⚠️ **Optional:** If translation isn't available, the system will fall back to English
+
+**Examples:**
+- Entity name: `{"en": "Sac City Brews", "es": "Sac City Brews"}` (same in both languages)
+- Entity name: `{"en": "Tahoe Park", "es": "Parque Tahoe"}`
+- Description: `{"en": "Local brewery...", "es": "Cervecería local..."}`
+
+**Note:** If translations are not provided, set to `NULL`. The system will use the English `name` and `description` fields as fallbacks.
+
+### 1.4 Validate Data Against Form
 Cross-reference collected data with [ENTITY_DATA_COLLECTION_FORM.md](./ENTITY_DATA_COLLECTION_FORM.md):
 - ✅ Name (required)
 - ✅ Description (required)
@@ -62,9 +99,42 @@ Cross-reference collected data with [ENTITY_DATA_COLLECTION_FORM.md](./ENTITY_DA
 - ⚠️ Phone (optional)
 - ⚠️ Website (optional)
 - ⚠️ Latitude/Longitude (required for physical locations people visit, NULL for mobile/home-based services)
+- ⚠️ Name Translations (optional but recommended - Spanish for community-facing entities)
+- ⚠️ Description Translations (optional but recommended - Spanish for community-facing entities)
 - ⚠️ Tags (optional)
-- ⚠️ Hours (optional)
+- ⚠️ Hours (optional - not displayed for CIVIC/PUBLIC_SPACE)
 - ⚠️ Social Media (optional)
+
+### 1.5 Check for Duplicate Entities
+
+**After completing research, you will be provided with a list of existing entities in the database.** Compare the entity you researched against this list to determine if it's a duplicate.
+
+**Comparison Criteria (use your judgment):**
+- **Name similarity:** Consider variations, abbreviations, and common name differences (e.g., "Oak Park Community Center" vs "Oak Park Community Center at MLK Park")
+- **Address matching:** Check if the address corresponds to the same physical location (handle variations in address formats)
+- **Website matching:** Compare website URLs (account for variations in protocol, www, trailing slashes)
+- **Overall entity identity:** Consider all factors together to determine if entities represent the same business/organization
+
+**Decision Making:**
+- Return `isDuplicate: true` if you are confident the researched entity is the same as an existing one
+- Include the existing entity's name in the response: `existingEntityName: "Existing Entity Name"`
+- Use your judgment to handle edge cases (e.g., same name but different location = not duplicate; same location but different name = likely duplicate)
+- If uncertain, err on the side of `isDuplicate: false` - manual review will catch edge cases
+
+**Important:** Only mark as duplicate if you are confident it's the same entity. Different branches, franchises at different locations, or similar names for different entities should NOT be marked as duplicates.
+
+### 1.6 Validate Coverage Area
+
+**After duplicate checking, if an address was found:**
+- The system will automatically geocode the address
+- It will verify the location is within the TahOak Park Collective coverage area (Tahoe Park, Oak Park, Elmhurst, Colonial Park, Curtis Park neighborhoods)
+- **If outside coverage area:** Entity addition will be rejected with an error message
+- **If no address:** The system assumes the entity is in the coverage area (for mobile services, home-based businesses, etc.)
+
+**Coverage area boundaries:**
+- The system uses a polygon boundary to validate locations
+- Only entities within this boundary will be accepted
+- This ensures all entities are genuinely local to the covered neighborhoods
 
 ---
 
@@ -81,6 +151,13 @@ docker exec tahoak-db psql -U tahoak -d tahoak_db -c "SELECT id, email FROM \"Us
 docker exec tahoak-db psql -U tahoak -d tahoak_db -c "SELECT id, name, slug FROM \"Category\" ORDER BY name;"
 ```
 **Map category names to IDs** (e.g., "Food & Drink" → `cmiht14on0000t0nzkbtyl473`)
+
+**⚠️ Stop Condition:** If you cannot find appropriate existing categories that match the entity you researched, **STOP** and ask the user:
+- Should a new category be created?
+- Should the entity be added to the closest existing category (and which one)?
+- Should the entity addition be postponed until categories are reviewed?
+
+Do not proceed with entity insertion if you cannot confidently map it to at least one appropriate existing category.
 
 ### 2.3 Get Tag IDs (if tags will be added)
 ```bash
@@ -109,10 +186,15 @@ If exists, append `-1`, `-2`, etc.
 ## Step 4: Format Data for Insertion
 
 **⚠️ Important: SQL Escaping**
-Before inserting text fields into SQL, escape any single quotes by doubling them (`''`). This applies to the `description` field and any other text fields that may contain apostrophes. Examples:
+Before inserting text fields into SQL, escape any single quotes by doubling them (`''`). This applies to:
+- The `description` field and any other text fields that may contain apostrophes
+- Translation JSON objects (both in `nameTranslations` and `descriptionTranslations`)
+
+Examples:
 - `Kids' Classes` → `Kids'' Classes`
 - `Owner's Choice` → `Owner''s Choice`
 - `They're open` → `They''re open`
+- Translation JSON: `{"en": "Owner's Choice", "es": "Elección del Propietario"}` → `'{"en": "Owner''s Choice", "es": "Elección del Propietario"}'::jsonb`
 
 This will be applied when building the INSERT statement in Step 5.1.
 
@@ -133,7 +215,10 @@ Convert business hours to JSON format:
 - Use `"closed": true` for closed days
 - Omit `open`/`close` when `closed: true`
 
-**Note:** For entities with class schedules, appointment-only services, or varying hours (gyms, studios, personal trainers), leave `hours` as `NULL` and add a note in the description directing users to the website for current schedules/hours. Use clear, user-friendly messaging such as: "See website for current class schedules and hours" or "Please visit our website for current schedules."
+**Note:** 
+- For entities with class schedules or varying hours (gyms, dance studios, yoga studios, fitness classes, personal trainers), leave `hours` as `NULL` and add a note in the description directing users to the website for current schedules/hours. Use clear, user-friendly messaging such as: "See website for current class schedules and hours" or "Please visit our website for current schedules."
+- For schools and other entities with standard operating hours, use `NULL` if hours are not readily available - no special note needed in the description.
+- **Important:** Hours are not displayed for CIVIC and PUBLIC_SPACE entity types. Don't add hours data for these entity types.
 
 ### 4.2 Format Social Media JSON
 ```json
@@ -148,8 +233,14 @@ Convert business hours to JSON format:
 
 ### 4.3 Format Images JSON (if applicable)
 ```json
-["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+{
+  "hero": "https://example.com/storefront-photo.jpg",
+  "logo": "https://example.com/logo.png"
+}
 ```
+- `hero`: Cover/featured image (displayed prominently, or as profile photo for CIVIC entities without coordinates)
+- `logo`: Logo/avatar image (displayed smaller, typically in cards)
+- Both fields are optional, but at least one image (preferably hero) is recommended
 
 ---
 
@@ -159,15 +250,19 @@ Convert business hours to JSON format:
 ```bash
 docker exec tahoak-db psql -U tahoak -d tahoak_db -c "
 INSERT INTO \"Entity\" (
-  id, name, slug, description, address, phone, website,
+  id, name, slug, description, 
+  \"nameTranslations\", \"descriptionTranslations\",
+  address, phone, website,
   latitude, longitude, \"entityType\", status, featured,
   \"ownerId\", hours, \"socialMedia\", images,
   \"createdAt\", \"updatedAt\"
 ) VALUES (
   gen_random_uuid()::text,
-  'Entity Name',
+  'Entity Name',  -- English (required, used as fallback)
   'entity-slug',
-  'Description text here',
+  'Description text here',  -- English (required, used as fallback)
+  '{\"en\": \"Entity Name\", \"es\": \"Nombre de Entidad\"}'::jsonb,  -- Translations (optional)
+  '{\"en\": \"Description text here\", \"es\": \"Texto de descripción aquí\"}'::jsonb,  -- Translations (optional)
   '123 Main St, Sacramento, CA 95820',
   '(916) 555-1234',
   'https://www.example.com',
@@ -185,6 +280,12 @@ INSERT INTO \"Entity\" (
 ) RETURNING id, name, slug;
 "
 ```
+
+**Translation Fields:**
+- `nameTranslations` and `descriptionTranslations` are optional - set to `NULL` if translations are not available
+- If provided, must be valid JSON with `en` and `es` keys
+- The system will fall back to the `name` and `description` fields if translations are missing or incomplete
+- **SQL Escaping:** Remember to escape single quotes in translation JSON (e.g., `Owner's` → `Owner''s`)
 
 **Important fields:**
 - `id`: Use `gen_random_uuid()::text`

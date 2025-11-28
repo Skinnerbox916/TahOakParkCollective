@@ -15,7 +15,7 @@ export function UserMenu() {
   const tNav = useTranslations("nav");
 
   const isAdmin = session?.user?.roles?.includes(ROLE.ADMIN) ?? false;
-  const isBusinessOwner = (session?.user?.roles?.includes(ROLE.BUSINESS_OWNER) ?? false) || isAdmin;
+  const isEntityOwner = (session?.user?.roles?.includes(ROLE.ENTITY_OWNER) ?? false) || isAdmin;
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -109,7 +109,7 @@ export function UserMenu() {
                 {tNav("admin")} {tNav("dashboard")}
               </Link>
             )}
-            {isBusinessOwner && (
+            {isEntityOwner && (
               <Link
                 href="/portal/dashboard"
                 onClick={() => setIsOpen(false)}

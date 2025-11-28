@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ENTITY_TYPES } from "@/lib/constants";
-import { BUSINESS_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
-import type { BusinessStatus, EntityType } from "@/lib/prismaEnums";
+import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
+import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 
 interface User {
   id: string;
@@ -36,7 +36,7 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
   const [website, setWebsite] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [ownerId, setOwnerId] = useState("");
-  const [status, setStatus] = useState<BusinessStatus>(BUSINESS_STATUS.PENDING);
+  const [status, setStatus] = useState<EntityStatus>(ENTITY_STATUS.PENDING);
   const [entityType, setEntityType] = useState<EntityType>(ENTITY_TYPE.COMMERCE);
   
   // Social media state
@@ -411,13 +411,13 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
           </label>
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value as BusinessStatus)}
+            onChange={(e) => setStatus(e.target.value as EntityStatus)}
             disabled={loading}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           >
-            <option value={BUSINESS_STATUS.PENDING}>Pending</option>
-            <option value={BUSINESS_STATUS.ACTIVE}>Active</option>
-            <option value={BUSINESS_STATUS.INACTIVE}>Inactive</option>
+            <option value={ENTITY_STATUS.PENDING}>Pending</option>
+            <option value={ENTITY_STATUS.ACTIVE}>Active</option>
+            <option value={ENTITY_STATUS.INACTIVE}>Inactive</option>
           </select>
         </div>
 

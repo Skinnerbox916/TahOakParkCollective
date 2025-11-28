@@ -1,4 +1,5 @@
 import { HTMLAttributes, ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -15,11 +16,11 @@ const paddingClasses = {
 export function Card({
   children,
   padding = "md",
-  className = "",
+  className,
   ...props
 }: CardProps) {
   const baseClasses = "bg-white rounded-lg shadow";
-  const classes = `${baseClasses} ${paddingClasses[padding]} ${className}`;
+  const classes = cn(baseClasses, paddingClasses[padding], className);
 
   return (
     <div className={classes} {...props}>

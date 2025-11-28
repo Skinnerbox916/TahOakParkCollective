@@ -4,7 +4,7 @@ import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-
 import { ROLE } from "@/lib/prismaEnums";
 
 export async function GET(request: NextRequest) {
-  return withRole([ROLE.BUSINESS_OWNER, ROLE.ADMIN], async (user) => {
+  return withRole([ROLE.ENTITY_OWNER, ROLE.ADMIN], async (user) => {
     try {
       const entities = await prisma.entity.findMany({
         where: {
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  return withRole([ROLE.BUSINESS_OWNER, ROLE.ADMIN], async (user) => {
+  return withRole([ROLE.ENTITY_OWNER, ROLE.ADMIN], async (user) => {
     try {
       const body = await request.json();
       const { id, ...updateData } = body;

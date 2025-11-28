@@ -1,6 +1,7 @@
 import { redirect } from "@/i18n/routing";
 import { requireRole } from "@/lib/auth";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { DashboardShell } from "@/components/layout/DashboardShell";
+import { portalNavItems } from "@/lib/navigation";
 
 export default async function PortalLayout({
   children,
@@ -8,20 +9,19 @@ export default async function PortalLayout({
   children: React.ReactNode;
 }) {
   try {
-    await requireRole(["BUSINESS_OWNER" as const, "ADMIN" as const]);
+    await requireRole(["ENTITY_OWNER" as const, "ADMIN" as const]);
   } catch {
     redirect("/auth/unauthorized");
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        <Sidebar type="portal" />
-        <main className="flex-1 p-6">{children}</main>
-      </div>
-    </div>
+    <DashboardShell type="portal" navItems={portalNavItems}>
+      {children}
+    </DashboardShell>
   );
 }
+
+
 
 
 

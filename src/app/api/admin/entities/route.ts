@@ -1,15 +1,15 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
-import { ROLE, BUSINESS_STATUS } from "@/lib/prismaEnums";
-import type { BusinessStatus, EntityType } from "@/lib/prismaEnums";
+import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
+import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import { expandSearchQuery, getMatchingCategories } from "@/lib/keyword-search";
 
 export async function GET(request: NextRequest) {
   return withRole([ROLE.ADMIN], async (user) => {
     try {
       const searchParams = request.nextUrl.searchParams;
-      const status = searchParams.get("status") as BusinessStatus | null;
+      const status = searchParams.get("status") as EntityStatus | null;
       const search = searchParams.get("search") || "";
       const categoryId = searchParams.get("categoryId") || "";
       const entityType = searchParams.get("entityType") as EntityType | null;
@@ -73,6 +73,11 @@ export async function GET(request: NextRequest) {
         where,
         include: {
           categories: true,
+          tags: {
+            include: {
+              tag: true,
+            },
+          },
           owner: {
             select: {
               id: true,
@@ -107,7 +112,7 @@ export async function PUT(request: NextRequest) {
       const updateData: any = {};
 
       if (status !== undefined) {
-        if (!Object.values(BUSINESS_STATUS).includes(status)) {
+        if (!Object.values(ENTITY_STATUS).includes(status)) {
           return createErrorResponse("Valid status is required", 400);
         }
         updateData.status = status;
@@ -130,6 +135,11 @@ export async function PUT(request: NextRequest) {
         data: updateData,
         include: {
           categories: true,
+          tags: {
+            include: {
+              tag: true,
+            },
+          },
           owner: {
             select: {
               id: true,

@@ -102,7 +102,7 @@ export default function AdminUsers() {
             >
               <option value="">All Roles</option>
               <option value={ROLE.USER}>User</option>
-              <option value={ROLE.BUSINESS_OWNER}>Business Owner</option>
+              <option value={ROLE.ENTITY_OWNER}>Entity Owner</option>
               <option value={ROLE.ADMIN}>Admin</option>
             </select>
           </div>

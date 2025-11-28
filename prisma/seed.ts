@@ -5,7 +5,7 @@ import { hashPassword } from "../src/lib/password";
 // =============================================================================
 // CATEGORIES - The canonical list of categories for the TahOak Park Collective
 // =============================================================================
-// These are the 14 user-centric categories for browsing/discovery.
+// These are the 13 user-centric categories for browsing/discovery.
 // Each category can be associated with multiple Entity Types.
 // Categories are managed via admin UI after initial seed.
 // =============================================================================
@@ -96,18 +96,11 @@ const CATEGORIES = [
     nameTranslations: { en: "Government", es: "Gobierno" },
   },
   {
-    name: "Parks & Public Spaces",
-    slug: "parks-public",
-    description: "Parks, libraries, community centers, recreation facilities",
+    name: "Parks",
+    slug: "parks",
+    description: "Parks, gardens, plazas, outdoor recreation spaces",
     entityTypes: [EntityType.PUBLIC_SPACE],
-    nameTranslations: { en: "Parks & Public Spaces", es: "Parques y Espacios Públicos" },
-  },
-  {
-    name: "Events",
-    slug: "events",
-    description: "Recurring community events, markets, meetups, festivals",
-    entityTypes: [EntityType.EVENT],
-    nameTranslations: { en: "Events", es: "Eventos" },
+    nameTranslations: { en: "Parks", es: "Parques" },
   },
 ];
 

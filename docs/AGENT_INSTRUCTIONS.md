@@ -131,10 +131,90 @@ return createErrorResponse("Error message", 400);
 
 ## i18n
 
-- Locales: `en`, `es`
-- Messages: `src/messages/{locale}.json`
-- Use `useTranslations("namespace")` in components
-- API uses `getLocaleFromRequest(request)`
+### Architecture
+- **URL-based routing**: All pages are under `[locale]` route segment (`/en/...` or `/es/...`)
+- **Browser language detection**: Middleware automatically detects browser language via `Accept-Language` header on first visit and redirects to appropriate locale
+- **No stored preferences**: Locale is determined by URL path, not user preferences
+- **Site-wide consistency**: Same system for public, admin, and portal pages
+
+### Locales
+- Supported: `en` (English), `es` (Spanish)
+- Default: `en`
+- Configuration: `src/i18n/routing.ts`
+
+### Translation Files
+- Location: `src/messages/{locale}.json`
+- Structure: Organized by namespaces (e.g., `common`, `nav`, `admin`, `portal`, `tags`)
+- Format: Nested JSON objects
+
+### Using Translations in Components
+```typescript
+import { useTranslations } from 'next-intl';
+
+// In component
+const t = useTranslations("namespace");
+const tCommon = useTranslations("common");
+
+// Usage
+<h1>{t("title")}</h1>
+<button>{tCommon("save")}</button>
+```
+
+### Admin/Portal Translation Helpers
+```typescript
+import { useAdminTranslations, usePortalTranslations } from '@/lib/admin-translations';
+
+// Admin pages
+const { t, tStatus, tRole } = useAdminTranslations("dashboard");
+t("title"); // "Admin Dashboard"
+tStatus("ACTIVE"); // "Active"
+tRole("ADMIN"); // "Admin"
+
+// Portal pages
+const tPortal = usePortalTranslations("dashboard");
+tPortal("title"); // "My Entities"
+```
+
+### Language Switcher
+- Component: `src/components/layout/LanguageSwitcher.tsx`
+- UI: Dropdown menu showing current locale (e.g., "EN" or "ES")
+- Location: Included in `Navbar` component (appears on all pages)
+- Behavior: Switches locale by navigating to same path with different locale prefix
+
+### API Locale Detection
+For API routes, use `getLocaleFromRequest(request)` from `src/lib/api-locale.ts`:
+- Priority: URL path → Query parameter → Referer header → Default (`en`)
+- Usage: `const locale = getLocaleFromRequest(request);`
+
+### Navigation
+Always use locale-aware navigation:
+```typescript
+import { Link, useRouter } from '@/i18n/routing';
+
+// Links automatically preserve locale
+<Link href="/search">Search</Link>
+
+// Programmatic navigation
+const router = useRouter();
+router.push("/entities"); // Preserves current locale
+```
+
+---
+
+## Adding Entities
+
+When adding new entities to the directory, use the **[ENTITY_ADDITION_RUNBOOK.md](./ENTITY_ADDITION_RUNBOOK.md)** for step-by-step instructions. The runbook covers:
+- Research and data collection
+- Database lookups (categories, tags, admin user)
+- Direct SQL insertion via Docker
+- Prisma client regeneration
+- Verification queries
+
+**Important:** Always regenerate Prisma client after direct database operations:
+```bash
+docker exec tahoak-web npx prisma generate
+docker restart tahoak-web
+```
 
 ---
 

@@ -34,7 +34,7 @@
     "user": "User",
     "userMenu": "User menu",
     "adminPanel": "Admin Panel",
-    "businessPortal": "Business Portal",
+    "businessPortal": "Entity Portal",
     "menu": "Menu",
     "closeMenu": "Close menu",
     "directory": "Directory",
@@ -45,7 +45,7 @@
     "about": "About",
     "contact": "Contact",
     "search": "Search",
-    "businesses": "Businesses",
+    "businesses": "Entities",
     "dashboard": "Dashboard",
     "admin": "Admin",
     "portal": "Portal"
@@ -65,12 +65,12 @@
   },
   "home": {
     "welcome": "Welcome to TahOak Park Collective",
-    "subtitle": "Discover local businesses in your community",
+    "subtitle": "Discover local entities in your community",
     "browseByCategory": "Browse by Category",
-    "viewAllBusinesses": "View All Businesses",
-    "featuredBusiness": "Featured Business",
+    "viewAllBusinesses": "View All Entities",
+    "featuredBusiness": "Featured Entity",
     "exploreOnMap": "Explore on the Map",
-    "exploreOnMapDescription": "See all businesses on an interactive map",
+    "exploreOnMapDescription": "See all entities on an interactive map",
     "learnMore": "Learn more →",
     "featured": "Featured",
     "entity": "entity",
@@ -280,7 +280,7 @@
   "search": {
     "title": "Search",
     "subtitle": "Discover local businesses and organizations in your community",
-    "searchPlaceholder": "Search businesses, organizations...",
+    "searchPlaceholder": "Search entities, organizations...",
     "noResults": "No results found",
     "loading": "Loading...",
     "error": "Error loading results",
@@ -414,15 +414,163 @@
     "noLocation": "No location available",
     "tags": "Tags",
     "location": "Location",
+    "photo": "Photo",
     "photos": "Photos",
     "coverImage": "Cover Image",
     "logo": "Logo",
-    "ownThisBusiness": "Own This Business?",
-    "claimDescription": "Claim this listing to manage your business information.",
+    "ownThisBusiness": "Own This Entity?",
+    "claimDescription": "Claim this listing to manage your entity information.",
     "claimThisEntity": "Claim This Entity",
     "foundAnIssue": "Found an Issue?",
     "reportDescription": "See incorrect information? Let us know.",
     "reportAnIssue": "Report an Issue"
+  },
+  "tags": {
+    "pageTitle": "Tag Management",
+    "pageDescription": "Create and manage tags for entities. Tags help categorize businesses by identity, friendliness, and amenities.",
+    "loading": "Loading tags...",
+    "createNewTag": "Create New Tag",
+    "tagNameEnglish": "Tag Name (English)",
+    "tagNameSpanish": "Tag Name (Spanish)",
+    "translateToSpanish": "Translate to Spanish",
+    "translateToEnglish": "Translate to English",
+    "bothLanguagesRequired": "Both English and Spanish translations are required",
+    "category": "Category",
+    "creating": "Creating...",
+    "createTag": "Create Tag",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "deleteConfirmation": "Are you sure you want to delete this tag? This will remove it from all entities.",
+    "name": "Name",
+    "preview": "Preview",
+    "actions": "Actions",
+    "failedToCreate": "Failed to create tag",
+    "failedToDelete": "Failed to delete tag"
+  },
+  "admin": {
+    "sidebar": {
+      "sectionTitle": "Admin",
+      "dashboard": "Dashboard",
+      "entities": "Entities",
+      "quickAdd": "Quick Add",
+      "pendingChanges": "Pending Changes",
+      "spotChecks": "Spot Checks",
+      "suggestions": "Suggestions",
+      "issueReports": "Issue Reports",
+      "subscribers": "Subscribers",
+      "analytics": "Analytics",
+      "tags": "Tags",
+      "users": "Users"
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "pendingApprovalsHeading": "{count} Pending Approval{count, plural, one {} other {s}}",
+      "pendingApprovalsDescription": "Review and approve pending entity listings",
+      "reviewPending": "Review Pending",
+      "totalEntities": "Total Entities",
+      "activeEntities": "Active Entities",
+      "totalUsers": "Total Users",
+      "active": "Active",
+      "pending": "Pending",
+      "inactive": "Inactive",
+      "users": "Users",
+      "entityOwners": "Entity Owners",
+      "admins": "Admins",
+      "viewAll": "View all →",
+      "reviewNow": "Review now →",
+      "quickLinksTitle": "Quick Links",
+      "manageEntities": "Manage Entities",
+      "manageEntitiesDescription": "View, edit, and approve entity listings",
+      "manageUsers": "Manage Users",
+      "manageUsersDescription": "View users and manage roles",
+      "viewDirectory": "View Directory",
+      "viewDirectoryDescription": "See the public-facing directory",
+      "loadError": "Failed to load statistics"
+    },
+    "common": {
+      "status": {
+        "ACTIVE": "Active",
+        "PENDING": "Pending",
+        "INACTIVE": "Inactive"
+      },
+      "roles": {
+        "USER": "User",
+        "ADMIN": "Admin",
+        "ENTITY_OWNER": "Entity Owner"
+      }
+    },
+    "entities": {
+      "noEntities": "No entities found",
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "category": "Category",
+        "tags": "Tags",
+        "status": "Status",
+        "featured": "Featured",
+        "owner": "Owner",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "alerts": {
+        "statusError": "Failed to update entity status",
+        "featuredError": "Failed to update featured status",
+        "typeError": "Failed to update entity type",
+        "deleteConfirm": "Are you sure you want to delete this entity? This action cannot be undone.",
+        "deleteError": "Failed to delete entity"
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "menu": "Actions",
+        "manageTags": "Manage Tags",
+        "delete": "Delete",
+        "deleting": "Deleting..."
+      },
+      "dropdown": {
+        "statusLabel": "Status"
+      },
+      "page": {
+        "title": "Manage Entities",
+        "addButton": "Add New Entity",
+        "searchPlaceholder": "Search entities...",
+        "allStatuses": "All Statuses",
+        "allCategories": "All Categories",
+        "allTypes": "All Types",
+        "applyFilters": "Apply Filters",
+        "loading": "Loading entities...",
+        "errorLoading": "Failed to load entities"
+      }
+    }
+  },
+  "portal": {
+    "sidebar": {
+      "sectionTitle": "Business Portal",
+      "dashboard": "Dashboard",
+      "myBusiness": "My Business"
+    },
+    "dashboard": {
+      "title": "My Entities",
+      "addEntity": "Add Entity",
+      "loading": "Loading entities...",
+      "errorLoading": "Failed to load entities",
+      "emptyHeading": "No entities yet",
+      "emptyDescription": "Get started by adding your first entity to the directory.",
+      "addFirst": "Add Your First Entity",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "categoryLabel": "Category:",
+      "deleteConfirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+    },
+    "entity": {
+      "editTitle": "Edit Entity",
+      "loading": "Loading entity...",
+      "invalidId": "Invalid entity ID",
+      "errorLoading": "Failed to load entity",
+      "notFound": "Entity not found",
+      "back": "← Back to Dashboard"
+    }
   }
 }
 

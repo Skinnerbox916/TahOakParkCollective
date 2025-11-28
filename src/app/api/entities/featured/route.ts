@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
-import { BUSINESS_STATUS } from "@/lib/prismaEnums";
+import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
 import { getTranslatedField } from "@/lib/translations";
 
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const featuredEntities = await prisma.entity.findMany({
       where: {
         featured: true,
-        status: BUSINESS_STATUS.ACTIVE,
+        status: ENTITY_STATUS.ACTIVE,
       },
       include: {
         categories: true,

@@ -32,6 +32,38 @@ Use this form to collect all available information when adding entities to the T
 
 ---
 
+## Translations
+
+### Name Translations
+- **Field:** `nameTranslations` (JSON object)
+- **Required:** No (falls back to `name` field)
+- **Format:**
+```json
+{
+  "en": "Entity Name",
+  "es": "Nombre de Entidad"
+}
+```
+
+### Description Translations
+- **Field:** `descriptionTranslations` (JSON object)
+- **Required:** No (falls back to `description` field)
+- **Format:**
+```json
+{
+  "en": "English description text",
+  "es": "Texto de descripción en español"
+}
+```
+
+**Notes:**
+- Always provide the English (`en`) key even if it matches the base `name`/`description` field
+- Spanish (`es`) translations are recommended for community-facing entities
+- If translations are not available, set to `NULL` - the system will use the base fields
+- The system automatically displays the appropriate language based on user's locale preference
+
+---
+
 ## Contact Information
 
 ### Address
@@ -88,8 +120,7 @@ Use this form to collect all available information when adding entities to the T
   - Community & Faith (`community-faith`) - Neighborhood groups, non-profits, churches, mutual aid
   - Social Services (`social-services`) - Food banks, health clinics, homeless services
   - Government (`government`) - Elected officials, city offices, public services
-  - Parks & Public Spaces (`parks-public`) - Parks, libraries, community centers, rec facilities
-  - Events (`events`) - Recurring community events, markets, meetups
+  - Parks (`parks`) - Parks, gardens, plazas, outdoor recreation spaces
 
 **Notes:** 
 - Entities can belong to multiple categories
@@ -195,21 +226,23 @@ Use this form to collect all available information when adding entities to the T
 ## Images
 
 ### Images
-- **Field:** `images` (JSON array of URLs)
+- **Field:** `images` (JSON object)
 - **Required:** No
-- **Format:** Array of image URLs
+- **Format:** Object with `hero` and/or `logo` properties
 - **Example:**
 ```json
-[
-  "https://example.com/images/entity-photo-1.jpg",
-  "https://example.com/images/entity-photo-2.jpg"
-]
+{
+  "hero": "https://example.com/images/storefront-photo.jpg",
+  "logo": "https://example.com/images/logo.png"
+}
 ```
 
 **Notes:**
 - URLs should point to publicly accessible images
-- First image is typically used as the primary/featured image
-- Recommended: At least one image for better presentation
+- `hero`: Cover/featured image (displayed prominently)
+- `logo`: Logo/avatar image (displayed smaller, typically in cards)
+- For CIVIC entities without coordinates, the hero image will be displayed as a large profile photo instead of a map
+- Recommended: At least one image (preferably hero) for better presentation
 
 ---
 
@@ -243,7 +276,9 @@ Use this form to collect all available information when adding entities to the T
 ```markdown
 ## Basic Information
 - **Name:** Joe's Coffee Shop
+- **Name Translations:** `{"en": "Joe's Coffee Shop", "es": "Café de Joe"}`
 - **Description:** Local coffee shop serving organic, fair-trade coffee and fresh pastries.
+- **Description Translations:** `{"en": "Local coffee shop serving organic, fair-trade coffee and fresh pastries.", "es": "Cafetería local que sirve café orgánico y de comercio justo y pasteles frescos."}`
 - **Entity Type:** COMMERCE
 
 ## Contact Information
@@ -275,7 +310,8 @@ Use this form to collect all available information when adding entities to the T
 - Instagram: https://www.instagram.com/joescoffee
 
 ## Images
-- Primary photo URL: https://example.com/joes-coffee-exterior.jpg
+- Hero image: https://example.com/joes-coffee-exterior.jpg
+- Logo: https://example.com/joes-coffee-logo.png
 
 ## Administrative
 - **Status:** ACTIVE
@@ -298,6 +334,7 @@ Use this form to collect all available information when adding entities to the T
 
 ## Related Documentation
 
+- [Entity Addition Runbook](./ENTITY_ADDITION_RUNBOOK.md) - Step-by-step guide for adding entities using direct database insertion
 - [Entity Types and Categories](./ENTITY_TYPES_AND_CATEGORIES.md) - Valid category/entity type combinations
 - [Agent Context](./AGENT_CONTEXT.md) - Development guidelines and database structure
 
