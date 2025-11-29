@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { MagicLinkPurpose } from '@/lib/prismaEnums';
+import { routing } from '@/i18n/routing';
 
 // Mock Resend client for development when RESEND_API_KEY is not set
 // This allows development/testing without a live email service
@@ -20,7 +21,8 @@ const resend = apiKey
 const FROM_EMAIL = process.env.SMTP_FROM || 'noreply@tahoak.skibri.us';
 
 export async function sendVerificationEmail(email: string, token: string) {
-  const verifyUrl = `${process.env.NEXTAUTH_URL}/subscribe/verify?token=${token}`;
+  const localePrefix = `/${routing.defaultLocale}`;
+  const verifyUrl = `${process.env.NEXTAUTH_URL}${localePrefix}/subscribe/verify?token=${token}`;
   
   try {
     await resend.emails.send({
@@ -53,17 +55,17 @@ export async function sendMagicLinkEmail(
   switch (purpose) {
     case MagicLinkPurpose.MANAGE_PREFERENCES:
       subject = 'Manage your TahOak Park Collective preferences';
-      urlPath = `/subscribe/manage?token=${token}`;
+      urlPath = `/${routing.defaultLocale}/subscribe/manage?token=${token}`;
       break;
     case MagicLinkPurpose.CLAIM_ENTITY:
       subject = 'Verify your entity claim for TahOak Park Collective';
-      urlPath = entityId 
-        ? `/public/claim/verify?token=${token}&entityId=${entityId}`
-        : `/public/claim/verify?token=${token}`;
+      urlPath = entityId
+        ? `/${routing.defaultLocale}/claim/verify?token=${token}&entityId=${entityId}`
+        : `/${routing.defaultLocale}/claim/verify?token=${token}`;
       break;
     case MagicLinkPurpose.VERIFY_SUBSCRIPTION:
       subject = 'Verify your TahOak Park Collective subscription';
-      urlPath = `/subscribe/verify?token=${token}`;
+      urlPath = `/${routing.defaultLocale}/subscribe/verify?token=${token}`;
       break;
     default:
       throw new Error('Unsupported magic link purpose');
