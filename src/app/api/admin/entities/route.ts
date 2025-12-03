@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
-import { expandSearchQuery, getMatchingCategories } from "@/lib/keyword-search";
+import { entityIncludeStandard, buildAdminEntitySearchWhere } from "@/lib/entity-helpers";
 
 export async function GET(request: NextRequest) {
   return withRole([ROLE.ADMIN], async (user) => {
@@ -13,6 +13,19 @@ export async function GET(request: NextRequest) {
       const search = searchParams.get("search") || "";
       const categoryId = searchParams.get("categoryId") || "";
       const entityType = searchParams.get("entityType") as EntityType | null;
+      const sortBy = searchParams.get("sortBy") || "createdAt";
+      const sortOrder = searchParams.get("sortOrder") || "desc";
+
+      // Validate sortBy parameter
+      const allowedSortFields = ["name", "entityType", "status", "createdAt", "owner"];
+      if (!allowedSortFields.includes(sortBy)) {
+        return createErrorResponse("Invalid sortBy parameter", 400);
+      }
+
+      // Validate sortOrder parameter
+      if (sortOrder !== "asc" && sortOrder !== "desc") {
+        return createErrorResponse("Invalid sortOrder parameter", 400);
+      }
 
       const where: any = {};
       
@@ -29,66 +42,30 @@ export async function GET(request: NextRequest) {
       }
 
       if (search) {
-        const expandedTerms = expandSearchQuery(search);
-        const matchingCategorySlugs = getMatchingCategories(search);
-        
-        // Get category IDs for matching category slugs
-        let matchingCategoryIds: string[] = [];
-        if (matchingCategorySlugs.length > 0) {
-          const categories = await prisma.category.findMany({
-            where: {
-              slug: {
-                in: matchingCategorySlugs,
-              },
-            },
-            select: {
-              id: true,
-            },
-          });
-          matchingCategoryIds = categories.map(c => c.id);
-        }
-
-        // Build OR conditions with expanded terms
-        const searchConditions: any[] = [];
-        
-        expandedTerms.forEach(term => {
-          searchConditions.push(
-            { name: { contains: term, mode: "insensitive" } },
-            { description: { contains: term, mode: "insensitive" } },
-            { address: { contains: term, mode: "insensitive" } }
-          );
-        });
-
-        // Add category ID search if we found matching categories
-        if (matchingCategoryIds.length > 0) {
-          searchConditions.push({
-            categories: { some: { id: { in: matchingCategoryIds } } },
-          });
-        }
-
+        const searchConditions = await buildAdminEntitySearchWhere(search);
         where.OR = searchConditions;
+      }
+
+      // Build dynamic orderBy based on sortBy parameter
+      let orderBy: any;
+      if (sortBy === "owner") {
+        // Sort by owner name via relation
+        orderBy = {
+          owner: {
+            name: sortOrder,
+          },
+        };
+      } else {
+        // Sort by direct field
+        orderBy = {
+          [sortBy]: sortOrder,
+        };
       }
 
       const entities = await prisma.entity.findMany({
         where,
-        include: {
-          categories: true,
-          tags: {
-            include: {
-              tag: true,
-            },
-          },
-          owner: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
+        include: entityIncludeStandard,
+        orderBy,
       });
 
       return createSuccessResponse(entities);

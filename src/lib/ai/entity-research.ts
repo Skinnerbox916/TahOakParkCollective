@@ -3,9 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { ENTITY_TYPE } from "@/lib/prismaEnums";
 import { getExistingEntitiesForComparison } from "./get-existing-entities";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of OpenAI client to avoid errors at module load time
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY environment variable is not set. Please configure it in your environment.");
+  }
+  return new OpenAI({ apiKey });
+}
 
 export interface EntityResearchResult {
   name: string;
@@ -104,6 +109,11 @@ ${existingEntitiesList || "(No existing entities)"}
 
 CRITICAL INSTRUCTIONS:
 - Use the OFFICIAL name from your research, not the user-provided name
+- **ADDRESS REQUIREMENTS:**
+  * **REQUIRED for:** COMMERCE (storefronts, retail), PUBLIC_SPACE (parks, community centers), NON_PROFIT (churches, organizations with physical locations, neighborhood associations, community groups)
+  * **OPTIONAL for:** SERVICE_PROVIDER (home-based services, freelancers - use null if no physical location), CIVIC (elected officials may not have locations), EVENT (may vary by occurrence)
+  * **ADDRESS FORMAT:** If providing an address, it MUST be a full street address in format "123 Main Street, Sacramento, CA 95820" (NOT just the business name)
+  * **QUALITY STANDARD:** Only return an address if you found a complete, verifiable street address. Do not guess or use incomplete addresses. If you cannot find a proper street address for an entity that requires one, this indicates incomplete research.
 - For entity type PUBLIC_SPACE or CIVIC, set hours to null (hours not displayed for these types)
 - For gyms, dance studios, yoga studios, fitness classes: skip hours and note in description "Visit website for current class schedules and hours"
 - Compare the researched entity against existing entities list above
@@ -116,7 +126,7 @@ Return valid JSON in this exact format:
 {
   "name": "Official Name",
   "description": "2-3 sentence description",
-  "address": "Full address or null",
+  "address": "Full street address (e.g., '123 Main St, Sacramento, CA 95820') or null if not found",
   "phone": "Phone number or null",
   "website": "URL or null",
   "entityType": "ENTITY_TYPE",
@@ -135,6 +145,7 @@ Return valid JSON in this exact format:
 }`;
 
   // Call OpenAI Responses API
+  const openai = getOpenAIClient();
   const response = await openai.responses.create({
     model: "gpt-5-nano",
     input: prompt,

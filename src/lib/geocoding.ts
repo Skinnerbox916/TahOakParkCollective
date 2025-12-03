@@ -24,14 +24,12 @@ export async function geocodeAddress(
   }
 
   try {
-    // Add Sacramento, CA to improve accuracy
-    const query = `${address.trim()}, Sacramento, CA`;
-    const encodedQuery = encodeURIComponent(query);
+    // First try with the full address
+    let query = `${address.trim()}, Sacramento, CA`;
+    let encodedQuery = encodeURIComponent(query);
+    let url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=json&limit=1&addressdetails=1`;
 
-    // Use Nominatim API with rate limiting consideration
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=json&limit=1&addressdetails=1`;
-
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       headers: {
         "User-Agent": "TahOakParkCollective/1.0 (contact@tahoak.skibri.us)", // Required by Nominatim ToS
       },
@@ -42,7 +40,37 @@ export async function geocodeAddress(
       return null;
     }
 
-    const data = await response.json();
+    let data = await response.json();
+
+    // If no results, try without unit/suite numbers
+    if (!Array.isArray(data) || data.length === 0) {
+      // Remove common unit/suite patterns: ", Unit X", ", Suite X", " Apt X", "#X", etc.
+      const addressWithoutUnit = address
+        .replace(/,\s*(Unit|Suite|Apt|Apartment|#)\s+[A-Z0-9-]+/gi, '') // Remove ", Unit X" etc.
+        .replace(/\s+(Unit|Suite|Apt|Apartment|#)\s+[A-Z0-9-]+/gi, '') // Remove " Unit X" etc.
+        .replace(/,\s*$/g, '') // Remove trailing comma
+        .trim();
+
+      // Only retry if we actually removed something
+      if (addressWithoutUnit !== address.trim()) {
+        query = `${addressWithoutUnit}, Sacramento, CA`;
+        encodedQuery = encodeURIComponent(query);
+        url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=json&limit=1&addressdetails=1`;
+
+        // Small delay to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, 1100));
+
+        response = await fetch(url, {
+          headers: {
+            "User-Agent": "TahOakParkCollective/1.0 (contact@tahoak.skibri.us)",
+          },
+        });
+
+        if (response.ok) {
+          data = await response.json();
+        }
+      }
+    }
 
     if (!Array.isArray(data) || data.length === 0) {
       return null;

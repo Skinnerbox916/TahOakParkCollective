@@ -46,6 +46,8 @@ model Entity {
   slug                    String          @unique
   description             String?         @db.Text
   descriptionTranslations Json?           // JSON: { "en": "...", "es": "..." }
+  seoTitleTranslations    Json?           // JSON: { "en": "...", "es": "..." } - SEO title (50-60 chars recommended)
+  seoDescriptionTranslations Json?        // JSON: { "en": "...", "es": "..." } - SEO description (150-160 chars recommended)
   address                 String?
   phone                   String?
   website                 String?
@@ -53,7 +55,7 @@ model Entity {
   longitude               Float?
   categories              Category[]
   entityType              EntityType      @default(COMMERCE)
-  status                  EntityStatus    @default(PENDING)
+  status                  EntityStatus    @default(ACTIVE)
   featured                Boolean         @default(false)
   images                  Json?           // Array of image URLs
   hours                   Json?           // Business hours structure
@@ -61,9 +63,9 @@ model Entity {
   ownerId                 String
   owner                   User            @relation(fields: [ownerId], references: [id])
   
-  // New MVP fields
+  // MVP fields
   tags                EntityTag[]
-  pendingChanges      PendingChange[]
+  approvals           Approval[]
   spotCheckDate       DateTime?
   verificationContact String?
   
@@ -107,44 +109,38 @@ model EntityTag {
   @@index([tagId])
 }
 
-model PendingChange {
-  id            String   @id @default(cuid())
-  entityId      String
-  changeType    ChangeType
-  fieldName     String?  // For field-level changes
-  oldValue      Json?    // Previous value
-  newValue      Json     // Proposed value
-  submittedBy   String?  // User ID (nullable for public submissions)
-  submitterEmail String? // For public submissions
-  status        ChangeStatus @default(PENDING)
-  reviewedBy    String?  // Admin ID who reviewed
-  reviewedAt    DateTime?
-  notes         String?  @db.Text
-  entity        Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model Approval {
+  id              String         @id @default(cuid())
+  type            ApprovalType
+  status          ApprovalStatus @default(PENDING)
+  
+  // For NEW_ENTITY: full entity data stored here until approved
+  entityData      Json?
+  
+  // For changes to existing entities
+  entityId        String?
+  entity          Entity?        @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  fieldName       String?        // For field-level changes
+  oldValue        Json?          // Previous value
+  newValue        Json?          // Proposed/new value
+  
+  // Submitter info
+  submittedBy     String?        // User ID (nullable for public/AI submissions)
+  submitterEmail  String?        // For public submissions
+  source          String?        // "ai", "public", "owner", "admin"
+  
+  // Review info
+  reviewedBy      String?        // Admin ID who reviewed
+  reviewedAt      DateTime?
+  notes           String?        @db.Text
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   
   @@index([status])
+  @@index([type])
   @@index([entityId])
   @@index([submittedBy])
-}
-
-model EntitySuggestion {
-  id            String   @id @default(cuid())
-  name          String
-  description   String?  @db.Text
-  address       String?
-  website       String?
-  submitterEmail String
-  submitterName String?
-  status        SuggestionStatus @default(PENDING)
-  reviewedBy    String?
-  reviewedAt    DateTime?
-  notes         String?  @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  @@index([status])
 }
 
 model IssueReport {
@@ -206,7 +202,6 @@ enum Role {
 enum EntityType {
   COMMERCE
   CIVIC
-  ADVOCACY
   PUBLIC_SPACE
   NON_PROFIT
   EVENT
@@ -215,7 +210,6 @@ enum EntityType {
 
 enum EntityStatus {
   ACTIVE
-  PENDING
   INACTIVE
 }
 
@@ -225,21 +219,15 @@ enum TagCategory {
   AMENITY         // Open: WiFi, Outdoor Seating, etc.
 }
 
-enum ChangeType {
-  CREATE_ENTITY
+enum ApprovalType {
+  NEW_ENTITY
   UPDATE_ENTITY
   ADD_TAG
   REMOVE_TAG
   UPDATE_IMAGE
 }
 
-enum ChangeStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum SuggestionStatus {
+enum ApprovalStatus {
   PENDING
   APPROVED
   REJECTED

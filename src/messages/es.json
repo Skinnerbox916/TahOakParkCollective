@@ -396,7 +396,6 @@
   "entityTypes": {
     "commerce": "Comercio",
     "civic": "Cívico",
-    "advocacy": "Defensa",
     "publicSpace": "Espacio Público",
     "nonProfit": "Sin Fines de Lucro",
     "event": "Evento",
@@ -423,7 +422,9 @@
     "claimThisEntity": "Reclamar esta Entidad",
     "foundAnIssue": "¿Encontraste un Problema?",
     "reportDescription": "¿Ves información incorrecta? Háznoslo saber.",
-    "reportAnIssue": "Reportar un Problema"
+    "reportAnIssue": "Reportar un Problema",
+    "description": "Descripción",
+    "socialMedia": "Redes Sociales"
   },
   "tags": {
     "pageTitle": "Gestión de Etiquetas",
@@ -451,11 +452,11 @@
     "sidebar": {
       "sectionTitle": "Administración",
       "dashboard": "Panel",
+      "approvals": "Aprobaciones",
       "entities": "Entidades",
+      "featured": "Destacado",
       "quickAdd": "Agregar Rápido",
-      "pendingChanges": "Cambios Pendientes",
       "spotChecks": "Verificaciones",
-      "suggestions": "Sugerencias",
       "issueReports": "Reportes de Problemas",
       "subscribers": "Suscriptores",
       "analytics": "Analítica",
@@ -467,11 +468,15 @@
       "pendingApprovalsHeading": "{count} aprobación{count, plural, one {} other {es}} pendiente{count, plural, one {} other {s}}",
       "pendingApprovalsDescription": "Revisa y aprueba listados de entidades pendientes",
       "reviewPending": "Revisar pendientes",
+      "reviewApprovals": "Revisar Aprobaciones",
+      "reviewApprovalsDescription": "Revisa nuevas entidades y cambios en espera de aprobación.",
+      "pendingDescription": "Revisa nuevas entidades y cambios enviados por usuarios e IA.",
       "totalEntities": "Total de Entidades",
       "activeEntities": "Entidades Activas",
       "totalUsers": "Total de Usuarios",
       "active": "Activas",
       "pending": "Pendientes",
+      "pendingApprovals": "Aprobaciones Pendientes",
       "inactive": "Inactivas",
       "users": "Usuarios",
       "entityOwners": "Propietarios de Entidades",
@@ -491,16 +496,31 @@
       "status": {
         "ACTIVE": "Activa",
         "PENDING": "Pendiente",
-        "INACTIVE": "Inactiva"
+        "INACTIVE": "Inactiva",
+        "APPROVED": "Aprobado",
+        "REJECTED": "Rechazado"
       },
       "roles": {
         "USER": "Usuario",
         "ADMIN": "Administrador",
         "ENTITY_OWNER": "Propietario de Entidad"
-      }
+      },
+      "refresh": "Actualizar",
+      "processing": "Procesando...",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "review": "Revisar",
+      "resolve": "Resolver",
+      "dismiss": "Descartar",
+      "clearFilters": "Limpiar Filtros",
+      "allRoles": "Todos los Roles",
+      "searchPlaceholder": "Buscar por nombre o correo...",
+      "notesOptional": "Notas (Opcional)",
+      "notesPlaceholder": "Agrega notas sobre esta decisión..."
     },
     "entities": {
       "noEntities": "No se encontraron entidades",
+      "noEntitiesDescription": "Intenta ajustar tus filtros",
       "columns": {
         "name": "Nombre",
         "type": "Tipo",
@@ -540,14 +560,281 @@
         "applyFilters": "Aplicar filtros",
         "loading": "Cargando entidades...",
         "errorLoading": "Error al cargar las entidades"
+      },
+      "newPage": {
+        "title": "Agregar Nueva Entidad"
       }
+    },
+    "quickAdd": {
+      "title": "Agregar Entidad Rápido",
+      "description": "Ingresa el nombre de una entidad para investigarla automáticamente y agregarla a la cola de pendientes.",
+      "entityName": "Nombre de la Entidad",
+      "placeholder": "ej., Centro Comunitario Oak Park",
+      "hint": "El sistema asume que la entidad está en el área de cobertura de TahOak Park Collective",
+      "addEntity": "Agregar Entidad",
+      "researching": "Investigando y agregando entidad...",
+      "howItWorks": "Cómo funciona",
+      "step1": "La IA investiga la entidad usando búsqueda web",
+      "step2": "Verifica duplicados contra entidades existentes",
+      "step3": "Extrae toda la información relevante (dirección, teléfono, sitio web, etc.)",
+      "step4": "Crea una solicitud de aprobación para tu revisión"
+    },
+    "spotChecks": {
+      "title": "Verificaciones",
+      "description": "Lista de verificación semanal. Revisa 3-5 entidades para asegurar la calidad de los datos. Se priorizan las entidades no verificadas en 6+ meses.",
+      "tip": "Consejo:",
+      "tipText": "Revisa cada entidad y verifica que la información sea correcta. Haz clic en \"Marcar como Verificado\" cuando termines.",
+      "refreshList": "Actualizar Lista",
+      "loading": "Cargando lista de verificación...",
+      "markAsChecked": "Marcar como Verificado"
+    },
+    "users": {
+      "title": "Gestionar Usuarios",
+      "loading": "Cargando usuarios...",
+      "errorLoading": "Error al cargar usuarios",
+      "noUsers": "No se encontraron usuarios",
+      "noUsersDescription": "Intenta ajustar tus filtros",
+      "columns": {
+        "name": "Nombre",
+        "email": "Correo",
+        "roles": "Roles",
+        "businesses": "Negocios",
+        "created": "Creado",
+        "actions": "Acciones"
+      },
+      "actions": {
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "editRoles": "Editar Roles",
+        "updating": "Actualizando..."
+      }
+    },
+    "approvals": {
+      "title": "Aprobaciones",
+      "description": "Revisa y aprueba o rechaza envíos y cambios de entidades.",
+      "loading": "Cargando aprobaciones...",
+      "errorLoading": "Error al cargar aprobaciones",
+      "noApprovals": "No se encontraron aprobaciones",
+      "allReviewed": "Todos los elementos han sido revisados.",
+      "noMatches": "Ningún elemento coincide con los filtros seleccionados.",
+      "status": "Estado:",
+      "type": "Tipo:",
+      "allTypes": "Todos los Tipos",
+      "submitted": "Enviado:",
+      "submittedBy": "Por:",
+      "types": {
+        "NEW_ENTITY": "Nueva Entidad",
+        "UPDATE_ENTITY": "Actualizar Entidad",
+        "ADD_TAG": "Agregar Etiqueta",
+        "REMOVE_TAG": "Eliminar Etiqueta",
+        "UPDATE_IMAGE": "Actualizar Imagen"
+      },
+      "sources": {
+        "ai": "Agregar Rápido IA",
+        "public": "Sugerencia Pública",
+        "owner": "Propietario de Entidad",
+        "admin": "Administrador"
+      },
+      "detail": {
+        "title": "Detalles de Aprobación",
+        "backToApprovals": "← Volver a Aprobaciones",
+        "approvalInfo": "Información de Aprobación",
+        "rawEntityData": "Datos Crudos de Entidad",
+        "clickToExpand": "Clic para expandir",
+        "changeDetails": "Detalles del Cambio",
+        "entity": "Entidad:",
+        "field": "Campo",
+        "oldValue": "Valor Anterior",
+        "newValue": "Valor Nuevo",
+        "reviewAction": "Acción de Revisión",
+        "slug": "Slug",
+        "coordinates": "Coordenadas",
+        "categorySlugs": "Slugs de Categoría",
+        "tagSlugs": "Slugs de Etiqueta",
+        "hoursRaw": "Horarios (crudo)",
+        "nameTranslations": "Traducciones de Nombre",
+        "descriptionTranslations": "Traducciones de Descripción",
+        "reviewed": "Revisado",
+        "reviewNotes": "Notas de Revisión",
+        "source": "Fuente",
+        "notFound": "Aprobación no encontrada"
+      }
+    },
+    "issueReports": {
+      "title": "Reportes de Problemas",
+      "description": "Revisa y resuelve reportes de problemas de la comunidad sobre listados de entidades.",
+      "filterByStatus": "Filtrar por Estado:",
+      "loading": "Cargando reportes de problemas...",
+      "errorLoading": "Error al cargar reportes de problemas",
+      "noReports": "No se encontraron reportes de problemas",
+      "allReviewed": "Todos los reportes han sido revisados.",
+      "reportedBy": "Reportado por:",
+      "reporterName": "Nombre:",
+      "reported": "Reportado:",
+      "resolution": "Resolución:",
+      "resolveIssue": "Resolver Problema",
+      "dismissIssue": "Descartar Problema",
+      "resolveDescription": "Por favor describe cómo se resolvió este problema.",
+      "dismissDescription": "Por favor explica por qué se está descartando este problema.",
+      "resolutionNotes": "Notas de Resolución *",
+      "resolvePlaceholder": "¿Cómo se resolvió este problema?",
+      "dismissPlaceholder": "¿Por qué se está descartando?",
+      "types": {
+        "INCORRECT_INFO": "Información Incorrecta",
+        "CLOSED": "Cerrado/Permanentemente Cerrado",
+        "INELIGIBLE": "No Elegible",
+        "OTHER": "Otro Problema"
+      },
+      "statuses": {
+        "PENDING": "Pendiente",
+        "RESOLVED": "Resuelto",
+        "DISMISSED": "Descartado"
+      }
+    },
+    "subscribers": {
+      "title": "Suscriptores",
+      "description": "Gestiona suscriptores de correo electrónico y ve preferencias de suscripción.",
+      "loading": "Cargando suscriptores...",
+      "errorLoading": "Error al cargar suscriptores",
+      "noSubscribers": "No se encontraron suscriptores",
+      "tryAdjusting": "Intenta ajustar tu búsqueda o filtro.",
+      "noMatch": "Ningún suscriptor coincide con el filtro seleccionado.",
+      "searchLabel": "Buscar",
+      "searchPlaceholder": "Buscar por correo...",
+      "filterLabel": "Filtrar",
+      "stats": {
+        "total": "Total",
+        "verified": "Verificados",
+        "unverified": "Sin Verificar",
+        "unsubscribed": "Dados de Baja"
+      },
+      "filters": {
+        "all": "Todos",
+        "verified": "Verificados",
+        "unverified": "Sin Verificar",
+        "unsubscribed": "Dados de Baja"
+      },
+      "columns": {
+        "email": "Correo",
+        "status": "Estado",
+        "preferences": "Preferencias",
+        "verified": "Verificado",
+        "subscribed": "Suscrito",
+        "lastUpdated": "Última Actualización"
+      },
+      "preferences": {
+        "newsletter": "Boletín",
+        "newBusinesses": "Nuevos Negocios",
+        "events": "Eventos",
+        "updates": "Actualizaciones",
+        "none": "Ninguna"
+      },
+      "notVerified": "No verificado",
+      "never": "Nunca"
+    },
+    "analytics": {
+      "title": "Analítica",
+      "description": "Ve estadísticas de analítica y visitantes del sitio web usando Umami.",
+      "last30Days": "Estadísticas e información de visitantes del sitio web (Últimos 30 días)",
+      "checkingStatus": "Verificando estado de Umami...",
+      "notConfigured": "Analítica No Configurada",
+      "configuredDescription": "El seguimiento de analítica está configurado, pero el sitio web necesita ser configurado en Umami.",
+      "serviceRunning": "El servicio de Umami está corriendo",
+      "serviceUnreachable": "El servicio de Umami no está accesible",
+      "openDashboard": "Abrir Panel Completo →",
+      "openUmamiDashboard": "Abrir Panel de Umami",
+      "directAccess": "Acceso directo:",
+      "fullDashboard": "Panel Completo",
+      "fullDashboardDescription": "Ve analíticas detalladas, gráficos y reportes en el panel de Umami.",
+      "noData": "¡Aún no hay datos de analítica disponibles. Visita tu sitio web para comenzar a recopilar datos!",
+      "stats": {
+        "pageviews": "Vistas de Página",
+        "totalPageViews": "Total de vistas de página",
+        "visitors": "Visitantes",
+        "uniqueVisitors": "Visitantes únicos",
+        "visits": "Visitas",
+        "totalSessions": "Sesiones totales",
+        "bounceRate": "Tasa de Rebote",
+        "singlePageVisits": "Visitas de una sola página",
+        "avgVisitTime": "Tiempo Promedio de Visita",
+        "avgSessionDuration": "Duración promedio de sesión"
+      }
+    },
+    "entityForm": {
+      "fields": {
+        "name": "Nombre de la entidad *",
+        "entityType": "Tipo de entidad *",
+        "category": "Categoría",
+        "address": "Dirección",
+        "phone": "Teléfono",
+        "website": "Sitio web"
+      },
+      "placeholders": {
+        "name": "Ingresa el nombre de la entidad",
+        "selectCategory": "Selecciona una categoría",
+        "description": "Describe la entidad...",
+        "address": "Dirección",
+        "phone": "(555) 123-4567",
+        "website": "https://ejemplo.com"
+      },
+      "sections": {
+        "about": "Acerca de",
+        "locationContact": "Ubicación y Contacto",
+        "hours": "Horario de Atención",
+        "hoursEvent": "Horario del Evento",
+        "hoursEventDescription": "¿Cuándo ocurre este evento recurrente?",
+        "hoursServiceProvider": "Disponibilidad",
+        "hoursServiceProviderDescription": "¿Cuándo estás normalmente disponible para citas?",
+        "onlinePresence": "Presencia en Línea",
+        "media": "Imágenes",
+        "tags": "Etiquetas",
+        "tagsDescription": "Las etiquetas de identidad se aplican inmediatamente. Las etiquetas de amabilidad requieren verificación del administrador."
+      },
+      "hints": {
+        "commerce": {
+          "address": "Ubicación física del local"
+        },
+        "civic": {
+          "address": "Dirección de oficina (opcional)"
+        },
+        "publicSpace": {
+          "address": "La ubicación es importante para que los visitantes te encuentren"
+        },
+        "event": {
+          "address": "Lugar del evento (si tiene ubicación fija)",
+          "hours": "Ingresa el horario típico del evento"
+        },
+        "serviceProvider": {
+          "address": "Opcional - muchos proveedores de servicios trabajan desde casa",
+          "hours": "Ingresa tu disponibilidad típica"
+        },
+        "noCategories": "No hay categorías disponibles para {type}",
+        "addMediaTagsLater": "Puedes agregar imágenes y etiquetas después de crear la entidad.",
+        "addMediaLater": "Puedes agregar imágenes después de crear la entidad."
+      },
+      "validation": {
+        "nameRequired": "El nombre de la entidad es obligatorio",
+        "invalidWebsite": "Por favor ingresa una URL válida (ej: https://ejemplo.com)",
+        "invalidSocialUrl": "Por favor ingresa una URL válida para {platform}"
+      },
+      "success": {
+        "created": "¡Entidad creada exitosamente!",
+        "updated": "¡Entidad actualizada exitosamente!"
+      },
+      "buttons": {
+        "create": "Crear Entidad",
+        "update": "Actualizar Entidad",
+        "creating": "Creando...",
+        "updating": "Actualizando...",
+        "cancel": "Cancelar"
+      },
+      "loading": "Actualizando..."
     }
   },
   "portal": {
     "sidebar": {
-      "sectionTitle": "Portal de Negocios",
-      "dashboard": "Panel",
-      "myBusiness": "Mi Negocio"
+      "sectionTitle": "Portal de Entidades",
+      "dashboard": "Panel"
     },
     "dashboard": {
       "title": "Mis Entidades",
@@ -561,7 +848,10 @@
       "edit": "Editar",
       "delete": "Eliminar",
       "categoryLabel": "Categoría:",
-      "deleteConfirm": "¿Seguro que quieres eliminar \"{name}\"? Esta acción no se puede deshacer."
+      "deleteConfirm": "¿Seguro que quieres eliminar \"{name}\"? Esta acción no se puede deshacer.",
+      "pageViews": "Visitas",
+      "visitors": "Visitantes",
+      "last30Days": "Últimos 30 días"
     },
     "entity": {
       "editTitle": "Editar Entidad",
@@ -570,6 +860,76 @@
       "errorLoading": "Error al cargar la entidad",
       "notFound": "Entidad no encontrada",
       "back": "← Volver al panel"
+    },
+    "form": {
+      "fields": {
+        "name": "Nombre de la entidad *",
+        "entityType": "Tipo de entidad *",
+        "category": "Categoría",
+        "address": "Dirección",
+        "phone": "Teléfono",
+        "website": "Sitio web"
+      },
+      "placeholders": {
+        "name": "Ingresa el nombre de la entidad",
+        "selectCategory": "Selecciona una categoría",
+        "description": "Describe la entidad...",
+        "address": "Dirección",
+        "phone": "(555) 123-4567",
+        "website": "https://ejemplo.com"
+      },
+      "sections": {
+        "about": "Acerca de",
+        "locationContact": "Ubicación y Contacto",
+        "hours": "Horario de Atención",
+        "hoursEvent": "Horario del Evento",
+        "hoursEventDescription": "¿Cuándo ocurre este evento recurrente?",
+        "hoursServiceProvider": "Disponibilidad",
+        "hoursServiceProviderDescription": "¿Cuándo estás normalmente disponible para citas?",
+        "onlinePresence": "Presencia en Línea",
+        "media": "Imágenes",
+        "tags": "Etiquetas",
+        "tagsDescription": "Las etiquetas de identidad se aplican inmediatamente. Las etiquetas de amabilidad requieren verificación del administrador."
+      },
+      "hints": {
+        "commerce": {
+          "address": "Ubicación física del local"
+        },
+        "civic": {
+          "address": "Dirección de oficina (opcional)"
+        },
+        "publicSpace": {
+          "address": "La ubicación es importante para que los visitantes te encuentren"
+        },
+        "event": {
+          "address": "Lugar del evento (si tiene ubicación fija)",
+          "hours": "Ingresa el horario típico del evento"
+        },
+        "serviceProvider": {
+          "address": "Opcional - muchos proveedores de servicios trabajan desde casa",
+          "hours": "Ingresa tu disponibilidad típica"
+        },
+        "noCategories": "No hay categorías disponibles para {type}",
+        "addMediaTagsLater": "Puedes agregar imágenes y etiquetas después de crear la entidad.",
+        "addMediaLater": "Puedes agregar imágenes después de crear la entidad."
+      },
+      "validation": {
+        "nameRequired": "El nombre de la entidad es obligatorio",
+        "invalidWebsite": "Por favor ingresa una URL válida (ej: https://ejemplo.com)",
+        "invalidSocialUrl": "Por favor ingresa una URL válida para {platform}"
+      },
+      "success": {
+        "created": "¡Entidad creada exitosamente!",
+        "updated": "¡Entidad actualizada exitosamente!"
+      },
+      "buttons": {
+        "create": "Crear Entidad",
+        "update": "Actualizar Entidad",
+        "creating": "Creando...",
+        "updating": "Actualizando...",
+        "cancel": "Cancelar"
+      },
+      "loading": "Actualizando..."
     }
   }
 }

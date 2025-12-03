@@ -5,31 +5,39 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { EntityWithRelations, EntityTagWithTag } from "@/types";
 import { StatusBadge } from "./StatusBadge";
-import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Dropdown } from "@/components/ui/Dropdown";
-import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
-import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
+import { IconButton } from "@/components/ui/IconButton";
+import { KebabIcon } from "@/components/ui/KebabIcon";
+import { SortableTableHeader } from "./SortableTableHeader";
+import { ENTITY_STATUS } from "@/lib/prismaEnums";
+import type { EntityStatus } from "@/lib/prismaEnums";
 import { ApiResponse } from "@/types";
 import { formatPhoneNumber, cn } from "@/lib/utils";
 import { ENTITY_TYPES } from "@/lib/constants";
 import { useAdminTranslations } from "@/lib/admin-translations";
 import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
+import { TagBadge } from "@/components/tags/TagBadge";
 
 interface EntityTableProps {
   entities: EntityWithRelations[];
   onStatusChange?: (entityId: string, newStatus: EntityStatus) => Promise<void>;
-  onFeaturedChange?: (entityId: string, featured: boolean) => Promise<void>;
-  onEntityTypeChange?: (entityId: string, entityType: EntityType) => Promise<void>;
   onDelete?: (entityId: string) => Promise<void>;
-  onTagManage?: (entityId: string) => void;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  onSort?: (sortKey: string) => void;
 }
 
-export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEntityTypeChange, onDelete, onTagManage }: EntityTableProps) {
+export function EntityTable({ 
+  entities, 
+  onStatusChange, 
+  onDelete,
+  sortBy,
+  sortOrder,
+  onSort
+}: EntityTableProps) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
-  const [updatingEntityType, setUpdatingEntityType] = useState<string | null>(null);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const { t: tEntities, tStatus } = useAdminTranslations("entities");
   const tCommon = useTranslations("common");
   const entityTypeLabels = useEntityTypeLabels();
@@ -45,34 +53,6 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
       alert(tEntities("alerts.statusError"));
     } finally {
       setUpdating(null);
-    }
-  };
-
-  const handleFeaturedToggle = async (entityId: string, currentFeatured: boolean) => {
-    if (!onFeaturedChange) return;
-    
-    setTogglingFeatured(entityId);
-    try {
-      await onFeaturedChange(entityId, !currentFeatured);
-    } catch (error) {
-      console.error("Error toggling featured:", error);
-      alert(tEntities("alerts.featuredError"));
-    } finally {
-      setTogglingFeatured(null);
-    }
-  };
-
-  const handleEntityTypeChange = async (entityId: string, newType: EntityType) => {
-    if (!onEntityTypeChange) return;
-    
-    setUpdatingEntityType(entityId);
-    try {
-      await onEntityTypeChange(entityId, newType);
-    } catch (error) {
-      console.error("Error updating entity type:", error);
-      alert(tEntities("alerts.typeError"));
-    } finally {
-      setUpdatingEntityType(null);
     }
   };
 
@@ -96,9 +76,11 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
 
   if (entities.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">{tEntities("noEntities")}</p>
-      </div>
+      <EmptyState
+        icon="📋"
+        title={tEntities("noEntities")}
+        description={tEntities("noEntitiesDescription") || "Try adjusting your filters"}
+      />
     );
   }
 
@@ -107,30 +89,77 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {tEntities("columns.name")}
-            </th>
-            <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {tEntities("columns.type")}
-            </th>
+            {onSort ? (
+              <SortableTableHeader
+                label={tEntities("columns.name")}
+                sortKey="name"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort}
+              />
+            ) : (
+              <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {tEntities("columns.name")}
+              </th>
+            )}
+            {onSort ? (
+              <SortableTableHeader
+                label={tEntities("columns.type")}
+                sortKey="entityType"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort}
+                className="hidden lg:table-cell"
+              />
+            ) : (
+              <th className="hidden lg:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {tEntities("columns.type")}
+              </th>
+            )}
             <th className="hidden lg:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               {tEntities("columns.category")}
             </th>
-            <th className="hidden lg:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {tEntities("columns.tags")}
-            </th>
-            <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {tEntities("columns.status")}
-            </th>
-            <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {tEntities("columns.featured")}
-            </th>
-            <th className="hidden lg:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {tEntities("columns.owner")}
-            </th>
-            <th className="hidden xl:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {tEntities("columns.created")}
-            </th>
+            {onSort ? (
+              <SortableTableHeader
+                label={tEntities("columns.status")}
+                sortKey="status"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort}
+              />
+            ) : (
+              <th className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {tEntities("columns.status")}
+              </th>
+            )}
+            {onSort ? (
+              <SortableTableHeader
+                label={tEntities("columns.owner")}
+                sortKey="owner"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort}
+                className="hidden lg:table-cell"
+              />
+            ) : (
+              <th className="hidden lg:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {tEntities("columns.owner")}
+              </th>
+            )}
+            {onSort ? (
+              <SortableTableHeader
+                label={tEntities("columns.created")}
+                sortKey="createdAt"
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                onSort={onSort}
+                className="hidden xl:table-cell"
+              />
+            ) : (
+              <th className="hidden xl:table-cell px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {tEntities("columns.created")}
+              </th>
+            )}
             <th className="px-3 lg:px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               {tEntities("columns.actions")}
             </th>
@@ -153,79 +182,52 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
                   )}
                 </div>
               </td>
-              <td className="px-3 lg:px-4 py-3 whitespace-nowrap">
-                {onEntityTypeChange ? (
-                  <select
-                    value={entity.entityType}
-                    onChange={(e) => handleEntityTypeChange(entity.id, e.target.value as EntityType)}
-                    disabled={updatingEntityType === entity.id}
-                    className={cn(
-                      "text-xs border border-gray-300 rounded px-2 py-1 focus-ring min-w-[140px]",
-                      updatingEntityType === entity.id && "opacity-50 cursor-not-allowed"
-                    )}
-                  >
-                    {ENTITY_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {entityTypeLabels[type.value as EntityType]}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <span className="text-sm text-gray-700">
-                    {entityTypeLabels[entity.entityType as EntityType]}
-                  </span>
-                )}
+              <td className="hidden lg:table-cell px-3 lg:px-4 py-3 whitespace-nowrap">
+                <span className="text-sm text-gray-700">
+                  {entityTypeLabels[entity.entityType as EntityType]}
+                </span>
               </td>
               <td className="hidden lg:table-cell px-3 lg:px-4 py-3 whitespace-nowrap">
                 <span className="text-sm text-gray-900">
-                  {entity.category?.name || "—"}
+                  {entity.categories && entity.categories.length > 0
+                    ? entity.categories.map((cat: any) => cat.name).join(", ")
+                    : "—"}
                 </span>
               </td>
-              <td className="hidden lg:table-cell px-3 lg:px-4 py-3">
-                {(() => {
-                  const tags = (entity.tags as EntityTagWithTag[] || []);
-                  if (tags.length === 0) {
-                    return <span className="text-sm text-gray-500">—</span>;
-                  }
-                  if (tags.length <= 2) {
-                    return (
-                      <div className="flex flex-wrap gap-1">
-                        {tags.map((et) => (
-                          <span
-                            key={et.id}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800"
-                          >
-                            {et.tag.name}
-                          </span>
-                        ))}
-                      </div>
-                    );
-                  }
-                  return (
-                    <span className="text-sm text-gray-700">
-                      {tags.slice(0, 2).map((et) => et.tag.name).join(", ")} +{tags.length - 2}
+              <td className="px-3 lg:px-4 py-3 whitespace-nowrap">
+                {onStatusChange ? (
+                  <div className="flex flex-col items-start gap-1">
+                    <button
+                      onClick={() => {
+                        const newStatus = entity.status === ENTITY_STATUS.ACTIVE 
+                          ? ENTITY_STATUS.INACTIVE 
+                          : ENTITY_STATUS.ACTIVE;
+                        handleStatusChange(entity.id, newStatus);
+                      }}
+                      disabled={updating === entity.id}
+                      className={cn(
+                        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
+                        entity.status === ENTITY_STATUS.ACTIVE ? "bg-green-600" : "bg-gray-300",
+                        updating === entity.id && "opacity-50 cursor-not-allowed"
+                      )}
+                      title={entity.status === ENTITY_STATUS.ACTIVE ? "Click to deactivate" : "Click to activate"}
+                    >
+                      <span
+                        className={cn(
+                          "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                          entity.status === ENTITY_STATUS.ACTIVE ? "translate-x-6" : "translate-x-1"
+                        )}
+                      />
+                    </button>
+                    <span className={cn(
+                      "text-xs font-medium",
+                      entity.status === ENTITY_STATUS.ACTIVE ? "text-green-700" : "text-gray-500"
+                    )}>
+                      {entity.status === ENTITY_STATUS.ACTIVE ? "Active" : "Inactive"}
                     </span>
-                  );
-                })()}
-              </td>
-              <td className="px-3 lg:px-4 py-3 whitespace-nowrap">
-                <StatusBadge status={entity.status} />
-              </td>
-              <td className="px-3 lg:px-4 py-3 whitespace-nowrap">
-                {onFeaturedChange ? (
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={entity.featured || false}
-                      onChange={() => handleFeaturedToggle(entity.id, entity.featured || false)}
-                      disabled={togglingFeatured === entity.id}
-                      className="form-checkbox h-5 w-5 text-indigo-600 rounded focus-ring"
-                    />
-                  </label>
+                  </div>
                 ) : (
-                  <span className="text-sm text-gray-700">
-                    {entity.featured ? tCommon("yes") : tCommon("no")}
-                  </span>
+                  <StatusBadge status={entity.status} />
                 )}
               </td>
               <td className="hidden lg:table-cell px-3 lg:px-4 py-3 whitespace-nowrap">
@@ -242,98 +244,46 @@ export function EntityTable({ entities, onStatusChange, onFeaturedChange, onEnti
                 {new Date(entity.createdAt).toLocaleDateString()}
               </td>
               <td className="px-3 lg:px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                {entity.status === ENTITY_STATUS.PENDING && onStatusChange ? (
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
+                <Dropdown
+                  align="right"
+                  trigger={
+                    <IconButton
+                      icon={<KebabIcon className="w-5 h-5" />}
                       size="sm"
-                      variant="primary"
-                      onClick={() => handleStatusChange(entity.id, ENTITY_STATUS.ACTIVE)}
-                      disabled={updating === entity.id}
-                    >
-                      {updating === entity.id ? tCommon("loading") : tEntities("actions.approve")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => handleStatusChange(entity.id, ENTITY_STATUS.INACTIVE)}
-                      disabled={updating === entity.id}
-                    >
-                      {updating === entity.id ? tCommon("loading") : tEntities("actions.reject")}
-                    </Button>
-                  </div>
-                ) : (
-                  <Dropdown
-                    align="right"
-                    trigger={
-                      <Button size="sm" variant="outline">
-                        {tEntities("actions.menu")}
-                      </Button>
-                    }
-                    onOpenChange={(open) => setOpenDropdown(open ? entity.id : null)}
+                      variant="ghost"
+                      aria-label={tEntities("actions.menu") || "Actions"}
+                    />
+                  }
+                >
+                  <Link
+                    href={`/admin/entities/${entity.id}`}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    {entity.status !== ENTITY_STATUS.PENDING && onStatusChange && (
-                      <div className="py-1">
-                        <label className="block px-4 py-2 text-sm text-gray-700">
-                          <span className="block mb-1">
-                            {tEntities("dropdown.statusLabel")}
-                          </span>
-                          <select
-                            value={entity.status}
-                            onChange={(e) => {
-                              handleStatusChange(entity.id, e.target.value as EntityStatus);
-                              setOpenDropdown(null);
-                            }}
-                            disabled={updating === entity.id}
-                            className={cn(
-                              "w-full text-xs border border-gray-300 rounded px-2 py-1 focus-ring",
-                              updating === entity.id && "opacity-50 cursor-not-allowed"
-                            )}
-                          >
-                            <option value={ENTITY_STATUS.ACTIVE}>
-                              {tStatus(ENTITY_STATUS.ACTIVE)}
-                            </option>
-                            <option value={ENTITY_STATUS.PENDING}>
-                              {tStatus(ENTITY_STATUS.PENDING)}
-                            </option>
-                            <option value={ENTITY_STATUS.INACTIVE}>
-                              {tStatus(ENTITY_STATUS.INACTIVE)}
-                            </option>
-                          </select>
-                        </label>
-                      </div>
-                    )}
-                    {onTagManage && (
+                    View Profile
+                  </Link>
+                  <Link
+                    href={`/admin/entities/${entity.id}/edit`}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    Edit Entity
+                  </Link>
+                  {onDelete && (
+                    <div className="border-t border-gray-200">
                       <button
-                        onClick={() => {
-                          onTagManage(entity.id);
-                          setOpenDropdown(null);
-                        }}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => handleDelete(entity.id)}
+                        disabled={deleting === entity.id}
+                        className={cn(
+                          "flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors",
+                          deleting === entity.id && "opacity-50 cursor-not-allowed"
+                        )}
                       >
-                        {tEntities("actions.manageTags")}
-                      </button>
-                    )}
-                    {onDelete && (
-                      <div className="border-t border-gray-200 py-1">
-                        <button
-                          onClick={() => {
-                            handleDelete(entity.id);
-                            setOpenDropdown(null);
-                          }}
-                          disabled={deleting === entity.id}
-                          className={cn(
-                            "flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors",
-                            deleting === entity.id && "opacity-50 cursor-not-allowed"
-                          )}
-                        >
                         {deleting === entity.id
                           ? tEntities("actions.deleting")
                           : tEntities("actions.delete")}
-                        </button>
-                      </div>
-                    )}
-                  </Dropdown>
-                )}
+                      </button>
+                    </div>
+                  )}
+                </Dropdown>
               </td>
             </tr>
           ))}

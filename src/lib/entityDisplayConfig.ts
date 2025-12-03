@@ -253,7 +253,6 @@ export function getLayoutConfig(
       config = EVENT_LAYOUT;
       break;
     case 'COMMERCE':
-    case 'ADVOCACY':
     case 'NON_PROFIT':
     default:
       config = DEFAULT_LAYOUT;

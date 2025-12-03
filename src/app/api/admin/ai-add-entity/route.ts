@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
-import { ROLE, ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
+import { ROLE, ENTITY_TYPE, ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
 import { researchEntity } from "@/lib/ai/entity-research";
 import { generateSlug } from "@/lib/utils";
 import { geocodeAddress } from "@/lib/geocoding";
@@ -33,10 +33,42 @@ export async function POST(request: NextRequest) {
       let entityLatitude: number | null = null;
       let entityLongitude: number | null = null;
       
+      // Determine if address is required based on entity type
+      const addressRequiredTypes = [
+        ENTITY_TYPE.COMMERCE,
+        ENTITY_TYPE.PUBLIC_SPACE,
+        ENTITY_TYPE.NON_PROFIT,
+      ];
+      const addressRequired = addressRequiredTypes.includes(researchResult.entityType as typeof ENTITY_TYPE[keyof typeof ENTITY_TYPE]);
+      
       if (researchResult.address) {
+        // Check if address looks like a street address (contains numbers)
+        // This helps avoid trying to geocode business names
+        const addressHasNumbers = /\d/.test(researchResult.address);
+        
+        if (!addressHasNumbers) {
+          // Address doesn't look like a street address (probably just a business name)
+          return createErrorResponse(
+            `Invalid address format: "${researchResult.address}". The address must be a full street address (e.g., "123 Main Street, Sacramento, CA 95820"), not just a business name. Please ensure the AI research found a complete street address.`,
+            400
+          );
+        }
+
         const geocodeResult = await geocodeAddress(researchResult.address);
         
-        if (geocodeResult) {
+        if (!geocodeResult) {
+          // Geocoding failed - reject if address is required, otherwise allow without coordinates
+          if (addressRequired) {
+            return createErrorResponse(
+              `Could not verify address location: "${researchResult.address}". The address could not be geocoded, which suggests it may be incomplete or incorrect. For ${researchResult.entityType} entities, a complete, verifiable address is required.`,
+              400
+            );
+          } else {
+            // Address optional - log warning but allow through
+            console.warn(`Geocoding failed for optional address: "${researchResult.address}". Approval will be created without coordinates.`);
+          }
+        } else {
+          // Geocoding succeeded - validate coverage area
           const coverageValidation = validateCoverage(
             geocodeResult.latitude,
             geocodeResult.longitude
@@ -52,15 +84,15 @@ export async function POST(request: NextRequest) {
           // Store geocoded coordinates
           entityLatitude = geocodeResult.latitude;
           entityLongitude = geocodeResult.longitude;
-        } else {
-          // If geocoding fails, we can't validate coverage - return error
-          return createErrorResponse(
-            "Could not verify address location. Please ensure the entity is within the TahOak Park Collective coverage area.",
-            400
-          );
         }
+      } else if (addressRequired) {
+        // Address is required but not provided
+        return createErrorResponse(
+          `Address is required for ${researchResult.entityType} entities but was not found. Please ensure the AI research found a complete street address for this entity.`,
+          400
+        );
       }
-      // If no address (mobile services, home-based, etc.), assume it's in coverage area
+      // If no address and not required (mobile services, home-based, etc.), assume it's in coverage area
 
       // Check if category guidance is needed
       if (researchResult.needsCategoryGuidance) {
@@ -80,14 +112,14 @@ export async function POST(request: NextRequest) {
 
       // Validate entity type
       const validEntityTypes = Object.values(ENTITY_TYPE);
-      if (!researchResult.entityType || !validEntityTypes.includes(researchResult.entityType as any)) {
+      if (!researchResult.entityType || !validEntityTypes.includes(researchResult.entityType as typeof ENTITY_TYPE[keyof typeof ENTITY_TYPE])) {
         return createErrorResponse(
           `Invalid entity type: ${researchResult.entityType}. Must be one of: ${validEntityTypes.join(", ")}`,
           400
         );
       }
 
-      // Resolve category slugs to IDs
+      // Verify categories exist
       const categories = await prisma.category.findMany({
         where: {
           slug: { in: researchResult.categorySlugs },
@@ -102,16 +134,16 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Resolve tag slugs to IDs (if tags provided)
-      let tagIds: string[] = [];
+      // Verify tags exist (if provided)
       if (researchResult.tagSlugs && researchResult.tagSlugs.length > 0) {
         const tags = await prisma.tag.findMany({
           where: {
             slug: { in: researchResult.tagSlugs },
           },
-          select: { id: true },
+          select: { id: true, slug: true },
         });
-        tagIds = tags.map((tag) => tag.id);
+        // Use only valid tag slugs
+        researchResult.tagSlugs = tags.map((tag) => tag.slug);
       }
 
       // Get admin user ID for ownerId
@@ -139,7 +171,7 @@ export async function POST(request: NextRequest) {
       // Clean social media - remove empty values
       let cleanedSocialMedia = null;
       if (researchResult.socialMedia && typeof researchResult.socialMedia === "object") {
-        const cleaned: any = {};
+        const cleaned: Record<string, string> = {};
         for (const [key, value] of Object.entries(researchResult.socialMedia)) {
           if (value && typeof value === "string" && value.trim()) {
             cleaned[key] = value.trim();
@@ -148,90 +180,62 @@ export async function POST(request: NextRequest) {
         cleanedSocialMedia = Object.keys(cleaned).length > 0 ? cleaned : null;
       }
 
-      // Create entity with PENDING status
-      const entity = await prisma.entity.create({
+      // Build entity data to store in Approval
+      const entityData = {
+        name: researchResult.name,
+        slug: uniqueSlug,
+        description: researchResult.description,
+        address: researchResult.address || null,
+        phone: researchResult.phone || null,
+        website: researchResult.website || null,
+        latitude: entityLatitude,
+        longitude: entityLongitude,
+        entityType: researchResult.entityType,
+        hours: researchResult.hours || null,
+        socialMedia: cleanedSocialMedia,
+        nameTranslations: researchResult.nameTranslations || null,
+        descriptionTranslations: researchResult.descriptionTranslations || null,
+        categorySlugs: researchResult.categorySlugs,
+        tagSlugs: researchResult.tagSlugs || [],
+        ownerId: adminUser.id,
+      };
+
+      // Create Approval record instead of Entity
+      const approval = await prisma.approval.create({
         data: {
-          name: researchResult.name,
-          slug: uniqueSlug,
-          description: researchResult.description,
-          address: researchResult.address || null,
-          phone: researchResult.phone || null,
-          website: researchResult.website || null,
-          latitude: entityLatitude,
-          longitude: entityLongitude,
-          entityType: researchResult.entityType as any,
-          status: ENTITY_STATUS.PENDING,
-          ownerId: adminUser.id,
-          hours: researchResult.hours || null,
-          socialMedia: cleanedSocialMedia,
-          nameTranslations: researchResult.nameTranslations || null,
-          descriptionTranslations: researchResult.descriptionTranslations || null,
-          categories: {
-            connect: categories.map((cat) => ({ id: cat.id })),
-          },
-        },
-        include: {
-          categories: true,
-          owner: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-      });
-
-      // Add tags if any
-      if (tagIds.length > 0) {
-        for (const tagId of tagIds) {
-          await prisma.entityTag.create({
-            data: {
-              entityId: entity.id,
-              tagId,
-              verified: true, // Admin-added tags are verified
-              createdBy: adminUser.id,
-            },
-          });
-        }
-      }
-
-      // Fetch entity with tags for response
-      const entityWithTags = await prisma.entity.findUnique({
-        where: { id: entity.id },
-        include: {
-          categories: true,
-          tags: {
-            include: {
-              tag: true,
-            },
-          },
-          owner: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
+          type: ApprovalType.NEW_ENTITY,
+          status: ApprovalStatus.PENDING,
+          entityData,
+          submittedBy: user.id,
+          source: "ai",
         },
       });
 
       return createSuccessResponse(
-        entityWithTags,
-        `Entity "${researchResult.name}" added successfully! Status: Pending`
+        { approval, entityData },
+        `Entity "${researchResult.name}" submitted for approval!`
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error in AI entity addition:", error);
       
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
       // Handle specific AI research errors
-      if (error.message?.includes("AI returned invalid JSON")) {
+      if (errorMessage.includes("OPENAI_API_KEY")) {
+        return createErrorResponse(
+          "OpenAI API key is not configured. Please set the OPENAI_API_KEY environment variable.",
+          500
+        );
+      }
+
+      if (errorMessage.includes("AI returned invalid JSON")) {
         return createErrorResponse(
           "Could not process entity data. Please try again or add manually.",
           500
         );
       }
 
-      if (error.message?.includes("missing required fields")) {
+      if (errorMessage.includes("missing required fields")) {
         return createErrorResponse(
           "Missing required information. Please try again or add manually.",
           400
@@ -239,10 +243,9 @@ export async function POST(request: NextRequest) {
       }
 
       return createErrorResponse(
-        error.message || "Failed to research and add entity. Please try again or add manually.",
+        errorMessage || "Failed to research and add entity. Please try again or add manually.",
         500
       );
     }
   });
 }
-

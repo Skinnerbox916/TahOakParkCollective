@@ -396,7 +396,6 @@
   "entityTypes": {
     "commerce": "Commerce",
     "civic": "Civic",
-    "advocacy": "Advocacy",
     "publicSpace": "Public Space",
     "nonProfit": "Non-Profit",
     "event": "Event",
@@ -423,7 +422,9 @@
     "claimThisEntity": "Claim This Entity",
     "foundAnIssue": "Found an Issue?",
     "reportDescription": "See incorrect information? Let us know.",
-    "reportAnIssue": "Report an Issue"
+    "reportAnIssue": "Report an Issue",
+    "description": "Description",
+    "socialMedia": "Social Media"
   },
   "tags": {
     "pageTitle": "Tag Management",
@@ -451,11 +452,11 @@
     "sidebar": {
       "sectionTitle": "Admin",
       "dashboard": "Dashboard",
+      "approvals": "Approvals",
       "entities": "Entities",
+      "featured": "Featured",
       "quickAdd": "Quick Add",
-      "pendingChanges": "Pending Changes",
       "spotChecks": "Spot Checks",
-      "suggestions": "Suggestions",
       "issueReports": "Issue Reports",
       "subscribers": "Subscribers",
       "analytics": "Analytics",
@@ -467,11 +468,15 @@
       "pendingApprovalsHeading": "{count} Pending Approval{count, plural, one {} other {s}}",
       "pendingApprovalsDescription": "Review and approve pending entity listings",
       "reviewPending": "Review Pending",
+      "reviewApprovals": "Review Approvals",
+      "reviewApprovalsDescription": "Review new entities and changes awaiting approval.",
+      "pendingDescription": "Review new entities and changes submitted by users and AI.",
       "totalEntities": "Total Entities",
       "activeEntities": "Active Entities",
       "totalUsers": "Total Users",
       "active": "Active",
       "pending": "Pending",
+      "pendingApprovals": "Pending Approvals",
       "inactive": "Inactive",
       "users": "Users",
       "entityOwners": "Entity Owners",
@@ -491,16 +496,31 @@
       "status": {
         "ACTIVE": "Active",
         "PENDING": "Pending",
-        "INACTIVE": "Inactive"
+        "INACTIVE": "Inactive",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
       },
       "roles": {
         "USER": "User",
         "ADMIN": "Admin",
         "ENTITY_OWNER": "Entity Owner"
-      }
+      },
+      "refresh": "Refresh",
+      "processing": "Processing...",
+      "approve": "Approve",
+      "reject": "Reject",
+      "review": "Review",
+      "resolve": "Resolve",
+      "dismiss": "Dismiss",
+      "clearFilters": "Clear Filters",
+      "allRoles": "All Roles",
+      "searchPlaceholder": "Search by name or email...",
+      "notesOptional": "Notes (Optional)",
+      "notesPlaceholder": "Add any notes about this decision..."
     },
     "entities": {
       "noEntities": "No entities found",
+      "noEntitiesDescription": "Try adjusting your filters",
       "columns": {
         "name": "Name",
         "type": "Type",
@@ -540,14 +560,281 @@
         "applyFilters": "Apply Filters",
         "loading": "Loading entities...",
         "errorLoading": "Failed to load entities"
+      },
+      "newPage": {
+        "title": "Add New Entity"
       }
+    },
+    "quickAdd": {
+      "title": "Quick Add Entity",
+      "description": "Enter an entity name to automatically research and add it to the pending queue.",
+      "entityName": "Entity Name",
+      "placeholder": "e.g., Oak Park Community Center",
+      "hint": "The system assumes the entity is in the TahOak Park Collective coverage area",
+      "addEntity": "Add Entity",
+      "researching": "Researching and adding entity...",
+      "howItWorks": "How it works",
+      "step1": "AI researches the entity using web search",
+      "step2": "Checks for duplicates against existing entities",
+      "step3": "Extracts all relevant information (address, phone, website, etc.)",
+      "step4": "Creates approval request for your review"
+    },
+    "spotChecks": {
+      "title": "Spot Checks",
+      "description": "Weekly spot check list. Review 3-5 entities to ensure data quality. Entities not checked in 6+ months are prioritized.",
+      "tip": "Tip:",
+      "tipText": "Review each entity and verify that the information is accurate. Click \"Mark as Checked\" when complete.",
+      "refreshList": "Refresh List",
+      "loading": "Loading spot check list...",
+      "markAsChecked": "Mark as Checked"
+    },
+    "users": {
+      "title": "Manage Users",
+      "loading": "Loading users...",
+      "errorLoading": "Failed to load users",
+      "noUsers": "No users found",
+      "noUsersDescription": "Try adjusting your filters",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "roles": "Roles",
+        "businesses": "Businesses",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "actions": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "editRoles": "Edit Roles",
+        "updating": "Updating..."
+      }
+    },
+    "approvals": {
+      "title": "Approvals",
+      "description": "Review and approve or reject entity submissions and changes.",
+      "loading": "Loading approvals...",
+      "errorLoading": "Failed to load approvals",
+      "noApprovals": "No approvals found",
+      "allReviewed": "All items have been reviewed.",
+      "noMatches": "No items match the selected filters.",
+      "status": "Status:",
+      "type": "Type:",
+      "allTypes": "All Types",
+      "submitted": "Submitted:",
+      "submittedBy": "By:",
+      "types": {
+        "NEW_ENTITY": "New Entity",
+        "UPDATE_ENTITY": "Update Entity",
+        "ADD_TAG": "Add Tag",
+        "REMOVE_TAG": "Remove Tag",
+        "UPDATE_IMAGE": "Update Image"
+      },
+      "sources": {
+        "ai": "AI Quick-Add",
+        "public": "Public Suggestion",
+        "owner": "Entity Owner",
+        "admin": "Admin"
+      },
+      "detail": {
+        "title": "Approval Details",
+        "backToApprovals": "← Back to Approvals",
+        "approvalInfo": "Approval Information",
+        "rawEntityData": "Raw Entity Data",
+        "clickToExpand": "Click to expand",
+        "changeDetails": "Change Details",
+        "entity": "Entity:",
+        "field": "Field",
+        "oldValue": "Old Value",
+        "newValue": "New Value",
+        "reviewAction": "Review Action",
+        "slug": "Slug",
+        "coordinates": "Coordinates",
+        "categorySlugs": "Category Slugs",
+        "tagSlugs": "Tag Slugs",
+        "hoursRaw": "Hours (raw)",
+        "nameTranslations": "Name Translations",
+        "descriptionTranslations": "Description Translations",
+        "reviewed": "Reviewed",
+        "reviewNotes": "Review Notes",
+        "source": "Source",
+        "notFound": "Approval not found"
+      }
+    },
+    "issueReports": {
+      "title": "Issue Reports",
+      "description": "Review and resolve issue reports from the community about entity listings.",
+      "filterByStatus": "Filter by Status:",
+      "loading": "Loading issue reports...",
+      "errorLoading": "Failed to load issue reports",
+      "noReports": "No issue reports found",
+      "allReviewed": "All reports have been reviewed.",
+      "reportedBy": "Reported by:",
+      "reporterName": "Name:",
+      "reported": "Reported:",
+      "resolution": "Resolution:",
+      "resolveIssue": "Resolve Issue",
+      "dismissIssue": "Dismiss Issue",
+      "resolveDescription": "Please describe how this issue was resolved.",
+      "dismissDescription": "Please explain why this issue is being dismissed.",
+      "resolutionNotes": "Resolution Notes *",
+      "resolvePlaceholder": "How was this issue resolved?",
+      "dismissPlaceholder": "Why is this being dismissed?",
+      "types": {
+        "INCORRECT_INFO": "Incorrect Information",
+        "CLOSED": "Closed/Permanently Closed",
+        "INELIGIBLE": "Not Eligible",
+        "OTHER": "Other Issue"
+      },
+      "statuses": {
+        "PENDING": "Pending",
+        "RESOLVED": "Resolved",
+        "DISMISSED": "Dismissed"
+      }
+    },
+    "subscribers": {
+      "title": "Subscribers",
+      "description": "Manage email subscribers and view subscription preferences.",
+      "loading": "Loading subscribers...",
+      "errorLoading": "Failed to load subscribers",
+      "noSubscribers": "No subscribers found",
+      "tryAdjusting": "Try adjusting your search or filter.",
+      "noMatch": "No subscribers match the selected filter.",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search by email...",
+      "filterLabel": "Filter",
+      "stats": {
+        "total": "Total",
+        "verified": "Verified",
+        "unverified": "Unverified",
+        "unsubscribed": "Unsubscribed"
+      },
+      "filters": {
+        "all": "All",
+        "verified": "Verified",
+        "unverified": "Unverified",
+        "unsubscribed": "Unsubscribed"
+      },
+      "columns": {
+        "email": "Email",
+        "status": "Status",
+        "preferences": "Preferences",
+        "verified": "Verified",
+        "subscribed": "Subscribed",
+        "lastUpdated": "Last Updated"
+      },
+      "preferences": {
+        "newsletter": "Newsletter",
+        "newBusinesses": "New Businesses",
+        "events": "Events",
+        "updates": "Updates",
+        "none": "None"
+      },
+      "notVerified": "Not verified",
+      "never": "Never"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "description": "View website analytics and visitor statistics using Umami.",
+      "last30Days": "Website visitor statistics and insights (Last 30 days)",
+      "checkingStatus": "Checking Umami status...",
+      "notConfigured": "Analytics Not Configured",
+      "configuredDescription": "Analytics tracking is configured, but the website needs to be set up in Umami.",
+      "serviceRunning": "Umami service is running",
+      "serviceUnreachable": "Umami service is not accessible",
+      "openDashboard": "Open Full Dashboard →",
+      "openUmamiDashboard": "Open Umami Dashboard",
+      "directAccess": "Direct access:",
+      "fullDashboard": "Full Dashboard",
+      "fullDashboardDescription": "View detailed analytics, charts, and reports in the Umami dashboard.",
+      "noData": "No analytics data available yet. Visit your website to start collecting data!",
+      "stats": {
+        "pageviews": "Pageviews",
+        "totalPageViews": "Total page views",
+        "visitors": "Visitors",
+        "uniqueVisitors": "Unique visitors",
+        "visits": "Visits",
+        "totalSessions": "Total sessions",
+        "bounceRate": "Bounce Rate",
+        "singlePageVisits": "Single-page visits",
+        "avgVisitTime": "Avg. Visit Time",
+        "avgSessionDuration": "Average session duration"
+      }
+    },
+    "entityForm": {
+      "fields": {
+        "name": "Entity Name *",
+        "entityType": "Entity Type *",
+        "category": "Category",
+        "address": "Address",
+        "phone": "Phone",
+        "website": "Website"
+      },
+      "placeholders": {
+        "name": "Enter entity name",
+        "selectCategory": "Select a category",
+        "description": "Describe the entity...",
+        "address": "Street address",
+        "phone": "(555) 123-4567",
+        "website": "https://example.com"
+      },
+      "sections": {
+        "about": "About",
+        "locationContact": "Location & Contact",
+        "hours": "Business Hours",
+        "hoursEvent": "Event Schedule",
+        "hoursEventDescription": "When does this recurring event take place?",
+        "hoursServiceProvider": "Availability",
+        "hoursServiceProviderDescription": "When are you typically available for appointments?",
+        "onlinePresence": "Online Presence",
+        "media": "Images",
+        "tags": "Tags",
+        "tagsDescription": "Identity tags apply immediately. Friendliness tags require admin verification."
+      },
+      "hints": {
+        "commerce": {
+          "address": "Physical storefront location"
+        },
+        "civic": {
+          "address": "Office address (optional)"
+        },
+        "publicSpace": {
+          "address": "Location is important for visitors to find you"
+        },
+        "event": {
+          "address": "Event venue (if fixed location)",
+          "hours": "Enter the typical event schedule"
+        },
+        "serviceProvider": {
+          "address": "Optional - many service providers are home-based",
+          "hours": "Enter your typical availability"
+        },
+        "noCategories": "No categories available for {type}",
+        "addMediaTagsLater": "You can add images and tags after creating the entity.",
+        "addMediaLater": "You can add images after creating the entity."
+      },
+      "validation": {
+        "nameRequired": "Entity name is required",
+        "invalidWebsite": "Please enter a valid website URL (e.g., https://example.com)",
+        "invalidSocialUrl": "Please enter a valid {platform} URL"
+      },
+      "success": {
+        "created": "Entity created successfully!",
+        "updated": "Entity updated successfully!"
+      },
+      "buttons": {
+        "create": "Create Entity",
+        "update": "Update Entity",
+        "creating": "Creating...",
+        "updating": "Updating...",
+        "cancel": "Cancel"
+      },
+      "loading": "Updating..."
     }
   },
   "portal": {
     "sidebar": {
-      "sectionTitle": "Business Portal",
-      "dashboard": "Dashboard",
-      "myBusiness": "My Business"
+      "sectionTitle": "Entity Portal",
+      "dashboard": "Dashboard"
     },
     "dashboard": {
       "title": "My Entities",
@@ -561,7 +848,10 @@
       "edit": "Edit",
       "delete": "Delete",
       "categoryLabel": "Category:",
-      "deleteConfirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+      "deleteConfirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+      "pageViews": "Page Views",
+      "visitors": "Visitors",
+      "last30Days": "Last 30 days"
     },
     "entity": {
       "editTitle": "Edit Entity",
@@ -570,6 +860,76 @@
       "errorLoading": "Failed to load entity",
       "notFound": "Entity not found",
       "back": "← Back to Dashboard"
+    },
+    "form": {
+      "fields": {
+        "name": "Entity Name *",
+        "entityType": "Entity Type *",
+        "category": "Category",
+        "address": "Address",
+        "phone": "Phone",
+        "website": "Website"
+      },
+      "placeholders": {
+        "name": "Enter entity name",
+        "selectCategory": "Select a category",
+        "description": "Describe the entity...",
+        "address": "Street address",
+        "phone": "(555) 123-4567",
+        "website": "https://example.com"
+      },
+      "sections": {
+        "about": "About",
+        "locationContact": "Location & Contact",
+        "hours": "Business Hours",
+        "hoursEvent": "Event Schedule",
+        "hoursEventDescription": "When does this recurring event take place?",
+        "hoursServiceProvider": "Availability",
+        "hoursServiceProviderDescription": "When are you typically available for appointments?",
+        "onlinePresence": "Online Presence",
+        "media": "Images",
+        "tags": "Tags",
+        "tagsDescription": "Identity tags apply immediately. Friendliness tags require admin verification."
+      },
+      "hints": {
+        "commerce": {
+          "address": "Physical storefront location"
+        },
+        "civic": {
+          "address": "Office address (optional)"
+        },
+        "publicSpace": {
+          "address": "Location is important for visitors to find you"
+        },
+        "event": {
+          "address": "Event venue (if fixed location)",
+          "hours": "Enter the typical event schedule"
+        },
+        "serviceProvider": {
+          "address": "Optional - many service providers are home-based",
+          "hours": "Enter your typical availability"
+        },
+        "noCategories": "No categories available for {type}",
+        "addMediaTagsLater": "You can add images and tags after creating the entity.",
+        "addMediaLater": "You can add images after creating the entity."
+      },
+      "validation": {
+        "nameRequired": "Entity name is required",
+        "invalidWebsite": "Please enter a valid website URL (e.g., https://example.com)",
+        "invalidSocialUrl": "Please enter a valid {platform} URL"
+      },
+      "success": {
+        "created": "Entity created successfully!",
+        "updated": "Entity updated successfully!"
+      },
+      "buttons": {
+        "create": "Create Entity",
+        "update": "Update Entity",
+        "creating": "Creating...",
+        "updating": "Updating...",
+        "cancel": "Cancel"
+      },
+      "loading": "Updating..."
     }
   }
 }

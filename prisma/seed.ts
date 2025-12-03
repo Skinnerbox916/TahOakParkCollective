@@ -78,7 +78,7 @@ const CATEGORIES = [
     name: "Community & Faith",
     slug: "community-faith",
     description: "Neighborhood groups, non-profits, churches, temples, mutual aid",
-    entityTypes: [EntityType.ADVOCACY, EntityType.NON_PROFIT],
+    entityTypes: [EntityType.NON_PROFIT],
     nameTranslations: { en: "Community & Faith", es: "Comunidad y Fe" },
   },
   {

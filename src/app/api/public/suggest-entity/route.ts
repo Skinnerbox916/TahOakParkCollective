@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
-import { SuggestionStatus } from "@/lib/prismaEnums";
+import { ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,24 +18,26 @@ export async function POST(request: NextRequest) {
       return createErrorResponse("Invalid email format", 400);
     }
 
-    // Create suggestion
-    const suggestion = await prisma.entitySuggestion.create({
+    // Create approval with NEW_ENTITY type
+    const approval = await prisma.approval.create({
       data: {
-        name,
-        description,
-        address,
-        website,
+        type: ApprovalType.NEW_ENTITY,
+        status: ApprovalStatus.PENDING,
+        entityData: {
+          name,
+          description: description || null,
+          address: address || null,
+          website: website || null,
+          submitterName: submitterName || null,
+        },
         submitterEmail,
-        submitterName,
-        status: SuggestionStatus.PENDING,
+        source: "public",
       },
     });
 
-    return createSuccessResponse(suggestion, "Suggestion submitted successfully");
+    return createSuccessResponse(approval, "Suggestion submitted successfully");
   } catch (error) {
     console.error("Error submitting entity suggestion:", error);
     return createErrorResponse("Failed to submit suggestion", 500);
   }
 }
-
-

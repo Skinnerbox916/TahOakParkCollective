@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { ROLE, ChangeType, ChangeStatus } from "@/lib/prismaEnums";
+import { ROLE, ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
-import { getTranslatedField } from "@/lib/translations";
+import { entityIncludeStandard, transformEntity } from "@/lib/entity-helpers";
 
 export async function GET(
   request: NextRequest,
@@ -14,21 +14,7 @@ export async function GET(
     const { id } = await params;
     const entity = await prisma.entity.findUnique({
       where: { id },
-      include: {
-        categories: true,
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          }
-        }
-      },
+      include: entityIncludeStandard,
     });
 
     if (!entity) {
@@ -36,44 +22,7 @@ export async function GET(
     }
 
     // Map entity to include translated content
-    const translatedEntity = {
-      ...entity,
-      name: getTranslatedField(entity.nameTranslations, locale, entity.name),
-      description: entity.description
-        ? getTranslatedField(entity.descriptionTranslations, locale, entity.description)
-        : null,
-    };
-
-    // Translate categories if present
-    if (entity.categories && Array.isArray(entity.categories)) {
-      translatedEntity.categories = entity.categories.map((cat: any) => ({
-        ...cat,
-        name: getTranslatedField(cat.nameTranslations, locale, cat.name),
-        description: cat.description
-          ? getTranslatedField(cat.descriptionTranslations, locale, cat.description)
-          : null,
-      }));
-    }
-
-    // Translate tags if present
-    if (entity.tags && Array.isArray(entity.tags)) {
-      translatedEntity.tags = entity.tags.map((entityTag: any) => {
-        if (entityTag.tag) {
-          return {
-            ...entityTag,
-            tag: {
-              ...entityTag.tag,
-              name: getTranslatedField(
-                entityTag.tag.nameTranslations,
-                locale,
-                entityTag.tag.name
-              ),
-            },
-          };
-        }
-        return entityTag;
-      });
-    }
+    const translatedEntity = transformEntity(entity, locale);
 
     return createSuccessResponse(translatedEntity);
   } catch (error) {
@@ -90,7 +39,7 @@ export async function PUT(
     try {
       const { id } = await params;
       const body = await request.json();
-      const { name, description, address, phone, website, categoryIds, status, entityType, socialMedia } = body;
+      const { name, description, address, phone, website, categoryIds, status, entityType, socialMedia, hours, seoTitleTranslations, seoDescriptionTranslations } = body;
 
       // Check if entity exists
       const existingEntity = await prisma.entity.findUnique({
@@ -141,6 +90,54 @@ export async function PUT(
         }
       }
 
+      // Handle hours - clean empty values or set to null if explicitly cleared
+      if (hours !== undefined) {
+        if (hours === null) {
+          updateData.hours = null;
+        } else if (typeof hours === 'object') {
+          // Clean hours - remove days with no data
+          const cleaned: any = {};
+          for (const [day, dayHours] of Object.entries(hours)) {
+            if (dayHours && typeof dayHours === 'object') {
+              const dh = dayHours as any;
+              if (dh.closed || (dh.open && dh.close)) {
+                cleaned[day] = dayHours;
+              }
+            }
+          }
+          updateData.hours = Object.keys(cleaned).length > 0 ? cleaned : null;
+        }
+      }
+
+      // Handle SEO translation fields
+      if (seoTitleTranslations !== undefined) {
+        if (seoTitleTranslations === null) {
+          updateData.seoTitleTranslations = null;
+        } else if (typeof seoTitleTranslations === 'object') {
+          const cleaned: any = {};
+          for (const [locale, value] of Object.entries(seoTitleTranslations)) {
+            if (value && typeof value === 'string' && value.trim()) {
+              cleaned[locale] = value.trim();
+            }
+          }
+          updateData.seoTitleTranslations = Object.keys(cleaned).length > 0 ? cleaned : null;
+        }
+      }
+
+      if (seoDescriptionTranslations !== undefined) {
+        if (seoDescriptionTranslations === null) {
+          updateData.seoDescriptionTranslations = null;
+        } else if (typeof seoDescriptionTranslations === 'object') {
+          const cleaned: any = {};
+          for (const [locale, value] of Object.entries(seoDescriptionTranslations)) {
+            if (value && typeof value === 'string' && value.trim()) {
+              cleaned[locale] = value.trim();
+            }
+          }
+          updateData.seoDescriptionTranslations = Object.keys(cleaned).length > 0 ? cleaned : null;
+        }
+      }
+
       // Status changes: Admin only
       if (status !== undefined) {
         if (isAdmin) {
@@ -172,24 +169,25 @@ export async function PUT(
         return createSuccessResponse(entity, "Entity updated successfully");
       }
 
-      // If Owner, create Pending Change
+      // If Owner, create Approval request
       // Store the entire updateData as newValue
       if (Object.keys(updateData).length === 0) {
          return createErrorResponse("No changes provided", 400);
       }
 
-      const pendingChange = await prisma.pendingChange.create({
+      const approval = await prisma.approval.create({
         data: {
           entityId: id,
-          changeType: ChangeType.UPDATE_ENTITY,
+          type: ApprovalType.UPDATE_ENTITY,
           newValue: updateData,
           submittedBy: user.id,
           submitterEmail: user.email,
-          status: ChangeStatus.PENDING,
+          status: ApprovalStatus.PENDING,
+          source: "owner",
         },
       });
 
-      return createSuccessResponse(pendingChange, "Changes submitted for review");
+      return createSuccessResponse(approval, "Changes submitted for review");
 
     } catch (error) {
       console.error("Error updating entity:", error);

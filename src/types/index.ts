@@ -1,16 +1,16 @@
-import type { Entity, Category, User, Prisma, Tag, EntityTag, PendingChange } from "@prisma/client";
-import type { Role, EntityStatus, EntityType, TagCategory, ChangeType, ChangeStatus } from "@/lib/prismaEnums";
+import type { Entity, Category, User, Prisma, Tag, EntityTag, Approval } from "@prisma/client";
+import type { Role, EntityStatus, EntityType, TagCategory, ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
 
-export type { Entity, Category, User, Role, EntityStatus, EntityType, Tag, EntityTag, TagCategory, PendingChange, ChangeType, ChangeStatus };
+export type { Entity, Category, User, Role, EntityStatus, EntityType, Tag, EntityTag, TagCategory, Approval, ApprovalType, ApprovalStatus };
 
 export type EntityTagWithTag = EntityTag & { tag: Tag };
 
-export type PendingChangeWithEntity = PendingChange & {
+export type ApprovalWithEntity = Approval & {
   entity: {
     id: string;
     name: string;
     slug: string;
-  };
+  } | null;
 };
 
 export type EntityWithRelations = Prisma.EntityGetPayload<{
@@ -24,23 +24,6 @@ export type EntityWithRelations = Prisma.EntityGetPayload<{
     };
   };
 }>;
-
-// For suggestion pages
-export type SuggestionWithEntity = {
-  id: string;
-  name: string;
-  description: string | null;
-  address: string | null;
-  website: string | null;
-  submitterEmail: string;
-  submitterName: string | null;
-  status: string;
-  reviewedBy: string | null;
-  reviewedAt: Date | null;
-  notes: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
 
 export interface ApiResponse<T = unknown> {
   success: boolean;

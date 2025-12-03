@@ -11,7 +11,6 @@ export function useEntityTypeLabels() {
   return {
     COMMERCE: t("commerce"),
     CIVIC: t("civic"),
-    ADVOCACY: t("advocacy"),
     PUBLIC_SPACE: t("publicSpace"),
     NON_PROFIT: t("nonProfit"),
     EVENT: t("event"),
@@ -32,7 +31,6 @@ export async function getEntityTypeLabels(locale: string): Promise<Record<Entity
   return {
     COMMERCE: t("commerce"),
     CIVIC: t("civic"),
-    ADVOCACY: t("advocacy"),
     PUBLIC_SPACE: t("publicSpace"),
     NON_PROFIT: t("nonProfit"),
     EVENT: t("event"),

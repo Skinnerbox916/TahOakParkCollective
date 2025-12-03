@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { Link } from "@/i18n/routing";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { ApiResponse } from "@/types";
 import { useAdminTranslations } from "@/lib/admin-translations";
 
@@ -11,7 +14,6 @@ interface Stats {
   entities: {
     total: number;
     active: number;
-    pending: number;
     inactive: number;
   };
   users: {
@@ -21,6 +23,7 @@ interface Stats {
     admin: number;
   };
   pendingApprovals: number;
+  pendingIssueReports: number;
 }
 
 export default function AdminDashboard() {
@@ -54,17 +57,8 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
-          {tDashboard("title")}
-        </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-1/2 mb-2"></div>
-              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-            </Card>
-          ))}
-        </div>
+        <PageHeader title={tDashboard("title")} />
+        <LoadingState />
       </div>
     );
   }
@@ -72,41 +66,35 @@ export default function AdminDashboard() {
   if (error || !stats) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
-          {tDashboard("title")}
-        </h1>
-        <Card>
-          <p className="text-red-600">{error || tDashboard("loadError")}</p>
-        </Card>
+        <PageHeader title={tDashboard("title")} />
+        <Alert variant="error">
+          {error || tDashboard("loadError")}
+        </Alert>
       </div>
     );
   }
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">
-        {tDashboard("title")}
-      </h1>
+      <PageHeader title={tDashboard("title")} />
 
       {/* Quick Actions */}
       {stats.pendingApprovals > 0 && (
-        <Card className="mb-6 bg-yellow-50 border-yellow-200">
+        <Alert variant="warning">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">
-                {tDashboard("pendingApprovalsHeading", {
-                  count: stats.pendingApprovals,
-                })}
+              <h2 className="text-lg font-semibold mb-1">
+                {tDashboard("pendingApprovalsHeading", { count: stats.pendingApprovals })}
               </h2>
-              <p className="text-sm text-gray-600">
-                {tDashboard("pendingApprovalsDescription")}
+              <p className="text-sm">
+                {tDashboard("pendingDescription")}
               </p>
             </div>
-            <Button href="/admin/entities?status=PENDING">
-              {tDashboard("reviewPending")}
+            <Button href="/admin/approvals">
+              {tDashboard("reviewApprovals")}
             </Button>
           </div>
-        </Card>
+        </Alert>
       )}
 
       {/* Statistics Cards */}
@@ -122,12 +110,6 @@ export default function AdminDashboard() {
               <span>{tDashboard("active")}:</span>
               <span className="font-medium text-green-600">
                 {stats.entities.active}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>{tDashboard("pending")}:</span>
-              <span className="font-medium text-yellow-600">
-                {stats.entities.pending}
               </span>
             </div>
             <div className="flex justify-between">
@@ -180,13 +162,11 @@ export default function AdminDashboard() {
         {/* Pending Approvals */}
         <Card>
           <h3 className="text-sm font-medium text-gray-500 mb-1">
-            {tDashboard("pendingApprovalsHeading", {
-              count: stats.pendingApprovals,
-            })}
+            {tDashboard("pendingApprovals")}
           </h3>
           <p className="text-3xl font-bold text-yellow-600">{stats.pendingApprovals}</p>
           <Link
-            href="/admin/entities?status=PENDING"
+            href="/admin/approvals"
             className="text-sm text-indigo-600 hover:text-indigo-700 mt-2 inline-block"
           >
             {tDashboard("reviewNow")}
@@ -210,22 +190,22 @@ export default function AdminDashboard() {
           </Link>
         </Card>
         <Card padding="sm" className="hover:shadow-md transition-shadow">
+          <Link href="/admin/approvals" className="block">
+            <h3 className="font-semibold text-gray-900 mb-1">
+              {tDashboard("reviewApprovals")}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {tDashboard("reviewApprovalsDescription")}
+            </p>
+          </Link>
+        </Card>
+        <Card padding="sm" className="hover:shadow-md transition-shadow">
           <Link href="/admin/users" className="block">
             <h3 className="font-semibold text-gray-900 mb-1">
               {tDashboard("manageUsers")}
             </h3>
             <p className="text-sm text-gray-600">
               {tDashboard("manageUsersDescription")}
-            </p>
-          </Link>
-        </Card>
-        <Card padding="sm" className="hover:shadow-md transition-shadow">
-          <Link href="/" className="block">
-            <h3 className="font-semibold text-gray-900 mb-1">
-              {tDashboard("viewDirectory")}
-            </h3>
-            <p className="text-sm text-gray-600">
-              {tDashboard("viewDirectoryDescription")}
             </p>
           </Link>
         </Card>

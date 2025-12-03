@@ -2,21 +2,14 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE } from "@/lib/prismaEnums";
+import { fetchCategories } from "@/lib/category-helpers";
 
 export async function GET(request: NextRequest) {
   return withRole([ROLE.ADMIN], async () => {
     try {
-      const categories = await prisma.category.findMany({
-        orderBy: {
-          name: "asc",
-        },
-        include: {
-          _count: {
-            select: {
-              entities: true,
-            },
-          },
-        },
+      const categories = await fetchCategories({
+        includeInactive: true,
+        requireEntityTypes: false,
       });
 
       return createSuccessResponse(categories);

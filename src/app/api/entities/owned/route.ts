@@ -1,25 +1,18 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
+import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
 import { ROLE } from "@/lib/prismaEnums";
+import { entityIncludeStandard } from "@/lib/entity-helpers";
 
 export async function GET(request: NextRequest) {
-  return withRole([ROLE.ENTITY_OWNER, ROLE.ADMIN], async (user) => {
+  // Any authenticated user can view their owned entities (may be empty for new users)
+  return withAuth(async (user) => {
     try {
       const entities = await prisma.entity.findMany({
         where: {
           ownerId: user.id,
         },
-        include: {
-          categories: true,
-          owner: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
+        include: entityIncludeStandard,
         orderBy: {
           createdAt: "desc",
         },
@@ -34,7 +27,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  return withRole([ROLE.ENTITY_OWNER, ROLE.ADMIN], async (user) => {
+  // Any authenticated user can update their own entities
+  return withAuth(async (user) => {
     try {
       const body = await request.json();
       const { id, ...updateData } = body;

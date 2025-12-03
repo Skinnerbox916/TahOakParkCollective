@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { RoleBadges } from "./RoleBadge";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ROLE } from "@/lib/prismaEnums";
 import type { Role } from "@/lib/prismaEnums";
 import { ApiResponse } from "@/types";
+import { useAdminTranslations } from "@/lib/admin-translations";
 
 interface User {
   id: string;
@@ -25,6 +27,7 @@ export function UserTable({ users, onRoleChange }: UserTableProps) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingRoles, setEditingRoles] = useState<Role[]>([]);
+  const { t } = useAdminTranslations("users");
 
   const handleEditClick = (user: User) => {
     setEditingUser(user.id);
@@ -83,9 +86,11 @@ export function UserTable({ users, onRoleChange }: UserTableProps) {
 
   if (users.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">No users found</p>
-      </div>
+      <EmptyState
+        icon="👥"
+        title={t("noUsers")}
+        description={t("noUsersDescription") || "Try adjusting your filters"}
+      />
     );
   }
 
@@ -95,22 +100,22 @@ export function UserTable({ users, onRoleChange }: UserTableProps) {
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Name
+              {t("columns.name")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Email
+              {t("columns.email")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Roles
+              {t("columns.roles")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Businesses
+              {t("columns.businesses")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Created
+              {t("columns.created")}
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
+              {t("columns.actions")}
             </th>
           </tr>
         </thead>
@@ -148,20 +153,21 @@ export function UserTable({ users, onRoleChange }: UserTableProps) {
                       ))}
                     </div>
                     <div className="flex gap-2 mt-2">
-                      <button
+                      <Button
+                        size="sm"
                         onClick={() => handleSave(user.id)}
                         disabled={updating === user.id}
-                        className="text-xs px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
                       >
-                        Save
-                      </button>
-                      <button
+                        {t("actions.save")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={handleCancel}
                         disabled={updating === user.id}
-                        className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50"
                       >
-                        Cancel
-                      </button>
+                        {t("actions.cancel")}
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -176,15 +182,15 @@ export function UserTable({ users, onRoleChange }: UserTableProps) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 {onRoleChange && editingUser !== user.id && (
-                  <button
+                  <Button
+                    size="sm"
                     onClick={() => handleEditClick(user)}
-                    className="text-xs px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
                   >
-                    Edit Roles
-                  </button>
+                    {t("actions.editRoles")}
+                  </Button>
                 )}
                 {updating === user.id && (
-                  <span className="ml-2 text-xs text-gray-500">Updating...</span>
+                  <span className="ml-2 text-xs text-gray-500">{t("actions.updating")}</span>
                 )}
               </td>
             </tr>

@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { ChangeType, ChangeStatus } from "@/lib/prismaEnums";
+import { ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
 
 export async function POST(
   request: NextRequest,
@@ -11,14 +11,14 @@ export async function POST(
     try {
       const { id } = await params;
       const body = await request.json();
-      const { changeType, fieldName, oldValue, newValue } = body;
+      const { approvalType, fieldName, oldValue, newValue } = body;
 
-      if (!changeType || !newValue) {
-        return createErrorResponse("changeType and newValue are required", 400);
+      if (!approvalType || !newValue) {
+        return createErrorResponse("approvalType and newValue are required", 400);
       }
 
-      if (!Object.values(ChangeType).includes(changeType)) {
-        return createErrorResponse("Invalid changeType", 400);
+      if (!Object.values(ApprovalType).includes(approvalType)) {
+        return createErrorResponse("Invalid approvalType", 400);
       }
 
       // Verify entity exists
@@ -30,26 +30,25 @@ export async function POST(
         return createErrorResponse("Entity not found", 404);
       }
 
-      // Create pending change
-      const change = await prisma.pendingChange.create({
+      // Create approval
+      const approval = await prisma.approval.create({
         data: {
           entityId: id,
-          changeType: changeType as ChangeType,
+          type: approvalType as ApprovalType,
           fieldName,
           oldValue: oldValue || null,
           newValue,
           submittedBy: user.id,
           submitterEmail: user.email,
-          status: ChangeStatus.PENDING,
+          status: ApprovalStatus.PENDING,
+          source: "owner",
         },
       });
 
-      return createSuccessResponse(change, "Change submitted for review");
+      return createSuccessResponse(approval, "Change submitted for review");
     } catch (error) {
       console.error("Error submitting change:", error);
       return createErrorResponse("Failed to submit change", 500);
     }
   });
 }
-
-

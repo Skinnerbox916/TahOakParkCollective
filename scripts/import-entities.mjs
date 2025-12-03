@@ -30,11 +30,12 @@ function mapEntityType(jsonType) {
   const mapping = {
     'COMMERCE': 'COMMERCE',
     'CIVIC': 'CIVIC',
-    'ADVOCACY': 'ADVOCACY',
     'PUBLIC_SPACE': 'PUBLIC_SPACE',
     'NON_PROFIT': 'NON_PROFIT',
     'EVENT': 'EVENT',
     'SERVICE_PROVIDER': 'SERVICE_PROVIDER',
+    // Legacy mapping: ADVOCACY is now merged into NON_PROFIT
+    'ADVOCACY': 'NON_PROFIT',
   };
   return mapping[jsonType] || 'COMMERCE';
 }

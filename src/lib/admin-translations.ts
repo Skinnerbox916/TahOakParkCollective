@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import type { EntityStatus, Role } from "@/lib/prismaEnums";
+import type { EntityStatus, ApprovalStatus, Role } from "@/lib/prismaEnums";
 
 type TranslateValues = Record<string, string | number>;
 
@@ -21,8 +21,10 @@ export function useAdminTranslations(scope?: string) {
 
   const common = useMemo(
     () => ({
-      status: (status: EntityStatus) =>
-        t(`common.status.${status}`) as string,
+      status: (status: EntityStatus | ApprovalStatus | undefined | null) => {
+        if (!status) return "";
+        return t(`common.status.${status}`) as string;
+      },
       role: (role: Role) => t(`common.roles.${role}`) as string,
     }),
     [t]

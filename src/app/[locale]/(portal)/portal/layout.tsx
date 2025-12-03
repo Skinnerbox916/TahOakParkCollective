@@ -1,5 +1,5 @@
 import { redirect } from "@/i18n/routing";
-import { requireRole } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { portalNavItems } from "@/lib/navigation";
 
@@ -9,9 +9,10 @@ export default async function PortalLayout({
   children: React.ReactNode;
 }) {
   try {
-    await requireRole(["ENTITY_OWNER" as const, "ADMIN" as const]);
+    // Any authenticated user can access the portal to manage their entities
+    await requireAuth();
   } catch {
-    redirect("/auth/unauthorized");
+    redirect("/auth/signin");
   }
 
   return (

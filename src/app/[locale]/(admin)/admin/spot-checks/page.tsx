@@ -5,12 +5,17 @@ import { SpotCheckList } from "@/components/admin/SpotCheckList";
 import { EntityWithRelations, ApiResponse } from "@/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { useAdminTranslations } from "@/lib/admin-translations";
 
 export default function AdminSpotChecksPage() {
   const [entities, setEntities] = useState<EntityWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useAdminTranslations("spotChecks");
 
   const fetchSpotChecks = async () => {
     try {
@@ -63,40 +68,33 @@ export default function AdminSpotChecksPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Spot Checks</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Weekly spot check list. Review 3-5 entities to ensure data quality. Entities not checked in 6+ months are prioritized.
-        </p>
-      </div>
+      <PageHeader 
+        title={t("title")}
+        description={t("description")}
+        action={
+          <Button onClick={fetchSpotChecks} disabled={loading} variant="outline">
+            {t("refreshList")}
+          </Button>
+        }
+      />
 
       {/* Error State */}
       {error && (
-        <Card className="mb-6 bg-red-50 border-red-200">
-          <p className="text-red-600">{error}</p>
-        </Card>
+        <Alert variant="error">
+          {error}
+        </Alert>
       )}
 
-      {/* Actions */}
-      <div className="mb-6 flex items-center justify-between">
-        <Card className="p-4 bg-blue-50 border-blue-200">
-          <p className="text-sm text-blue-800">
-            <strong>Tip:</strong> Review each entity and verify that the information is accurate.
-            Click &quot;Mark as Checked&quot; when complete.
-          </p>
-        </Card>
-        <Button onClick={fetchSpotChecks} disabled={loading} variant="outline">
-          Refresh List
-        </Button>
-      </div>
+      {/* Info Alert */}
+      <Alert variant="info">
+        <p className="text-sm">
+          <strong>{t("tip")}</strong> {t("tipText")}
+        </p>
+      </Alert>
 
       {/* Loading State */}
       {loading ? (
-        <Card>
-          <div className="text-center py-12">
-            <p className="text-gray-500">Loading spot check list...</p>
-          </div>
-        </Card>
+        <LoadingState message={t("loading")} />
       ) : (
         <SpotCheckList
           entities={entities}
@@ -107,4 +105,3 @@ export default function AdminSpotChecksPage() {
     </div>
   );
 }
-

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ApiResponse } from "@/types";
+import { useAdminTranslations } from "@/lib/admin-translations";
 
 interface UmamiStatus {
   configured: boolean;
@@ -28,6 +29,8 @@ export default function AdminAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const { t } = useAdminTranslations("analytics");
 
   useEffect(() => {
     async function checkUmamiStatus() {
@@ -103,7 +106,7 @@ export default function AdminAnalyticsPage() {
       <Card className="p-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking Umami status...</p>
+          <p className="text-gray-600">{t("checkingStatus")}</p>
         </div>
       </Card>
     );
@@ -113,9 +116,9 @@ export default function AdminAnalyticsPage() {
     return (
       <div>
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("title")}</h1>
           <p className="text-gray-600">
-            View website analytics and visitor statistics using Umami.
+            {t("description")}
           </p>
         </div>
 
@@ -123,7 +126,7 @@ export default function AdminAnalyticsPage() {
           <div className="text-center">
             <div className="text-6xl mb-4">📊</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Analytics Not Configured
+              {t("notConfigured")}
             </h2>
             
             {umamiStatus && (
@@ -131,19 +134,19 @@ export default function AdminAnalyticsPage() {
                 {umamiStatus.umamiStatus === "running" ? (
                   <div className="inline-flex items-center px-4 py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg mb-4">
                     <span className="mr-2">✅</span>
-                    Umami service is running
+                    {t("serviceRunning")}
                   </div>
                 ) : umamiStatus.umamiStatus === "unreachable" ? (
                   <div className="inline-flex items-center px-4 py-2 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg mb-4">
                     <span className="mr-2">⚠️</span>
-                    Umami service is not accessible
+                    {t("serviceUnreachable")}
                   </div>
                 ) : null}
               </div>
             )}
 
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Analytics tracking is configured, but the website needs to be set up in Umami.
+              {t("configuredDescription")}
             </p>
           </div>
         </Card>
@@ -155,9 +158,9 @@ export default function AdminAnalyticsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("title")}</h1>
           <p className="text-gray-600">
-            Website visitor statistics and insights (Last 30 days)
+            {t("last30Days")}
           </p>
         </div>
         <Button
@@ -166,14 +169,14 @@ export default function AdminAnalyticsPage() {
           rel="noopener noreferrer"
           variant="outline"
         >
-          Open Full Dashboard →
+          {t("openDashboard")}
         </Button>
       </div>
 
       {error && (
         <Card className="mb-6 bg-yellow-50 border-yellow-200">
           <p className="text-yellow-700">
-            ⚠️ {error}. <a href={dashboardUrl} target="_blank" rel="noopener noreferrer" className="underline">Open dashboard directly</a> to view analytics.
+            ⚠️ {error}. <a href={dashboardUrl} target="_blank" rel="noopener noreferrer" className="underline">{t("openDashboard")}</a>
           </p>
         </Card>
       )}
@@ -192,42 +195,42 @@ export default function AdminAnalyticsPage() {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <Card className="p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Pageviews</h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">{t("stats.pageviews")}</h3>
               <p className="text-3xl font-bold text-gray-900">{formatNumber(stats.pageviews)}</p>
-              <p className="text-xs text-gray-500 mt-2">Total page views</p>
+              <p className="text-xs text-gray-500 mt-2">{t("stats.totalPageViews")}</p>
             </Card>
 
             <Card className="p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Visitors</h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">{t("stats.visitors")}</h3>
               <p className="text-3xl font-bold text-indigo-600">{formatNumber(stats.visitors)}</p>
-              <p className="text-xs text-gray-500 mt-2">Unique visitors</p>
+              <p className="text-xs text-gray-500 mt-2">{t("stats.uniqueVisitors")}</p>
             </Card>
 
             <Card className="p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Visits</h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">{t("stats.visits")}</h3>
               <p className="text-3xl font-bold text-purple-600">{formatNumber(stats.visits)}</p>
-              <p className="text-xs text-gray-500 mt-2">Total sessions</p>
+              <p className="text-xs text-gray-500 mt-2">{t("stats.totalSessions")}</p>
             </Card>
 
             <Card className="p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Bounce Rate</h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">{t("stats.bounceRate")}</h3>
               <p className="text-3xl font-bold text-orange-600">{formatPercent(stats.bounceRate)}</p>
-              <p className="text-xs text-gray-500 mt-2">Single-page visits</p>
+              <p className="text-xs text-gray-500 mt-2">{t("stats.singlePageVisits")}</p>
             </Card>
           </div>
 
           {/* Additional Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Avg. Visit Time</h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">{t("stats.avgVisitTime")}</h3>
               <p className="text-2xl font-bold text-gray-900">{formatTime(stats.avgVisitTime)}</p>
-              <p className="text-xs text-gray-500 mt-2">Average session duration</p>
+              <p className="text-xs text-gray-500 mt-2">{t("stats.avgSessionDuration")}</p>
             </Card>
 
             <Card className="p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Full Dashboard</h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">{t("fullDashboard")}</h3>
               <p className="text-sm text-gray-600 mb-4">
-                View detailed analytics, charts, and reports in the Umami dashboard.
+                {t("fullDashboardDescription")}
               </p>
               <Button
                 href={dashboardUrl}
@@ -235,10 +238,10 @@ export default function AdminAnalyticsPage() {
                 rel="noopener noreferrer"
                 className="w-full"
               >
-                Open Umami Dashboard
+                {t("openUmamiDashboard")}
               </Button>
               <p className="text-xs text-gray-500 mt-2 text-center">
-                Direct access: <code className="bg-gray-100 px-1 rounded">{dashboardUrl}</code>
+                {t("directAccess")} <code className="bg-gray-100 px-1 rounded">{dashboardUrl}</code>
               </p>
             </Card>
           </div>
@@ -246,7 +249,7 @@ export default function AdminAnalyticsPage() {
       ) : (
         <Card className="p-8">
           <div className="text-center">
-            <p className="text-gray-600">No analytics data available yet. Visit your website to start collecting data!</p>
+            <p className="text-gray-600">{t("noData")}</p>
           </div>
         </Card>
       )}

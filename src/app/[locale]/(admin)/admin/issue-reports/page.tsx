@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ApiResponse } from "@/types";
 import { Link } from "@/i18n/routing";
+import { useAdminTranslations } from "@/lib/admin-translations";
+import { useTranslations } from "next-intl";
 
 interface IssueReport {
   id: string;
@@ -28,13 +30,6 @@ interface IssueReport {
   } | null;
 }
 
-const ISSUE_TYPE_LABELS: Record<IssueType, string> = {
-  INCORRECT_INFO: "Incorrect Information",
-  CLOSED: "Closed/Permanently Closed",
-  INELIGIBLE: "Not Eligible",
-  OTHER: "Other Issue",
-};
-
 export default function AdminIssueReportsPage() {
   const [reports, setReports] = useState<IssueReport[]>([]);
   const [selectedReport, setSelectedReport] = useState<IssueReport | null>(null);
@@ -44,6 +39,18 @@ export default function AdminIssueReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [action, setAction] = useState<"RESOLVE" | "DISMISS" | null>(null);
   const [resolution, setResolution] = useState("");
+  
+  const { t } = useAdminTranslations("issueReports");
+  const { t: tCommon } = useAdminTranslations("common");
+  const tGlobalCommon = useTranslations("common");
+
+  const getIssueTypeLabel = (type: IssueType): string => {
+    return t(`types.${type}`);
+  };
+
+  const getStatusLabel = (status: ReportStatus): string => {
+    return t(`statuses.${status}`);
+  };
 
   const fetchReports = async () => {
     try {
@@ -124,27 +131,27 @@ export default function AdminIssueReportsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Issue Reports</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Review and resolve issue reports from the community about entity listings.
+          {t("description")}
         </p>
       </div>
 
       {/* Status Filter */}
       <Card className="mb-6">
         <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">Filter by Status:</label>
+          <label className="text-sm font-medium text-gray-700">{t("filterByStatus")}</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as ReportStatus)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value={ReportStatus.PENDING}>Pending</option>
-            <option value={ReportStatus.RESOLVED}>Resolved</option>
-            <option value={ReportStatus.DISMISSED}>Dismissed</option>
+            <option value={ReportStatus.PENDING}>{getStatusLabel(ReportStatus.PENDING)}</option>
+            <option value={ReportStatus.RESOLVED}>{getStatusLabel(ReportStatus.RESOLVED)}</option>
+            <option value={ReportStatus.DISMISSED}>{getStatusLabel(ReportStatus.DISMISSED)}</option>
           </select>
           <Button variant="outline" onClick={fetchReports} disabled={loading}>
-            Refresh
+            {tCommon("refresh")}
           </Button>
         </div>
       </Card>
@@ -160,7 +167,7 @@ export default function AdminIssueReportsPage() {
       {loading ? (
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading issue reports...</p>
+            <p className="text-gray-500">{t("loading")}</p>
           </div>
         </Card>
       ) : reports.length === 0 ? (
@@ -168,10 +175,10 @@ export default function AdminIssueReportsPage() {
           <div className="text-center py-12">
             <div className="text-gray-400 text-4xl mb-4">✅</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No issue reports found
+              {t("noReports")}
             </h3>
             <p className="text-gray-600">
-              All reports have been reviewed.
+              {t("allReviewed")}
             </p>
           </div>
         </Card>
@@ -204,10 +211,10 @@ export default function AdminIssueReportsPage() {
                           : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {report.status}
+                      {getStatusLabel(report.status)}
                     </span>
                     <span className="inline-flex px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-full">
-                      {ISSUE_TYPE_LABELS[report.issueType]}
+                      {getIssueTypeLabel(report.issueType)}
                     </span>
                   </div>
 
@@ -224,16 +231,16 @@ export default function AdminIssueReportsPage() {
                   </div>
 
                   <div className="space-y-1 text-sm text-gray-600">
-                    <p>📧 Reported by: {report.submitterEmail}</p>
+                    <p>📧 {t("reportedBy")} {report.submitterEmail}</p>
                     {report.submitterName && (
-                      <p>👤 Name: {report.submitterName}</p>
+                      <p>👤 {t("reporterName")} {report.submitterName}</p>
                     )}
                     <p className="text-xs text-gray-500">
-                      Reported: {formatDate(report.createdAt)}
+                      {t("reported")} {formatDate(report.createdAt)}
                     </p>
                     {report.resolution && (
                       <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                        <strong>Resolution:</strong> {report.resolution}
+                        <strong>{t("resolution")}</strong> {report.resolution}
                       </div>
                     )}
                   </div>
@@ -247,7 +254,7 @@ export default function AdminIssueReportsPage() {
                       onClick={() => handleOpenModal(report, "RESOLVE")}
                       disabled={processing !== null}
                     >
-                      ✓ Resolve
+                      ✓ {tCommon("resolve")}
                     </Button>
                     <Button
                       variant="outline"
@@ -256,7 +263,7 @@ export default function AdminIssueReportsPage() {
                       disabled={processing !== null}
                       className="text-red-600 border-red-300 hover:bg-red-50"
                     >
-                      ✗ Dismiss
+                      ✗ {tCommon("dismiss")}
                     </Button>
                   </div>
                 )}
@@ -272,7 +279,7 @@ export default function AdminIssueReportsPage() {
           <Card className="max-w-lg w-full">
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                {action === "RESOLVE" ? "Resolve Issue" : "Dismiss Issue"}
+                {action === "RESOLVE" ? t("resolveIssue") : t("dismissIssue")}
               </h2>
 
               {error && (
@@ -287,14 +294,14 @@ export default function AdminIssueReportsPage() {
                 </p>
                 <p className="text-sm text-gray-600">
                   {action === "RESOLVE"
-                    ? "Please describe how this issue was resolved."
-                    : "Please explain why this issue is being dismissed."}
+                    ? t("resolveDescription")
+                    : t("dismissDescription")}
                 </p>
               </div>
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Resolution Notes *
+                  {t("resolutionNotes")}
                 </label>
                 <textarea
                   value={resolution}
@@ -302,7 +309,7 @@ export default function AdminIssueReportsPage() {
                   required
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder={action === "RESOLVE" ? "How was this issue resolved?" : "Why is this being dismissed?"}
+                  placeholder={action === "RESOLVE" ? t("resolvePlaceholder") : t("dismissPlaceholder")}
                 />
               </div>
 
@@ -317,14 +324,14 @@ export default function AdminIssueReportsPage() {
                   }}
                   disabled={processing !== null}
                 >
-                  Cancel
+                  {tGlobalCommon("cancel")}
                 </Button>
                 <Button
                   onClick={handleSubmitAction}
                   disabled={processing !== null || !resolution.trim()}
                   className={action === "DISMISS" ? "bg-red-600 hover:bg-red-700" : ""}
                 >
-                  {processing ? "Processing..." : action === "RESOLVE" ? "Resolve" : "Dismiss"}
+                  {processing ? tCommon("processing") : action === "RESOLVE" ? tCommon("resolve") : tCommon("dismiss")}
                 </Button>
               </div>
             </div>
@@ -334,4 +341,3 @@ export default function AdminIssueReportsPage() {
     </div>
   );
 }
-

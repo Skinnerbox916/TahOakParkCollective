@@ -94,19 +94,50 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const entity = await getEntityBySlug(slug, locale);
+  
+  // Fetch raw entity for SEO fields (need untranslated JSON fields)
+  const rawEntity = await prisma.entity.findFirst({
+    where: {
+      slug,
+      status: ENTITY_STATUS.ACTIVE,
+    },
+    select: {
+      name: true,
+      nameTranslations: true,
+      description: true,
+      descriptionTranslations: true,
+      seoTitleTranslations: true,
+      seoDescriptionTranslations: true,
+    },
+  });
 
-  if (!entity) {
+  if (!rawEntity) {
     return {
       title: "Entity Not Found",
     };
   }
 
+  // Get translated values with fallback chain
+  const translatedName = getTranslatedField(rawEntity.nameTranslations, locale, rawEntity.name);
+  const translatedDescription = rawEntity.description
+    ? getTranslatedField(rawEntity.descriptionTranslations, locale, rawEntity.description)
+    : null;
+  
+  // SEO fields: use SEO translations if available, fall back to name/description
+  const seoTitle = getTranslatedField(
+    rawEntity.seoTitleTranslations,
+    locale,
+    `${translatedName} | TahOak Park Collective`
+  );
+  const seoDescription = getTranslatedField(
+    rawEntity.seoDescriptionTranslations,
+    locale,
+    translatedDescription || `Visit ${translatedName}`
+  );
+
   return {
-    title: `${entity.name} | TahOak Park Collective`,
-    description:
-      entity.description ||
-      `Visit ${entity.name}`,
+    title: seoTitle,
+    description: seoDescription,
   };
 }
 

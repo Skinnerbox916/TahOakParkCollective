@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
-import { MagicLinkPurpose, ChangeType, ChangeStatus, ROLE } from "@/lib/prismaEnums";
+import { MagicLinkPurpose, ApprovalType, ApprovalStatus, ROLE } from "@/lib/prismaEnums";
 import { sendClaimNotificationEmail } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
@@ -54,12 +54,12 @@ export async function GET(request: NextRequest) {
       select: { id: true },
     });
 
-    // Create pending change for ownership transfer
+    // Create approval for ownership transfer
     // If user doesn't exist, we'll store null and admin can create account or assign existing
-    const pendingChange = await prisma.pendingChange.create({
+    const approval = await prisma.approval.create({
       data: {
         entityId: entity.id,
-        changeType: ChangeType.UPDATE_ENTITY,
+        type: ApprovalType.UPDATE_ENTITY,
         fieldName: "ownerId (Claim Request)",
         oldValue: { ownerId: entity.ownerId },
         newValue: existingUser?.id 
@@ -69,7 +69,8 @@ export async function GET(request: NextRequest) {
         notes: existingUser 
           ? `User exists: ${existingUser.id}` 
           : `User does not exist yet. Email: ${magicLink.email}`,
-        status: ChangeStatus.PENDING,
+        status: ApprovalStatus.PENDING,
+        source: "public",
       },
     });
 
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
         email: magicLink.email,
         entityId: entity.id,
         entityName: entity.name,
-        pendingChangeId: pendingChange.id,
+        approvalId: approval.id,
       },
       "Claim request submitted for admin review"
     );
@@ -111,5 +112,3 @@ export async function GET(request: NextRequest) {
     return createErrorResponse("Failed to verify claim", 500);
   }
 }
-
-

@@ -8,7 +8,6 @@ export type Role = (typeof ROLE)[keyof typeof ROLE];
 
 export const ENTITY_STATUS = {
   ACTIVE: "ACTIVE",
-  PENDING: "PENDING",
   INACTIVE: "INACTIVE",
 } as const;
 
@@ -18,7 +17,6 @@ export type EntityStatus =
 export const ENTITY_TYPE = {
   COMMERCE: "COMMERCE",
   CIVIC: "CIVIC",
-  ADVOCACY: "ADVOCACY",
   PUBLIC_SPACE: "PUBLIC_SPACE",
   NON_PROFIT: "NON_PROFIT",
   EVENT: "EVENT",
@@ -37,34 +35,25 @@ export const TagCategory = {
 export type TagCategory =
   (typeof TagCategory)[keyof typeof TagCategory];
 
-export const ChangeType = {
-  CREATE_ENTITY: "CREATE_ENTITY",
+export const ApprovalType = {
+  NEW_ENTITY: "NEW_ENTITY",
   UPDATE_ENTITY: "UPDATE_ENTITY",
   ADD_TAG: "ADD_TAG",
   REMOVE_TAG: "REMOVE_TAG",
   UPDATE_IMAGE: "UPDATE_IMAGE",
 } as const;
 
-export type ChangeType =
-  (typeof ChangeType)[keyof typeof ChangeType];
+export type ApprovalType =
+  (typeof ApprovalType)[keyof typeof ApprovalType];
 
-export const ChangeStatus = {
+export const ApprovalStatus = {
   PENDING: "PENDING",
   APPROVED: "APPROVED",
   REJECTED: "REJECTED",
 } as const;
 
-export type ChangeStatus =
-  (typeof ChangeStatus)[keyof typeof ChangeStatus];
-
-export const SuggestionStatus = {
-  PENDING: "PENDING",
-  APPROVED: "APPROVED",
-  REJECTED: "REJECTED",
-} as const;
-
-export type SuggestionStatus =
-  (typeof SuggestionStatus)[keyof typeof SuggestionStatus];
+export type ApprovalStatus =
+  (typeof ApprovalStatus)[keyof typeof ApprovalStatus];
 
 export const IssueType = {
   INCORRECT_INFO: "INCORRECT_INFO",

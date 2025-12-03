@@ -39,12 +39,26 @@ export async function GET(
     }
 
     // Map entity to include translated content
+    const translatedName = getTranslatedField(entity.nameTranslations, locale, entity.name);
+    const translatedDescription = entity.description
+      ? getTranslatedField(entity.descriptionTranslations, locale, entity.description)
+      : null;
+    
     const translatedEntity = {
       ...entity,
-      name: getTranslatedField(entity.nameTranslations, locale, entity.name),
-      description: entity.description
-        ? getTranslatedField(entity.descriptionTranslations, locale, entity.description)
-        : null,
+      name: translatedName,
+      description: translatedDescription,
+      // SEO fields with fallback to name/description
+      seoTitle: getTranslatedField(
+        entity.seoTitleTranslations,
+        locale,
+        translatedName
+      ),
+      seoDescription: getTranslatedField(
+        entity.seoDescriptionTranslations,
+        locale,
+        translatedDescription || translatedName
+      ),
     };
 
     // Translate category if present

@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { ENTITY_TYPES } from "@/lib/constants";
 import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
+import { formatPhoneNumber, normalizeUrl } from "@/lib/utils";
 
 interface User {
   id: string;
@@ -36,7 +37,7 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
   const [website, setWebsite] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [ownerId, setOwnerId] = useState("");
-  const [status, setStatus] = useState<EntityStatus>(ENTITY_STATUS.PENDING);
+  const [status, setStatus] = useState<EntityStatus>(ENTITY_STATUS.ACTIVE);
   const [entityType, setEntityType] = useState<EntityType>(ENTITY_TYPE.COMMERCE);
   
   // Social media state
@@ -50,6 +51,70 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
     youtube: "",
     threads: "",
   });
+
+  // Field-level validation errors
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Handle phone number formatting on blur
+  const handlePhoneBlur = () => {
+    const formatted = formatPhoneNumber(phone);
+    if (formatted !== phone) {
+      setPhone(formatted);
+    }
+  };
+
+  // Handle website URL normalization on blur
+  const handleWebsiteBlur = () => {
+    const normalized = normalizeUrl(website);
+    if (normalized !== website) {
+      setWebsite(normalized);
+    }
+    // Validate
+    if (normalized) {
+      try {
+        new URL(normalized);
+        setFieldErrors(prev => {
+          const { website: _, ...rest } = prev;
+          return rest;
+        });
+      } catch {
+        setFieldErrors(prev => ({ ...prev, website: "Please enter a valid URL" }));
+      }
+    } else {
+      setFieldErrors(prev => {
+        const { website: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  // Handle social media URL normalization on blur
+  const handleSocialBlur = (platform: keyof SocialMediaLinks) => {
+    const value = socialMedia[platform];
+    if (!value) return;
+
+    const normalized = normalizeUrl(value);
+    if (normalized !== value) {
+      setSocialMedia(prev => ({ ...prev, [platform]: normalized }));
+    }
+    // Validate
+    if (normalized) {
+      try {
+        new URL(normalized);
+        setFieldErrors(prev => {
+          const { [platform]: _, ...rest } = prev;
+          return rest;
+        });
+      } catch {
+        setFieldErrors(prev => ({ ...prev, [platform]: `Please enter a valid ${platform} URL` }));
+      }
+    } else {
+      setFieldErrors(prev => {
+        const { [platform]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
 
   // Load categories and users
   useEffect(() => {
@@ -272,6 +337,7 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
               label="Phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              onBlur={handlePhoneBlur}
               disabled={loading}
               placeholder="(555) 123-4567"
             />
@@ -280,12 +346,14 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
 
         <div>
           <Input
-            type="url"
+            type="text"
             label="Website"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
+            onBlur={handleWebsiteBlur}
             disabled={loading}
             placeholder="https://example.com"
+            error={fieldErrors.website}
           />
         </div>
 
@@ -297,68 +365,84 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
           <div className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Input
-                type="url"
+                type="text"
                 label="Facebook"
                 value={socialMedia.facebook || ""}
                 onChange={(e) => setSocialMedia({ ...socialMedia, facebook: e.target.value })}
+                onBlur={() => handleSocialBlur("facebook")}
                 disabled={loading}
                 placeholder="https://facebook.com/yourpage"
+                error={fieldErrors.facebook}
               />
               <Input
-                type="url"
+                type="text"
                 label="Instagram"
                 value={socialMedia.instagram || ""}
                 onChange={(e) => setSocialMedia({ ...socialMedia, instagram: e.target.value })}
+                onBlur={() => handleSocialBlur("instagram")}
                 disabled={loading}
                 placeholder="https://instagram.com/yourpage"
+                error={fieldErrors.instagram}
               />
               <Input
-                type="url"
+                type="text"
                 label="Twitter"
                 value={socialMedia.twitter || ""}
                 onChange={(e) => setSocialMedia({ ...socialMedia, twitter: e.target.value })}
+                onBlur={() => handleSocialBlur("twitter")}
                 disabled={loading}
                 placeholder="https://twitter.com/yourpage"
+                error={fieldErrors.twitter}
               />
               <Input
-                type="url"
+                type="text"
                 label="LinkedIn"
                 value={socialMedia.linkedin || ""}
                 onChange={(e) => setSocialMedia({ ...socialMedia, linkedin: e.target.value })}
+                onBlur={() => handleSocialBlur("linkedin")}
                 disabled={loading}
                 placeholder="https://linkedin.com/company/yourpage"
+                error={fieldErrors.linkedin}
               />
               <Input
-                type="url"
+                type="text"
                 label="Yelp"
                 value={socialMedia.yelp || ""}
                 onChange={(e) => setSocialMedia({ ...socialMedia, yelp: e.target.value })}
+                onBlur={() => handleSocialBlur("yelp")}
                 disabled={loading}
                 placeholder="https://yelp.com/biz/yourpage"
+                error={fieldErrors.yelp}
               />
               <Input
-                type="url"
+                type="text"
                 label="TikTok"
                 value={socialMedia.tiktok || ""}
                 onChange={(e) => setSocialMedia({ ...socialMedia, tiktok: e.target.value })}
+                onBlur={() => handleSocialBlur("tiktok")}
                 disabled={loading}
                 placeholder="https://tiktok.com/@yourpage"
+                error={fieldErrors.tiktok}
               />
               <Input
-                type="url"
+                type="text"
                 label="YouTube"
                 value={socialMedia.youtube || ""}
                 onChange={(e) => setSocialMedia({ ...socialMedia, youtube: e.target.value })}
+                onBlur={() => handleSocialBlur("youtube")}
                 disabled={loading}
                 placeholder="https://youtube.com/@yourchannel"
+                error={fieldErrors.youtube}
               />
               <Input
-                type="url"
+                type="text"
                 label="Threads"
                 value={socialMedia.threads || ""}
                 onChange={(e) => setSocialMedia({ ...socialMedia, threads: e.target.value })}
+                onBlur={() => handleSocialBlur("threads")}
                 disabled={loading}
                 placeholder="https://threads.net/@yourpage"
+                error={fieldErrors.threads}
               />
             </div>
           </div>
@@ -415,7 +499,6 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
             disabled={loading}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           >
-            <option value={ENTITY_STATUS.PENDING}>Pending</option>
             <option value={ENTITY_STATUS.ACTIVE}>Active</option>
             <option value={ENTITY_STATUS.INACTIVE}>Inactive</option>
           </select>

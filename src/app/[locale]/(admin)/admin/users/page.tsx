@@ -4,10 +4,16 @@ import { useEffect, useState } from "react";
 import { UserTable } from "@/components/admin/UserTable";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { FilterBar } from "@/components/admin/FilterBar";
 import { ApiResponse } from "@/types";
 import { ROLE } from "@/lib/prismaEnums";
 import type { Role } from "@/lib/prismaEnums";
+import { useAdminTranslations } from "@/lib/admin-translations";
 
 interface User {
   id: string;
@@ -26,6 +32,9 @@ export default function AdminUsers() {
   // Filter state
   const [roleFilter, setRoleFilter] = useState<Role | "">("");
   const [searchQuery, setSearchQuery] = useState("");
+  
+  const { t, tRole } = useAdminTranslations("users");
+  const { t: tCommon } = useAdminTranslations("common");
 
   useEffect(() => {
     async function fetchUsers() {
@@ -81,60 +90,42 @@ export default function AdminUsers() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Manage Users</h1>
+      <PageHeader title={t("title")} />
 
       {/* Filters */}
-      <Card className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4" suppressHydrationWarning>
-          <div>
-            <Input
-              type="text"
-              placeholder="Search by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div>
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value as Role | "")}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">All Roles</option>
-              <option value={ROLE.USER}>User</option>
-              <option value={ROLE.ENTITY_OWNER}>Entity Owner</option>
-              <option value={ROLE.ADMIN}>Admin</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            <Button
-              onClick={() => {
-                setSearchQuery("");
-                setRoleFilter("");
-              }}
-              variant="outline"
-              className="w-full"
-            >
-              Clear Filters
-            </Button>
-          </div>
-        </div>
-      </Card>
+      <FilterBar
+        onClear={() => {
+          setSearchQuery("");
+          setRoleFilter("");
+        }}
+      >
+        <Input
+          type="text"
+          placeholder={tCommon("searchPlaceholder")}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <Select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value as Role | "")}
+        >
+          <option value="">{tCommon("allRoles")}</option>
+          <option value={ROLE.USER}>{tRole(ROLE.USER)}</option>
+          <option value={ROLE.ENTITY_OWNER}>{tRole(ROLE.ENTITY_OWNER)}</option>
+          <option value={ROLE.ADMIN}>{tRole(ROLE.ADMIN)}</option>
+        </Select>
+      </FilterBar>
 
       {/* Error State */}
       {error && (
-        <Card className="mb-6 bg-red-50 border-red-200">
-          <p className="text-red-600">{error}</p>
-        </Card>
+        <Alert variant="error">
+          {error}
+        </Alert>
       )}
 
       {/* Loading State */}
       {loading ? (
-        <Card>
-          <div className="text-center py-12">
-            <p className="text-gray-500">Loading users...</p>
-          </div>
-        </Card>
+        <LoadingState message={t("loading")} />
       ) : (
         <Card padding="none">
           <UserTable users={users} onRoleChange={handleRoleChange} />

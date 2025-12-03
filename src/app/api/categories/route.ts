@@ -1,57 +1,20 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
 import { getLocaleFromRequest } from "@/lib/api-locale";
-import { getTranslatedField } from "@/lib/translations";
+import { fetchAndTransformCategories } from "@/lib/category-helpers";
+import type { EntityType } from "@/lib/prismaEnums";
 
 export async function GET(request: NextRequest) {
   try {
     const locale = getLocaleFromRequest(request);
-    const entityType = request.nextUrl.searchParams.get("entityType");
+    const entityType = request.nextUrl.searchParams.get("entityType") as EntityType | null;
     
-    const where: any = {};
-    if (entityType) {
-      where.entityTypes = {
-        has: entityType,
-      };
-    }
-
-    // Only return categories that have entityTypes set (part of the new entity-type system)
-    const categories = await prisma.category.findMany({
-      where: {
-        ...where,
-        entityTypes: {
-          isEmpty: false, // Only categories with entityTypes
-        },
-      },
-      include: {
-        _count: {
-          select: {
-            entities: true,
-          },
-        },
-      },
-      orderBy: {
-        name: "asc",
-      },
+    const categories = await fetchAndTransformCategories(locale, {
+      entityType,
+      requireEntityTypes: true,
     });
 
-    // Add entity count and translated fields to each category
-    const categoriesWithCounts = categories.map((category) => ({
-      id: category.id,
-      name: getTranslatedField(category.nameTranslations, locale, category.name),
-      slug: category.slug,
-      description: category.description
-        ? getTranslatedField(category.descriptionTranslations, locale, category.description)
-        : null,
-      featured: category.featured,
-      entityTypes: category.entityTypes || [],
-      entityCount: category._count?.entities || 0,
-      createdAt: category.createdAt,
-      updatedAt: category.updatedAt,
-    }));
-
-    return createSuccessResponse(categoriesWithCounts);
+    return createSuccessResponse(categories);
   } catch (error: any) {
     console.error("Error fetching categories:", error);
     console.error("Error details:", {

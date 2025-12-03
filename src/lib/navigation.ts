@@ -26,11 +26,11 @@ export const publicNavItems: NavItem[] = [
  */
 export const adminNavItems: NavItem[] = [
   { href: "/admin/dashboard", labelKey: "dashboard" },
+  { href: "/admin/approvals", labelKey: "approvals" },
   { href: "/admin/entities", labelKey: "entities" },
+  { href: "/admin/featured", labelKey: "featured" },
   { href: "/admin/quick-add", labelKey: "quickAdd" },
-  { href: "/admin/pending-changes", labelKey: "pendingChanges" },
   { href: "/admin/spot-checks", labelKey: "spotChecks" },
-  { href: "/admin/suggestions", labelKey: "suggestions" },
   { href: "/admin/issue-reports", labelKey: "issueReports" },
   { href: "/admin/subscribers", labelKey: "subscribers" },
   { href: "/admin/analytics", labelKey: "analytics" },
@@ -39,12 +39,11 @@ export const adminNavItems: NavItem[] = [
 ];
 
 /**
- * Portal (business owner) dashboard navigation items
+ * Portal (entity owner) dashboard navigation items
  * Used in DashboardSidebar for portal routes
  */
 export const portalNavItems: NavItem[] = [
   { href: "/portal/dashboard", labelKey: "dashboard" },
-  { href: "/portal/business", labelKey: "myBusiness" },
 ];
 
 /**

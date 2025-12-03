@@ -3,7 +3,6 @@ import type { EntityType, LocalTier } from "@/lib/prismaEnums";
 export const ENTITY_TYPES: { value: EntityType; label: string }[] = [
   { value: "COMMERCE", label: "Commerce" },
   { value: "CIVIC", label: "Civic" },
-  { value: "ADVOCACY", label: "Advocacy" },
   { value: "PUBLIC_SPACE", label: "Public Space" },
   { value: "NON_PROFIT", label: "Non-Profit" },
   { value: "EVENT", label: "Event" },
@@ -13,7 +12,6 @@ export const ENTITY_TYPES: { value: EntityType; label: string }[] = [
 export const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
   COMMERCE: "Commerce",
   CIVIC: "Civic",
-  ADVOCACY: "Advocacy",
   PUBLIC_SPACE: "Public Space",
   NON_PROFIT: "Non-Profit",
   EVENT: "Event",

@@ -1,14 +1,15 @@
 # TahOak Park Collective
 
-A business directory platform for local businesses in Tahoe Park, Oak Park, Elmhurst, Colonial Park, and Curtis Park neighborhoods of Sacramento, CA.
+A hyper-local directory platform for Tahoe Park, Oak Park, Elmhurst, Colonial Park, and Curtis Park neighborhoods of Sacramento, CA. Fully bilingual (English/Spanish).
 
 ## Features
 
-- **Public Business Directory**: Search and browse local businesses with map and list views
-- **Business Owner Portal**: Business owners can manage their business profiles
-- **Admin Dashboard**: Administrators can manage businesses, users, and approve listings
+- **Public Directory**: Search and browse local entities with map and list views
+- **Entity Owner Portal**: Owners can manage their entity profiles
+- **Admin Dashboard**: Administrators manage entities, users, and approve listings
+- **Bilingual**: Full English/Spanish support with auto-translation
 - **Authentication**: Secure role-based authentication with NextAuth
-- **Map Integration**: Interactive maps showing business locations using Leaflet
+- **Map Integration**: Interactive maps showing entity locations using Leaflet
 
 ## Tech Stack
 
@@ -17,6 +18,7 @@ A business directory platform for local businesses in Tahoe Park, Oak Park, Elmh
 - **Authentication**: NextAuth.js
 - **Maps**: React Leaflet
 - **Styling**: Tailwind CSS
+- **i18n**: next-intl (English/Spanish)
 - **Deployment**: Docker & Docker Compose
 
 ## Prerequisites
@@ -79,8 +81,6 @@ docker compose up -d tahoak-db
 
 The database will be available at `localhost:5432`.
 
-**Note**: Docker Compose will read environment variables from your `.env` file. Make sure `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` are set if you want to override defaults.
-
 ### 5. Run Database Migrations
 
 ```bash
@@ -98,10 +98,10 @@ npm run db:seed
 ```
 
 This creates:
-- 8 business categories
+- 13 entity categories
 - Admin user: `admin@tahoak.com` / `password123`
-- Business owner: `owner@tahoak.com` / `owner123`
-- 5 sample businesses
+- Entity owner: `owner@tahoak.com` / `owner123`
+- Sample entities and tags
 
 **Warning**: These are test credentials. Change them in production!
 
@@ -138,6 +138,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `POSTGRES_PASSWORD` | PostgreSQL password | `tahoak_password` |
 | `POSTGRES_DB` | PostgreSQL database name | `tahoak_db` |
 | `POSTGRES_PORT` | PostgreSQL port | `5432` |
+| `DEEPL_API_KEY` | DeepL API key for auto-translation | - |
 
 ## Database Management
 
@@ -147,11 +148,6 @@ Create a new migration:
 ```bash
 npm run db:migrate
 ```
-
-This will:
-1. Create migration files in `prisma/migrations/`
-2. Apply migrations to the database
-3. Regenerate Prisma Client
 
 ### Seeding the Database
 
@@ -163,9 +159,10 @@ npm run db:seed
 
 The schema is defined in `prisma/schema.prisma`. Key models:
 
-- **User**: Application users with roles (USER, ADMIN, BUSINESS_OWNER)
-- **Business**: Business listings with location, category, and status
-- **Category**: Business categories
+- **User**: Application users with roles (USER, ENTITY_OWNER, ADMIN)
+- **Entity**: Directory listings with location, categories, and status
+- **Category**: Entity categories
+- **Tag**: Identity, friendliness, and amenity tags
 - **Account/Session**: NextAuth authentication models
 
 ## Project Structure
@@ -176,16 +173,17 @@ The schema is defined in `prisma/schema.prisma`. Key models:
 │   ├── seed.ts             # Database seed script
 │   └── migrations/         # Database migrations
 ├── src/
-│   ├── app/                # Next.js app router pages
-│   │   ├── (admin)/        # Admin routes
-│   │   ├── (portal)/        # Business owner portal
-│   │   ├── (public)/       # Public pages
-│   │   └── api/            # API routes
+│   ├── app/
+│   │   ├── [locale]/(admin)/   # Admin routes (ADMIN role)
+│   │   ├── [locale]/(portal)/  # Entity owner portal
+│   │   ├── [locale]/(public)/  # Public pages
+│   │   └── api/                # API routes
 │   ├── components/         # React components
 │   ├── lib/                # Utility functions
+│   ├── messages/           # Translation files (en.json, es.json)
+│   ├── i18n/               # i18n configuration
 │   └── types/              # TypeScript types
-├── docs/                    # Project documentation
-│   └── AGENT_INSTRUCTIONS.md # Agent guide
+├── docs/                   # Project documentation
 ├── .env.example            # Environment variables template
 ├── docker-compose.yml      # Docker services configuration
 └── README.md               # This file
@@ -201,15 +199,15 @@ The schema is defined in `prisma/schema.prisma`. Key models:
 
 ### Authorization
 
-- **Public Routes**: Business search and listings
-- **Business Owner Routes**: `/portal/*` - Requires BUSINESS_OWNER or ADMIN role
+- **Public Routes**: Entity search and listings
+- **Entity Owner Routes**: `/portal/*` - Requires ENTITY_OWNER or ADMIN role
 - **Admin Routes**: `/admin/*` - Requires ADMIN role
 
 ### API Security
 
-- Business update/delete endpoints require authentication
-- Business owners can only modify their own businesses
-- Only admins can change business status
+- Entity update/delete endpoints require authentication
+- Entity owners can only modify their own entities
+- Only admins can change entity status
 - All API endpoints validate user permissions
 
 ### Best Practices
@@ -247,9 +245,9 @@ npm run db:generate  # Generate Prisma Client
 After seeding the database:
 
 - **Admin**: `admin@tahoak.com` / `password123`
-- **Business Owner**: `owner@tahoak.com` / `owner123`
+- **Entity Owner**: `owner@tahoak.com` / `owner123`
 
-**⚠️ Warning**: These are test credentials. Never use them in production!
+**Warning**: These are test credentials. Never use them in production!
 
 ## Deployment
 
@@ -312,13 +310,14 @@ docker compose down
 
 See LICENSE file for details.
 
-## Agent Instructions
+## Documentation
 
-For LLM coding agents working on this project, see [docs/AGENT_INSTRUCTIONS.md](./docs/AGENT_INSTRUCTIONS.md) for:
-- Development setup and Docker configuration
-- Common issues and solutions
-- Architecture patterns and conventions
-- Key learnings and gotchas
+For LLM coding agents working on this project, see [docs/AGENT_CONTEXT.md](./docs/AGENT_CONTEXT.md) for:
+- Development context and conventions
+- Entity model and categories
+- Docker commands
+- API patterns and authentication
+- Translation system overview
 
 ## Support
 

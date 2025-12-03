@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ApiResponse } from "@/types";
+import { useAdminTranslations } from "@/lib/admin-translations";
 
 interface Subscriber {
   id: string;
@@ -31,6 +32,9 @@ export default function AdminSubscribersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const { t } = useAdminTranslations("subscribers");
+  const { t: tCommon } = useAdminTranslations("common");
 
   const fetchSubscribers = async () => {
     try {
@@ -77,7 +81,7 @@ export default function AdminSubscribersPage() {
   }, [searchQuery]);
 
   const formatDate = (date: Date | string | null): string => {
-    if (!date) return "Never";
+    if (!date) return t("never");
     return new Date(date).toLocaleString("en-US", {
       month: "short",
       day: "numeric",
@@ -91,20 +95,20 @@ export default function AdminSubscribersPage() {
     if (subscriber.unsubscribed) {
       return (
         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-          Unsubscribed
+          {t("stats.unsubscribed")}
         </span>
       );
     }
     if (subscriber.verified) {
       return (
         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-          Verified
+          {t("stats.verified")}
         </span>
       );
     }
     return (
       <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-        Unverified
+        {t("stats.unverified")}
       </span>
     );
   };
@@ -122,28 +126,28 @@ export default function AdminSubscribersPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Subscribers</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Manage email subscribers and view subscription preferences.
+          {t("description")}
         </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card className="p-4">
-          <div className="text-sm text-gray-600 mb-1">Total</div>
+          <div className="text-sm text-gray-600 mb-1">{t("stats.total")}</div>
           <div className="text-2xl font-bold text-gray-900">{totalCount}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-gray-600 mb-1">Verified</div>
+          <div className="text-sm text-gray-600 mb-1">{t("stats.verified")}</div>
           <div className="text-2xl font-bold text-green-600">{verifiedCount}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-gray-600 mb-1">Unverified</div>
+          <div className="text-sm text-gray-600 mb-1">{t("stats.unverified")}</div>
           <div className="text-2xl font-bold text-yellow-600">{unverifiedCount}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-gray-600 mb-1">Unsubscribed</div>
+          <div className="text-sm text-gray-600 mb-1">{t("stats.unsubscribed")}</div>
           <div className="text-2xl font-bold text-red-600">{unsubscribedCount}</div>
         </Card>
       </div>
@@ -154,30 +158,30 @@ export default function AdminSubscribersPage() {
           <div className="flex-1">
             <Input
               type="text"
-              placeholder="Search by email..."
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              label="Search"
+              label={t("searchLabel")}
             />
           </div>
           <div className="flex items-end gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Filter
+                {t("filterLabel")}
               </label>
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as FilterType)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="all">All</option>
-                <option value="verified">Verified</option>
-                <option value="unverified">Unverified</option>
-                <option value="unsubscribed">Unsubscribed</option>
+                <option value="all">{t("filters.all")}</option>
+                <option value="verified">{t("filters.verified")}</option>
+                <option value="unverified">{t("filters.unverified")}</option>
+                <option value="unsubscribed">{t("filters.unsubscribed")}</option>
               </select>
             </div>
             <Button variant="outline" onClick={fetchSubscribers} disabled={loading}>
-              Refresh
+              {tCommon("refresh")}
             </Button>
           </div>
         </div>
@@ -195,7 +199,7 @@ export default function AdminSubscribersPage() {
         <Card>
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading subscribers...</p>
+            <p className="text-gray-500">{t("loading")}</p>
           </div>
         </Card>
       ) : subscribers.length === 0 ? (
@@ -203,12 +207,12 @@ export default function AdminSubscribersPage() {
           <div className="text-center py-12">
             <div className="text-gray-400 text-4xl mb-4">📧</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No subscribers found
+              {t("noSubscribers")}
             </h3>
             <p className="text-gray-600">
               {searchQuery
-                ? "Try adjusting your search or filter."
-                : "No subscribers match the selected filter."}
+                ? t("tryAdjusting")
+                : t("noMatch")}
             </p>
           </div>
         </Card>
@@ -219,22 +223,22 @@ export default function AdminSubscribersPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
+                    {t("columns.email")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t("columns.status")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preferences
+                    {t("columns.preferences")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Verified
+                    {t("columns.verified")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Subscribed
+                    {t("columns.subscribed")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Updated
+                    {t("columns.lastUpdated")}
                   </th>
                 </tr>
               </thead>
@@ -255,30 +259,30 @@ export default function AdminSubscribersPage() {
                           <div className="flex flex-wrap gap-2">
                             {subscriber.preferences.newsletter && (
                               <span className="inline-flex px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-800">
-                                Newsletter
+                                {t("preferences.newsletter")}
                               </span>
                             )}
                             {subscriber.preferences.newBusinesses && (
                               <span className="inline-flex px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
-                                New Businesses
+                                {t("preferences.newBusinesses")}
                               </span>
                             )}
                             {subscriber.preferences.events && (
                               <span className="inline-flex px-2 py-0.5 text-xs rounded bg-pink-100 text-pink-800">
-                                Events
+                                {t("preferences.events")}
                               </span>
                             )}
                             {subscriber.preferences.updates && (
                               <span className="inline-flex px-2 py-0.5 text-xs rounded bg-indigo-100 text-indigo-800">
-                                Updates
+                                {t("preferences.updates")}
                               </span>
                             )}
                             {getPreferenceCount(subscriber.preferences) === 0 && (
-                              <span className="text-gray-400 text-xs">None</span>
+                              <span className="text-gray-400 text-xs">{t("preferences.none")}</span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-400 text-xs">None</span>
+                          <span className="text-gray-400 text-xs">{t("preferences.none")}</span>
                         )}
                       </div>
                     </td>
@@ -288,7 +292,7 @@ export default function AdminSubscribersPage() {
                           {formatDate(subscriber.verifiedAt)}
                         </span>
                       ) : (
-                        <span className="text-gray-400">Not verified</span>
+                        <span className="text-gray-400">{t("notVerified")}</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -307,5 +311,3 @@ export default function AdminSubscribersPage() {
     </div>
   );
 }
-
-

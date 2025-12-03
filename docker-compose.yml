@@ -7,6 +7,8 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       # Database connection - uses DATABASE_URL from .env file
       # For Docker network, use tahoak-db as hostname
@@ -14,6 +16,8 @@ services:
       - NEXTAUTH_URL=${NEXTAUTH_URL:-https://tahoak.skibri.us}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-development_secret_change_me_in_prod}
       - NODE_ENV=development
+      # OpenAI API
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       # Umami Analytics (optional)
       - NEXT_PUBLIC_UMAMI_WEBSITE_ID=${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
       - NEXT_PUBLIC_UMAMI_URL=${NEXT_PUBLIC_UMAMI_URL:-http://192.168.1.219:3010}

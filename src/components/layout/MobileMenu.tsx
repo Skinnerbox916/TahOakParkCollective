@@ -26,7 +26,6 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const tSubscribe = useTranslations("subscribe");
 
   const isAdmin = session?.user?.roles?.includes(ROLE.ADMIN) ?? false;
-  const isEntityOwner = (session?.user?.roles?.includes(ROLE.ENTITY_OWNER) ?? false) || isAdmin;
 
   // Translation lookup for public nav items
   const getNavLabel = (labelKey: string) => {
@@ -134,15 +133,13 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       {tNav("admin")} {tNav("dashboard")}
                     </Link>
                   )}
-                  {isEntityOwner && (
-                    <Link
-                      href="/portal/dashboard"
-                      onClick={onClose}
-                      className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                      {t("businessPortal")}
-                    </Link>
-                  )}
+                  <Link
+                    href="/portal/dashboard"
+                    onClick={onClose}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    {t("businessPortal")}
+                  </Link>
                 </div>
               )}
 
