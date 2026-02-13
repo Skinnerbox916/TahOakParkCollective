@@ -11,8 +11,9 @@ interface DescriptionSectionProps {
 
 export function DescriptionSection({ entity, config }: DescriptionSectionProps) {
   const t = useTranslations("entity");
+  const displayDescription = entity.descriptionLocalized ?? entity.description;
   
-  if (!entity.description) {
+  if (!displayDescription) {
     return null;
   }
 
@@ -24,7 +25,7 @@ export function DescriptionSection({ entity, config }: DescriptionSectionProps) 
         {t(titleKey)}
       </h2>
       <p className="text-gray-700 whitespace-pre-line">
-        {entity.description}
+        {displayDescription}
       </p>
     </div>
   );

@@ -5,6 +5,7 @@ import { ENTITY_STATUS, ROLE, ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
 import { entityIncludeStandard, transformEntity, buildEntityWhereClause } from "@/lib/entity-helpers";
+import { validateEntityInput } from "@/lib/schemas/entitySchema";
 
 export async function GET(request: NextRequest) {
   try {
@@ -70,9 +71,22 @@ export async function POST(request: NextRequest) {
       const body = await request.json();
       const { name, description, address, phone, website, categoryIds, ownerId, entityType, socialMedia, hours, tagIds, seoTitleTranslations, seoDescriptionTranslations } = body;
 
-      if (!name) {
-        return createErrorResponse("Entity name is required", 400);
+      const validation = validateEntityInput({
+        name,
+        description,
+        address,
+        phone,
+        website,
+        socialMedia,
+        hours,
+      });
+
+      if (!validation.success) {
+        const firstError = Object.values(validation.fieldErrors)[0];
+        return createErrorResponse(firstError || validation.error, 400, validation.fieldErrors);
       }
+
+      const normalized = validation.data;
 
       // Determine the owner ID
       let finalOwnerId = user.id;
@@ -87,7 +101,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Generate slug from name
-      const slug = name
+      const slug = normalized.name
         .toLowerCase()
         .trim()
         .replace(/[^\w\s-]/g, "")
@@ -117,32 +131,8 @@ export async function POST(request: NextRequest) {
 
       const finalEntityType = entityType || ENTITY_TYPE.COMMERCE;
 
-      // Clean social media - remove empty values
-      let cleanedSocialMedia = null;
-      if (socialMedia && typeof socialMedia === 'object') {
-        const cleaned: any = {};
-        for (const [key, value] of Object.entries(socialMedia)) {
-          if (value && typeof value === 'string' && value.trim()) {
-            cleaned[key] = value.trim();
-          }
-        }
-        cleanedSocialMedia = Object.keys(cleaned).length > 0 ? cleaned : null;
-      }
-
-      // Clean hours - remove days with no data
-      let cleanedHours = null;
-      if (hours && typeof hours === 'object') {
-        const cleaned: any = {};
-        for (const [day, dayHours] of Object.entries(hours)) {
-          if (dayHours && typeof dayHours === 'object') {
-            const dh = dayHours as any;
-            if (dh.closed || (dh.open && dh.close)) {
-              cleaned[day] = dayHours;
-            }
-          }
-        }
-        cleanedHours = Object.keys(cleaned).length > 0 ? cleaned : null;
-      }
+      const cleanedSocialMedia = normalized.socialMedia ?? null;
+      const cleanedHours = normalized.hours ?? null;
 
       // Clean SEO translation fields - validate JSON structure
       let cleanedSeoTitleTranslations = null;
@@ -172,12 +162,12 @@ export async function POST(request: NextRequest) {
         // Create the entity
         const newEntity = await tx.entity.create({
           data: {
-            name,
+            name: normalized.name,
             slug: uniqueSlug,
-            description,
-            address,
-            phone,
-            website,
+            description: normalized.description,
+            address: normalized.address,
+            phone: normalized.phone,
+            website: normalized.website,
             categories: categoryIds?.length ? { connect: categoryIds.map((id: string) => ({ id })) } : undefined,
             entityType: finalEntityType,
             status,

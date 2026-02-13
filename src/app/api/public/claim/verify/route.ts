@@ -41,7 +41,10 @@ export async function GET(request: NextRequest) {
     // Verify entity exists
     const entity = await prisma.entity.findUnique({
       where: { id: entityId },
-      select: { id: true, name: true, ownerId: true },
+      include: {
+        categories: true,
+        tags: { include: { tag: true } },
+      },
     });
 
     if (!entity) {
@@ -54,20 +57,32 @@ export async function GET(request: NextRequest) {
       select: { id: true },
     });
 
-    // Create approval for ownership transfer
-    // If user doesn't exist, we'll store null and admin can create account or assign existing
+    const snapshot = {
+      name: entity.name,
+      slug: entity.slug,
+      description: entity.description,
+      address: entity.address,
+      phone: entity.phone,
+      website: entity.website,
+      latitude: entity.latitude,
+      longitude: entity.longitude,
+      entityType: entity.entityType as any,
+      hours: entity.hours as any,
+      socialMedia: entity.socialMedia as any,
+      displaySettings: (entity as any).displaySettings || null,
+      categorySlugs: entity.categories.map((c) => c.slug),
+      tagSlugs: (entity.tags || []).map((t) => t.tag?.slug).filter(Boolean),
+      ownerId: existingUser?.id || entity.ownerId,
+    };
+
     const approval = await prisma.approval.create({
       data: {
-        entityId: entity.id,
+        targetEntityId: entity.id,
         type: ApprovalType.UPDATE_ENTITY,
-        fieldName: "ownerId (Claim Request)",
-        oldValue: { ownerId: entity.ownerId },
-        newValue: existingUser?.id 
-          ? { ownerId: existingUser.id } 
-          : {}, // Empty object - admin needs to assign ownerId after creating account
+        proposedEntityData: snapshot as any,
         submitterEmail: magicLink.email,
-        notes: existingUser 
-          ? `User exists: ${existingUser.id}` 
+        notes: existingUser
+          ? `User exists: ${existingUser.id}`
           : `User does not exist yet. Email: ${magicLink.email}`,
         status: ApprovalStatus.PENDING,
         source: "public",

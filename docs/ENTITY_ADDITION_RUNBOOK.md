@@ -6,7 +6,8 @@
 
 Before starting, ensure you have:
 - Access to Docker containers (`tahoak-db`, `tahoak-web`)
-- Reference to [AGENT_CONTEXT.md](./AGENT_CONTEXT.md) for database structure, entity types, and categories
+- Reference to [AGENT_CONTEXT.md](./AGENT_CONTEXT.md) for entity types and categories
+- Reference to [DATABASE_GUIDE.md](./DATABASE_GUIDE.md) for complete schema, field types, and JSON structures
 
 ---
 
@@ -21,6 +22,7 @@ Before starting, ensure you have:
 Use web search to gather:
 - **Basic Info:** Name, description, entity type
 - **Contact:** Address, phone, website
+  - **Important:** The `website` field should only contain official business/organization websites (e.g., `https://www.example.com`). Do NOT use social media URLs (Instagram, Facebook, etc.) in the website field - those belong in the `socialMedia` field. If an entity only has social media presence and no official website, set `website` to `NULL`.
 - **Location:** Address (required for physical locations)
 - **Categories:** What categories apply (use category names, not IDs yet)
   - **Important:** If the entity doesn't fit neatly into any existing categories, **STOP** and ask the user for guidance before proceeding. Do not force-fit entities into inappropriate categories.
@@ -57,6 +59,57 @@ Use web search to gather:
 - **CIVIC entities** without coordinates display a large profile image (from `hero` field) instead
 - **SERVICE_PROVIDER** and **EVENT** entities without coordinates may also show profile images
 - **Hours section** is not displayed for CIVIC and PUBLIC_SPACE entity types
+
+### 1.2.2 Write User-Focused Description
+
+**Audience:** Local residents looking for businesses, services, or resources in their neighborhood.
+
+**Good descriptions should:**
+- Explain what the entity does or offers in plain language
+- Highlight what makes them notable (specialties, unique offerings, community involvement)
+- Mention key services, products, or programs relevant to users
+- Help users decide if this entity meets their needs
+
+**Length guidelines:**
+- **Minimum:** At least 2-3 sentences covering core offerings
+- **Maximum:** ~150 words (roughly a paragraph)
+- **Best practice:** Let the available information guide length. If research reveals rich details (history, specialties, notable programs, community involvement), include them. A well-established business with 20 years of history and multiple service lines deserves more depth than a simple mobile service.
+
+**Do NOT include:**
+- Internal references to TahOak Park Collective, the directory, or "coverage area"
+- Metadata about how or why the entity was added
+- Jargon about "hyper-local scope" or directory inclusion criteria
+- Marketing buzzwords without substance
+
+**Examples:**
+
+❌ **Bad:** "Moran'S Construction Inc is a Sacramento-based contractor specializing in residential and commercial remodeling. The firm operates from a published Sacramento address and provides general contracting services to the Tahoe Park/Oak Park area, aligning with TahOak Park Collective's hyper-local directory scope."
+
+✅ **Good:** "Moran's Construction Inc specializes in residential and commercial remodeling, with over 15 years serving the Sacramento area. Services include kitchen and bathroom renovations, room additions, structural repairs, and full home remodels. The company is licensed, bonded, and insured, and offers free estimates for projects of all sizes."
+
+❌ **Bad:** "Local business meeting TahOak Park Collective inclusion criteria."
+
+✅ **Good:** "Family-owned bakery offering fresh bread, pastries, and custom cakes since 2012. Known for their Cuban coffee, guava pastries, and empanadas made from traditional recipes. They also provide catering for local events and take custom cake orders for birthdays and special occasions."
+
+### 1.2.3 Look Up Official Business Records (for address/contact validation only)
+
+**Purpose:** Use official sources to validate or refine **address and contact info** (address, phone, website). Do **not** collect or store business-registration/ownership details.
+
+**Sources to check (in order):**
+
+1. **California Secretary of State**
+   - URL: `https://bizfileonline.sos.ca.gov/search/business`
+   - Use to confirm official address/website/phone if available.
+
+2. **City of Sacramento Business License**
+   - URL: `https://www.cityofsacramento.org/Revenue/Business-Tax/License-Verification`
+   - Use to confirm address/phone/website if available.
+
+3. **Sacramento County Assessor** (for property-based businesses)
+   - URL: `https://assessor.saccounty.gov/Pages/PropertySearch.aspx`
+   - Use only to confirm physical address if needed.
+
+**Do NOT store:** legal name, registration numbers, license numbers, ownership/agent info, or any other registration/ownership metadata.
 
 ### 1.3 Collect Translations (Optional but Recommended)
 
@@ -419,8 +472,10 @@ After completing all database operations, provide the user with:
 
 ### Status Values
 - `ACTIVE` - Visible on public site
-- `PENDING` - Awaiting approval
+- `PENDING_REVIEW` - Draft entity awaiting admin approval (created by AI/public submissions via API)
 - `INACTIVE` - Hidden from public
+
+**Note:** This runbook is for direct database insertion (bypassing the approval workflow). When using the API endpoints (`/api/admin/ai-add-entity` or `/api/public/suggest-entity`), entities are automatically created with `PENDING_REVIEW` status and linked to an `Approval` record for admin review.
 
 ---
 
@@ -451,7 +506,7 @@ After completing all database operations, provide the user with:
 | Field | Type | Description | Example |
 |-------|------|-------------|---------|
 | `name` | String | Primary display name | "Joe's Coffee Shop" |
-| `description` | String | Brief description | "Local coffee shop serving organic coffee" |
+| `description` | String | User-focused summary of what the entity offers (see 1.2.2 for guidelines) | "Family-owned bakery offering fresh bread, pastries, and custom cakes" |
 | `entityType` | Enum | One of: COMMERCE, SERVICE_PROVIDER, CIVIC, PUBLIC_SPACE, NON_PROFIT, EVENT | "COMMERCE" |
 | `categories` | Array | At least one category (use IDs) | ["food-drink"] |
 
@@ -470,9 +525,9 @@ After completing all database operations, provide the user with:
 | Field | Type | Description | Example |
 |-------|------|-------------|---------|
 | `phone` | String | Contact number | "(916) 555-1234" |
-| `website` | String | Full URL | "https://www.example.com" |
+| `website` | String | Official business/organization website URL (NOT social media) | "https://www.example.com" |
 | `hours` | JSON | Business hours (not for CIVIC/PUBLIC_SPACE) | See Step 4.1 |
-| `socialMedia` | JSON | Social media URLs | See Step 4.2 |
+| `socialMedia` | JSON | Social media URLs (Instagram, Facebook, etc.) | See Step 4.2 |
 | `images` | JSON | Hero and logo images | See Step 4.3 |
 | `tags` | Array | Identity, friendliness, amenity tags | ["kid-friendly", "wifi"] |
 
@@ -480,9 +535,12 @@ After completing all database operations, provide the user with:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `status` | Enum | ACTIVE | ACTIVE or INACTIVE |
+| `status` | Enum | ACTIVE | ACTIVE, INACTIVE, or PENDING_REVIEW |
 | `featured` | Boolean | false | Appears in featured sections |
 | `ownerId` | String | - | User ID of owner (use admin ID) |
+| `displaySettings` | JSONB | null | Controls field visibility: `{ address: true, phone: false, hours: true, ... }` |
+
+**Note on displaySettings:** When using the API (not direct DB insertion), use `normalizeEntityInput()` helper from `src/lib/normalizeEntityInput.ts` to ensure proper data normalization (empty objects become null, strings trimmed, etc.). This helper also handles `displaySettings` formatting.
 
 ### Tags Reference
 
@@ -497,3 +555,4 @@ After completing all database operations, provide the user with:
 ## Related Documentation
 
 - [AGENT_CONTEXT.md](./AGENT_CONTEXT.md) - Primary development context and reference
+- [DATABASE_GUIDE.md](./DATABASE_GUIDE.md) - Complete database schema, JSON field structures, and query patterns

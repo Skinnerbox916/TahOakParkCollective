@@ -18,7 +18,8 @@
     "bcrypt": "^5.1.1",
     "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
-    "next": "16.0.3",
+    "libphonenumber-js": "^1.12.33",
+    "next": "16.0.10",
     "next-auth": "^4.24.13",
     "next-intl": "^4.5.5",
     "openai": "^6.9.1",
@@ -26,10 +27,12 @@
     "prisma": "^7.0.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-icons": "^5.5.0",
     "react-leaflet": "^5.0.0",
     "resend": "^6.5.2",
     "sharp": "^0.34.5",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -41,7 +44,7 @@
     "@types/react-dom": "^19",
     "@types/react-leaflet": "^2.8.3",
     "eslint": "^9",
-    "eslint-config-next": "16.0.3",
+    "eslint-config-next": "16.0.10",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5"

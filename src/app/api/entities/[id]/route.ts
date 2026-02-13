@@ -4,31 +4,36 @@ import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-
 import { ROLE, ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
 import { entityIncludeStandard, transformEntity } from "@/lib/entity-helpers";
+import { normalizeSnapshot } from "@/lib/entitySnapshot";
+import { applyEntitySnapshot } from "@/lib/applyEntitySnapshot";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const locale = getLocaleFromRequest(request);
-    const { id } = await params;
-    const entity = await prisma.entity.findUnique({
-      where: { id },
-      include: entityIncludeStandard,
-    });
+  return withAuth(async (user) => {
+    try {
+      const locale = getLocaleFromRequest(request);
+      const { id } = await params;
+      const entity = await prisma.entity.findUnique({
+        where: { id },
+        include: entityIncludeStandard,
+      });
 
-    if (!entity) {
-      return createErrorResponse("Entity not found", 404);
+      if (!entity) {
+        return createErrorResponse("Entity not found", 404);
+      }
+
+      // Include admin-only fields for admin users
+      const isAdmin = user.roles.includes(ROLE.ADMIN);
+      const translatedEntity = transformEntity(entity, locale, isAdmin);
+
+      return createSuccessResponse(translatedEntity);
+    } catch (error) {
+      console.error("Error fetching entity:", error);
+      return createErrorResponse("Failed to fetch entity", 500);
     }
-
-    // Map entity to include translated content
-    const translatedEntity = transformEntity(entity, locale);
-
-    return createSuccessResponse(translatedEntity);
-  } catch (error) {
-    console.error("Error fetching entity:", error);
-    return createErrorResponse("Failed to fetch entity", 500);
-  }
+  });
 }
 
 export async function PUT(
@@ -39,7 +44,6 @@ export async function PUT(
     try {
       const { id } = await params;
       const body = await request.json();
-      const { name, description, address, phone, website, categoryIds, status, entityType, socialMedia, hours, seoTitleTranslations, seoDescriptionTranslations } = body;
 
       // Check if entity exists
       const existingEntity = await prisma.entity.findUnique({
@@ -58,131 +62,61 @@ export async function PUT(
         return createErrorResponse("Forbidden: You can only update your own entity", 403);
       }
 
-      // Build update data
-      const updateData: any = {};
-      if (name) updateData.name = name;
-      if (description !== undefined) updateData.description = description;
-      if (address !== undefined) updateData.address = address;
-      if (phone !== undefined) updateData.phone = phone;
-      if (website !== undefined) updateData.website = website;
-      // Handle categories (many-to-many)
-      let categoriesUpdate: any = undefined;
-      if (categoryIds !== undefined) {
-        categoriesUpdate = {
-          set: categoryIds.map((id: string) => ({ id })),
-        };
-      }
-      if (entityType !== undefined) updateData.entityType = entityType;
-      
-      // Handle social media - clean empty values or set to null if explicitly cleared
-      if (socialMedia !== undefined) {
-        if (socialMedia === null) {
-          updateData.socialMedia = null;
-        } else if (typeof socialMedia === 'object') {
-          // Clean social media - remove empty values
-          const cleaned: any = {};
-          for (const [key, value] of Object.entries(socialMedia)) {
-            if (value && typeof value === 'string' && value.trim()) {
-              cleaned[key] = value.trim();
-            }
-          }
-          updateData.socialMedia = Object.keys(cleaned).length > 0 ? cleaned : null;
-        }
-      }
-
-      // Handle hours - clean empty values or set to null if explicitly cleared
-      if (hours !== undefined) {
-        if (hours === null) {
-          updateData.hours = null;
-        } else if (typeof hours === 'object') {
-          // Clean hours - remove days with no data
-          const cleaned: any = {};
-          for (const [day, dayHours] of Object.entries(hours)) {
-            if (dayHours && typeof dayHours === 'object') {
-              const dh = dayHours as any;
-              if (dh.closed || (dh.open && dh.close)) {
-                cleaned[day] = dayHours;
-              }
-            }
-          }
-          updateData.hours = Object.keys(cleaned).length > 0 ? cleaned : null;
-        }
-      }
-
-      // Handle SEO translation fields
-      if (seoTitleTranslations !== undefined) {
-        if (seoTitleTranslations === null) {
-          updateData.seoTitleTranslations = null;
-        } else if (typeof seoTitleTranslations === 'object') {
-          const cleaned: any = {};
-          for (const [locale, value] of Object.entries(seoTitleTranslations)) {
-            if (value && typeof value === 'string' && value.trim()) {
-              cleaned[locale] = value.trim();
-            }
-          }
-          updateData.seoTitleTranslations = Object.keys(cleaned).length > 0 ? cleaned : null;
-        }
-      }
-
-      if (seoDescriptionTranslations !== undefined) {
-        if (seoDescriptionTranslations === null) {
-          updateData.seoDescriptionTranslations = null;
-        } else if (typeof seoDescriptionTranslations === 'object') {
-          const cleaned: any = {};
-          for (const [locale, value] of Object.entries(seoDescriptionTranslations)) {
-            if (value && typeof value === 'string' && value.trim()) {
-              cleaned[locale] = value.trim();
-            }
-          }
-          updateData.seoDescriptionTranslations = Object.keys(cleaned).length > 0 ? cleaned : null;
-        }
-      }
-
-      // Status changes: Admin only
-      if (status !== undefined) {
-        if (isAdmin) {
-          updateData.status = status;
-        } else {
-          return createErrorResponse("Forbidden: Only admins can change entity status", 403);
-        }
-      }
-
-      // If Admin, apply update directly
-      if (isAdmin) {
-        const entity = await prisma.entity.update({
-          where: { id },
-          data: {
-            ...updateData,
-            ...(categoriesUpdate && { categories: categoriesUpdate }),
-          },
-          include: {
-            categories: true,
-            owner: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
+      // Validate and normalize input
+      let snapshot;
+      try {
+        snapshot = normalizeSnapshot({
+          ...body,
+          categorySlugs: body.categorySlugs || [],
+          tagSlugs: body.tagSlugs || [],
         });
-        return createSuccessResponse(entity, "Entity updated successfully");
+      } catch (validationError) {
+        // Return validation error with field information
+        const { ValidationError } = await import("@/lib/normalizeEntityInput");
+        if (validationError instanceof ValidationError) {
+          return createErrorResponse(validationError.message, 400, validationError.fieldErrors);
+        }
+        const message = validationError instanceof Error ? validationError.message : "Invalid input";
+        return createErrorResponse(message, 400);
       }
 
-      // If Owner, create Approval request
-      // Store the entire updateData as newValue
-      if (Object.keys(updateData).length === 0) {
-         return createErrorResponse("No changes provided", 400);
+      if (isAdmin) {
+        // Single pipeline: create approval, auto-approve, apply snapshot
+        const result = await prisma.$transaction(async (tx) => {
+          const approval = await tx.approval.create({
+            data: {
+              type: ApprovalType.UPDATE_ENTITY,
+              status: ApprovalStatus.APPROVED,
+              targetEntityId: id,
+              proposedEntityData: snapshot as any,
+              submittedBy: user.id,
+              submitterEmail: user.email,
+              source: "admin",
+              reviewedBy: user.id,
+              reviewedAt: new Date(),
+            },
+          });
+
+          const entity = await applyEntitySnapshot(snapshot as any, {
+            targetEntityId: id,
+            defaultOwnerId: existingEntity.ownerId,
+          });
+
+          return { approval, entity };
+        });
+
+        return createSuccessResponse(result.entity, "Entity updated successfully");
       }
 
+      // Owner path: create pending approval with snapshot
       const approval = await prisma.approval.create({
         data: {
-          entityId: id,
           type: ApprovalType.UPDATE_ENTITY,
-          newValue: updateData,
+          status: ApprovalStatus.PENDING,
+          targetEntityId: id,
+          proposedEntityData: snapshot as any,
           submittedBy: user.id,
           submitterEmail: user.email,
-          status: ApprovalStatus.PENDING,
           source: "owner",
         },
       });

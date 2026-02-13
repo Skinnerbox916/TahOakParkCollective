@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       const approvals = await prisma.approval.findMany({
         where,
         include: {
-          entity: {
+          targetEntity: {
             select: {
               id: true,
               name: true,

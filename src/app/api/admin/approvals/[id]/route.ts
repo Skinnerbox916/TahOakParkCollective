@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE, ApprovalStatus, ApprovalType, ENTITY_STATUS } from "@/lib/prismaEnums";
+import { normalizeSnapshot } from "@/lib/entitySnapshot";
+import { applyEntitySnapshot } from "@/lib/applyEntitySnapshot";
 
 // GET - Fetch single approval details
 export async function GET(
@@ -15,7 +17,7 @@ export async function GET(
       const approval = await prisma.approval.findUnique({
         where: { id },
         include: {
-          entity: {
+          targetEntity: {
             include: {
               categories: true,
               owner: {
@@ -25,45 +27,36 @@ export async function GET(
                   email: true,
                 }
               },
-              tags: {
-                include: {
-                  tag: true,
-                }
-              }
-            }
-          }
-        }
+              tags: { include: { tag: true } },
+            },
+          },
+          entity: true,
+        },
       });
 
       if (!approval) {
         return createErrorResponse("Approval not found", 404);
       }
 
-      // For NEW_ENTITY approvals, resolve categorySlugs and tagSlugs to full objects
-      let resolvedCategories: Array<{ id: string; name: string; slug: string }> = [];
-      let resolvedTags: Array<{ id: string; name: string; slug: string; category: string }> = [];
+      const snapshot = approval.proposedEntityData as Record<string, unknown>;
 
-      if (approval.type === ApprovalType.NEW_ENTITY && approval.entityData) {
-        const entityData = approval.entityData as Record<string, unknown>;
-        
-        // Resolve categories
-        const categorySlugs = (entityData.categorySlugs as string[]) || [];
-        if (categorySlugs.length > 0) {
-          resolvedCategories = await prisma.category.findMany({
-            where: { slug: { in: categorySlugs } },
-            select: { id: true, name: true, slug: true }
-          });
-        }
+      const categorySlugs = (snapshot.categorySlugs as string[]) || [];
+      const resolvedCategories =
+        categorySlugs.length > 0
+          ? await prisma.category.findMany({
+              where: { slug: { in: categorySlugs } },
+              select: { id: true, name: true, slug: true },
+            })
+          : [];
 
-        // Resolve tags
-        const tagSlugs = (entityData.tagSlugs as string[]) || [];
-        if (tagSlugs.length > 0) {
-          resolvedTags = await prisma.tag.findMany({
-            where: { slug: { in: tagSlugs } },
-            select: { id: true, name: true, slug: true, category: true }
-          });
-        }
-      }
+      const tagSlugs = (snapshot.tagSlugs as string[]) || [];
+      const resolvedTags =
+        tagSlugs.length > 0
+          ? await prisma.tag.findMany({
+              where: { slug: { in: tagSlugs } },
+              select: { id: true, name: true, slug: true, category: true },
+            })
+          : [];
 
       return createSuccessResponse({
         ...approval,
@@ -95,8 +88,8 @@ export async function PUT(
       const approval = await prisma.approval.findUnique({
         where: { id },
         include: {
-          entity: true,
-        }
+          targetEntity: true,
+        },
       });
 
       if (!approval) {
@@ -108,7 +101,6 @@ export async function PUT(
       }
 
       if (action === "REJECT") {
-        // Just mark as rejected
         const updated = await prisma.approval.update({
           where: { id },
           data: {
@@ -125,69 +117,19 @@ export async function PUT(
       if (action === "APPROVE") {
         switch (approval.type) {
           case ApprovalType.NEW_ENTITY: {
-            // Create Entity from entityData
-            const entityData = approval.entityData as Record<string, unknown>;
-            if (!entityData) {
-              return createErrorResponse("No entity data found in approval", 400);
-            }
-
-            // Get admin user ID for owner
             const adminUser = await prisma.user.findFirst({
-              where: { roles: { has: ROLE.ADMIN } }
+              where: { roles: { has: ROLE.ADMIN } },
             });
-
             if (!adminUser) {
               return createErrorResponse("No admin user found to assign as owner", 500);
             }
 
-            // Resolve category slugs to IDs
-            const categorySlugs = (entityData.categorySlugs as string[]) || [];
-            const categories = await prisma.category.findMany({
-              where: { slug: { in: categorySlugs } }
+            const entity = await applyEntitySnapshot(approval.proposedEntityData as any, {
+              targetEntityId: null,
+              defaultOwnerId: adminUser.id,
+              statusForNew: ENTITY_STATUS.ACTIVE,
             });
 
-            // Resolve tag slugs to IDs
-            const tagSlugs = (entityData.tagSlugs as string[]) || [];
-            const tags = await prisma.tag.findMany({
-              where: { slug: { in: tagSlugs } }
-            });
-
-            // Create the entity
-            const entity = await prisma.entity.create({
-              data: {
-                name: entityData.name as string,
-                nameTranslations: entityData.nameTranslations as object || null,
-                slug: entityData.slug as string,
-                description: entityData.description as string || null,
-                descriptionTranslations: entityData.descriptionTranslations as object || null,
-                address: entityData.address as string || null,
-                phone: entityData.phone as string || null,
-                website: entityData.website as string || null,
-                latitude: entityData.latitude as number || null,
-                longitude: entityData.longitude as number || null,
-                entityType: entityData.entityType as string || "COMMERCE",
-                status: ENTITY_STATUS.ACTIVE,
-                hours: entityData.hours as object || null,
-                socialMedia: entityData.socialMedia as object || null,
-                ownerId: (entityData.ownerId as string) || adminUser.id,
-                categories: {
-                  connect: categories.map(c => ({ id: c.id }))
-                },
-              }
-            });
-
-            // Create entity tags
-            if (tags.length > 0) {
-              await prisma.entityTag.createMany({
-                data: tags.map(tag => ({
-                  entityId: entity.id,
-                  tagId: tag.id,
-                  verified: true, // Admin approved
-                }))
-              });
-            }
-
-            // Update approval with created entity reference
             const updated = await prisma.approval.update({
               where: { id },
               data: {
@@ -203,103 +145,126 @@ export async function PUT(
           }
 
           case ApprovalType.UPDATE_ENTITY: {
-            if (!approval.entityId) {
-              return createErrorResponse("No entity ID associated with this approval", 400);
+            if (!approval.targetEntityId) {
+              return createErrorResponse("No target entity associated with this approval", 400);
             }
-            
-            // Update entity fields with newValue
-            const newValue = approval.newValue as Record<string, unknown>;
-            await prisma.entity.update({
-              where: { id: approval.entityId },
-              data: newValue,
+            const entity = await applyEntitySnapshot(approval.proposedEntityData as any, {
+              targetEntityId: approval.targetEntityId,
+              defaultOwnerId: approval.targetEntity?.ownerId || user.id,
             });
-            break;
-          }
-
-          case ApprovalType.ADD_TAG: {
-            if (!approval.entityId) {
-              return createErrorResponse("No entity ID associated with this approval", 400);
-            }
-            
-            const newValue = approval.newValue as Record<string, unknown>;
-            if (newValue?.tagId) {
-              // Check if tag exists
-              const tag = await prisma.tag.findUnique({ where: { id: newValue.tagId as string } });
-              if (tag) {
-                // Upsert EntityTag
-                await prisma.entityTag.upsert({
-                  where: {
-                    entityId_tagId: {
-                      entityId: approval.entityId,
-                      tagId: newValue.tagId as string,
-                    },
-                  },
-                  update: {
-                    verified: true,
-                  },
-                  create: {
-                    entityId: approval.entityId,
-                    tagId: newValue.tagId as string,
-                    verified: true,
-                    createdBy: approval.submittedBy,
-                  },
-                });
-              }
-            }
-            break;
-          }
-
-          case ApprovalType.REMOVE_TAG: {
-            if (!approval.entityId) {
-              return createErrorResponse("No entity ID associated with this approval", 400);
-            }
-            
-            const newValue = approval.newValue as Record<string, unknown>;
-            if (newValue?.tagId) {
-              await prisma.entityTag.deleteMany({
-                where: {
-                  entityId: approval.entityId,
-                  tagId: newValue.tagId as string,
-                },
-              });
-            }
-            break;
-          }
-
-          case ApprovalType.UPDATE_IMAGE: {
-            if (!approval.entityId) {
-              return createErrorResponse("No entity ID associated with this approval", 400);
-            }
-            
-            // Update images field
-            await prisma.entity.update({
-              where: { id: approval.entityId },
+            const updated = await prisma.approval.update({
+              where: { id },
               data: {
-                images: approval.newValue,
+                status: ApprovalStatus.APPROVED,
+                reviewedBy: user.id,
+                reviewedAt: new Date(),
+                notes: notes || null,
+                entityId: approval.targetEntityId,
               },
             });
-            break;
+            return createSuccessResponse({ approval: updated, entity }, "Entity updated and approved");
           }
+
+          default:
+            return createErrorResponse("Unsupported approval type for new model", 400);
         }
-
-        // Mark approval as APPROVED
-        const updated = await prisma.approval.update({
-          where: { id },
-          data: {
-            status: ApprovalStatus.APPROVED,
-            reviewedBy: user.id,
-            reviewedAt: new Date(),
-            notes: notes || null,
-          },
-        });
-
-        return createSuccessResponse(updated, "Approval approved and applied");
       }
 
       return createErrorResponse("Unknown error", 500);
     } catch (error) {
       console.error("Error processing approval:", error);
       return createErrorResponse("Failed to process approval", 500);
+    }
+  });
+}
+
+// PATCH - Update proposedEntityData for pending approvals
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return withRole([ROLE.ADMIN], async () => {
+    try {
+      const { id } = await params;
+      const body = await request.json();
+      const { proposedEntityData } = body;
+
+      if (!proposedEntityData || typeof proposedEntityData !== "object") {
+        return createErrorResponse("proposedEntityData is required and must be an object", 400);
+      }
+
+      // Find the approval with entity info
+      const approval = await prisma.approval.findUnique({
+        where: { id },
+      });
+
+      if (!approval) {
+        return createErrorResponse("Approval not found", 404);
+      }
+
+      // Only allow editing PENDING approvals
+      if (approval.status !== ApprovalStatus.PENDING) {
+        return createErrorResponse("Only PENDING approvals can be edited", 400);
+      }
+
+      // Allow editing snapshots for both NEW_ENTITY and UPDATE_ENTITY
+
+      // Validate required fields
+      if (!proposedEntityData.name || typeof proposedEntityData.name !== "string" || !proposedEntityData.name.trim()) {
+        return createErrorResponse("Entity name is required", 400);
+      }
+
+      if (!proposedEntityData.slug || typeof proposedEntityData.slug !== "string" || !proposedEntityData.slug.trim()) {
+        return createErrorResponse("Entity slug is required", 400);
+      }
+
+      // Validate and normalize input
+      let normalized;
+      try {
+        normalized = normalizeSnapshot(proposedEntityData as any);
+      } catch (validationError) {
+        // Return validation error with field information
+        const { ValidationError } = await import("@/lib/normalizeEntityInput");
+        if (validationError instanceof ValidationError) {
+          return createErrorResponse(validationError.message, 400, validationError.fieldErrors);
+        }
+        const message = validationError instanceof Error ? validationError.message : "Invalid input";
+        return createErrorResponse(message, 400);
+      }
+
+      const resolvedCategories = normalized.categorySlugs.length
+        ? await prisma.category.findMany({
+            where: { slug: { in: normalized.categorySlugs } },
+            select: { id: true, name: true, slug: true },
+          })
+        : [];
+
+      const resolvedTags =
+        normalized.tagSlugs && normalized.tagSlugs.length
+          ? await prisma.tag.findMany({
+              where: { slug: { in: normalized.tagSlugs } },
+              select: { id: true, name: true, slug: true, category: true },
+            })
+          : [];
+
+      const updated = await prisma.approval.update({
+        where: { id },
+        data: {
+          proposedEntityData: normalized as any,
+        },
+      });
+
+      return createSuccessResponse(
+        {
+          ...updated,
+          resolvedCategories,
+          resolvedTags,
+        },
+        "Approval snapshot updated successfully"
+      );
+    } catch (error) {
+      console.error("Error updating approval entityData:", error);
+      return createErrorResponse("Failed to update approval", 500);
     }
   });
 }

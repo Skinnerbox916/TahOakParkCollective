@@ -27,7 +27,7 @@ export const entityIncludeStandard = {
 /**
  * Transforms an entity with translations for entity, categories, and tags
  */
-export function transformEntity(entity: any, locale: string) {
+export function transformEntity(entity: any, locale: string, includeAdminFields = false) {
   // Translate entity name and description
   const translatedName = getTranslatedField(entity.nameTranslations, locale, entity.name);
   const translatedDescription = entity.description
@@ -36,27 +36,20 @@ export function transformEntity(entity: any, locale: string) {
 
   const translatedEntity: any = {
     ...entity,
-    name: translatedName,
-    description: translatedDescription,
-    // SEO fields with fallback to name/description
-    seoTitle: getTranslatedField(
-      entity.seoTitleTranslations,
-      locale,
-      translatedName
-    ),
-    seoDescription: getTranslatedField(
-      entity.seoDescriptionTranslations,
-      locale,
-      translatedDescription || translatedName
-    ),
+    // Preserve canonical fields; expose localized variants separately
+    nameLocalized: translatedName,
+    descriptionLocalized: translatedDescription,
+    // SEO fields (these are inherently localized, so keep existing behavior)
+    seoTitle: getTranslatedField(entity.seoTitleTranslations, locale, translatedName),
+    seoDescription: getTranslatedField(entity.seoDescriptionTranslations, locale, translatedDescription || translatedName),
   };
 
   // Translate categories if present
   if (entity.categories && Array.isArray(entity.categories)) {
     translatedEntity.categories = entity.categories.map((cat: any) => ({
       ...cat,
-      name: getTranslatedField(cat.nameTranslations, locale, cat.name),
-      description: cat.description
+      nameLocalized: getTranslatedField(cat.nameTranslations, locale, cat.name),
+      descriptionLocalized: cat.description
         ? getTranslatedField(cat.descriptionTranslations, locale, cat.description)
         : null,
     }));
@@ -70,11 +63,7 @@ export function transformEntity(entity: any, locale: string) {
           ...entityTag,
           tag: {
             ...entityTag.tag,
-            name: getTranslatedField(
-              entityTag.tag.nameTranslations,
-              locale,
-              entityTag.tag.name
-            ),
+            nameLocalized: getTranslatedField(entityTag.tag.nameTranslations, locale, entityTag.tag.name),
           },
         };
       }
@@ -86,17 +75,9 @@ export function transformEntity(entity: any, locale: string) {
   if (entity.category) {
     translatedEntity.category = {
       ...entity.category,
-      name: getTranslatedField(
-        entity.category.nameTranslations,
-        locale,
-        entity.category.name
-      ),
-      description: entity.category.description
-        ? getTranslatedField(
-            entity.category.descriptionTranslations,
-            locale,
-            entity.category.description
-          )
+      nameLocalized: getTranslatedField(entity.category.nameTranslations, locale, entity.category.name),
+      descriptionLocalized: entity.category.description
+        ? getTranslatedField(entity.category.descriptionTranslations, locale, entity.category.description)
         : null,
     };
   }

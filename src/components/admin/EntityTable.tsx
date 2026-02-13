@@ -13,7 +13,8 @@ import { SortableTableHeader } from "./SortableTableHeader";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import type { EntityStatus } from "@/lib/prismaEnums";
 import { ApiResponse } from "@/types";
-import { formatPhoneNumber, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { formatPhoneForDisplay } from "@/lib/phone";
 import { ENTITY_TYPES } from "@/lib/constants";
 import { useAdminTranslations } from "@/lib/admin-translations";
 import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
@@ -236,7 +237,7 @@ export function EntityTable({
                 </div>
                 {entity.phone && (
                   <div className="text-xs text-gray-500">
-                    {formatPhoneNumber(entity.phone)}
+                    {formatPhoneForDisplay(entity.phone)}
                   </div>
                 )}
               </td>
@@ -256,16 +257,10 @@ export function EntityTable({
                   }
                 >
                   <Link
-                    href={`/admin/entities/${entity.id}`}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    View Profile
-                  </Link>
-                  <Link
                     href={`/admin/entities/${entity.id}/edit`}
                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    Edit Entity
+                    Edit
                   </Link>
                   {onDelete && (
                     <div className="border-t border-gray-200">

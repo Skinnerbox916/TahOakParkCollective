@@ -141,6 +141,12 @@ src/
 - Hours not displayed for CIVIC and PUBLIC_SPACE
 - Configuration in `src/lib/entityDisplayConfig.ts`
 
+**Display Settings:**
+- Entities can control field visibility via `displaySettings` JSONB field: `{ address: true, phone: false, hours: true, ... }`
+- When a field is disabled in `displaySettings`, it won't appear on the public profile even if data exists
+- This allows preserving data (like coordinates for geocoding) while hiding it from public view
+- `shouldShowSection()` in `entityDisplayConfig.ts` respects both `displaySettings` and data presence
+
 ### Tags
 Tags an be added and deleted from the admin dashboard
 **Identity (owner-assigned):** E.g., Black-owned, LGBTQ-owned, Women-owned, Veteran-owned, Asian-owned, Immigrant-owned, Indigenous-owned
@@ -148,6 +154,101 @@ Tags an be added and deleted from the admin dashboard
 **Friendliness (admin-verified):** E.g., Kid-friendly, Dog-friendly, Neurodiversity-friendly, Wheelchair-accessible, Senior-friendly, Sensory-friendly
 
 **Amenities (open):** E.g., WiFi, Outdoor Seating, Parking Available, Public Restroom, Accepts Cash, Accepts Cards, Gender-neutral Restrooms, Changing Tables
+
+### Entity Status
+
+Status values:
+- `ACTIVE` - Visible on public site
+- `INACTIVE` - Hidden from public
+- `PENDING_REVIEW` - Draft entity awaiting admin approval (created by AI/public submissions)
+
+**Status lifecycle:**
+- New entities from AI/public submissions are created with `PENDING_REVIEW` status
+- Admin approves → status changes to `ACTIVE`
+- Admin rejects → draft entity is deleted
+- Only `ACTIVE` entities appear on public site
+
+### Display Settings
+
+Entities can control field visibility on their profile via the `displaySettings` JSONB field:
+
+```typescript
+displaySettings: {
+  address?: boolean;    // Show/hide address field
+  phone?: boolean;      // Show/hide phone field
+  website?: boolean;    // Show/hide website field
+  hours?: boolean;      // Show/hide hours section
+  socialMedia?: boolean; // Show/hide social media links
+  location?: boolean;   // Show/hide map/location section
+}
+```
+
+**Use cases:**
+- Hide address for service providers who don't have a physical location
+- Keep coordinates in data for geocoding/search but hide map from profile
+- Toggle fields on/off without losing data (data preserved, just hidden)
+
+**Implementation:**
+- `shouldShowSection()` in `src/lib/entityDisplayConfig.ts` checks both `displaySettings` and data presence
+- Admin can edit `displaySettings` via approval detail page or entity edit form
+- Public profile respects `displaySettings` - fields with `false` are hidden even if data exists
+
+---
+
+## Approval System
+
+### Overview
+
+The approval system provides moderation workflow for entity submissions and changes. All new entity submissions and certain updates require admin approval before becoming public.
+
+### Approval Types
+
+| Type | Purpose | Data Storage |
+|------|---------|--------------|
+| `NEW_ENTITY` | New entity submission (AI/public) | Creates draft `Entity` with `PENDING_REVIEW` status |
+| `UPDATE_ENTITY` | Changes to existing entity | Stores diff in `newValue` JSON field |
+| `ADD_TAG` | Add tag to entity | Tag ID in `newValue` |
+| `REMOVE_TAG` | Remove tag from entity | Tag ID in `newValue` |
+| `UPDATE_IMAGE` | Change entity images | Image data in `newValue` |
+
+### NEW_ENTITY Approval Flow
+
+**Submission (AI/Public):**
+1. Entity data is normalized via `normalizeEntityInput()`
+2. Draft `Entity` record created with `status: PENDING_REVIEW`
+3. `Approval` record created with `type: NEW_ENTITY`, `entityId` linked to draft entity
+4. `approval.entityData` stores snapshot for audit (optional, not used for runtime)
+
+**Admin Review:**
+1. Admin views approval detail page (shows draft entity via `approval.entity`)
+2. Admin can edit draft entity inline (updates the Entity record, not JSON)
+3. Admin can toggle field visibility via `displaySettings`
+
+**Approve:**
+- Draft entity `status` changed to `ACTIVE`
+- Approval marked as `APPROVED`
+- Entity now visible on public site
+
+**Reject:**
+- Draft entity deleted (cascade removes related tags)
+- Approval marked as `REJECTED`
+
+### Key Implementation Details
+
+- **Draft entities are real Entity records** - No JSON blob storage, uses same model as approved entities
+- **Normalization required** - Always use `normalizeEntityInput()` from `src/lib/normalizeEntityInput.ts` to ensure consistent data format
+- **Display settings** - Editable during approval review, stored on Entity model
+- **Legacy support** - Old approvals using `entityData` JSON still supported (fallback logic in place)
+
+### API Endpoints
+
+| Method | Endpoint | Auth | Purpose |
+|--------|----------|------|---------|
+| POST | `/api/admin/ai-add-entity` | Admin | AI-powered entity submission (creates draft + approval) |
+| POST | `/api/public/suggest-entity` | - | Public entity suggestion (creates draft + approval) |
+| GET | `/api/admin/approvals/[id]` | Admin | Get approval details (includes draft entity) |
+| PATCH | `/api/admin/approvals/[id]` | Admin | Update draft entity data |
+| PUT | `/api/admin/approvals/[id]` | Admin | Approve/reject (activate or delete draft) |
 
 ---
 
@@ -198,6 +299,7 @@ APIs automatically detect locale and return translated content. Use `getLocaleFr
 | TypeScript types | `src/types/index.ts` |
 | API routes | `src/app/api/` |
 | Entity display config | `src/lib/entityDisplayConfig.ts` |
+| Entity input normalization | `src/lib/normalizeEntityInput.ts` |
 | Locale routing/redirects | `src/proxy.ts` |
 | i18n config | `src/i18n/routing.ts` |
 | Translation messages | `src/messages/{en,es}.json` |
@@ -268,6 +370,7 @@ return createErrorResponse("Error message", 400);
 - Use Prisma client from `src/lib/prisma.ts`
 - Use `include` for relations: `include: { categories: true }`
 - Default status filter: `status: ENTITY_STATUS.ACTIVE`
+- **Normalization:** Always use `normalizeEntityInput()` from `src/lib/normalizeEntityInput.ts` when creating/updating entities to ensure consistent data format (empty objects become null, strings trimmed, etc.)
 
 ### Key API Endpoints
 
@@ -339,9 +442,10 @@ docker restart tahoak-web
 
 ### Entity not appearing
 
-- Status must be `ACTIVE` (not `INACTIVE`)
+- Status must be `ACTIVE` (not `INACTIVE` or `PENDING_REVIEW`)
 - At least one category must be linked
 - Prisma client was regenerated after direct DB operations
+- Check `displaySettings` if field appears in DB but not on profile
 
 ---
 
@@ -374,6 +478,7 @@ docker restart tahoak-web
 
 ## Related Documentation
 
+- **[DATABASE_GUIDE.md](./DATABASE_GUIDE.md)** - Complete database reference: schema, relationships, migrations, query patterns
 - **[API_GUIDE.md](./API_GUIDE.md)** - API architecture, helper libraries, and query patterns
 - **[UI_CONVENTIONS.md](./UI_CONVENTIONS.md)** - Component library and styling standards
 - **[TRANSLATION_GUIDE.md](./TRANSLATION_GUIDE.md)** - Complete translation system documentation

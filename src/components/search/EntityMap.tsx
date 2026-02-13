@@ -193,6 +193,10 @@ export function EntityMap({
           );
           // Only show markers for entities within bounds
           if (!inBounds) return null;
+          const displayName = entity.nameLocalized ?? entity.name;
+          const displayCategory = entity.category
+            ? entity.category.nameLocalized ?? entity.category.name
+            : null;
           
           return (
             <Marker
@@ -203,11 +207,11 @@ export function EntityMap({
               <Popup>
                 <div className="p-2">
                   <h3 className="font-semibold text-gray-900 mb-1">
-                    {entity.name}
+                    {displayName}
                   </h3>
                   {entity.category && (
                     <p className="text-sm text-gray-600 mb-1">
-                      {entity.category.name}
+                      {displayCategory}
                     </p>
                   )}
                   {entity.address && (

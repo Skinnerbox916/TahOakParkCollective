@@ -7,6 +7,7 @@ import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 import { truncate } from "@/lib/utils";
 import type { EntityType } from "@/lib/prismaEnums";
 import { TagBadge } from "@/components/tags/TagBadge";
+import { formatPhoneForDisplay } from "@/lib/phone";
 
 interface EntityCardProps {
   entity: EntityWithRelations;
@@ -19,6 +20,8 @@ export function EntityCard({ entity }: EntityCardProps) {
   // Get first 3 tags
   const tags = (entity.tags as EntityTagWithTag[] || []).slice(0, 3);
   const images = entity.images as Record<string, string> | null;
+  const displayName = entity.nameLocalized ?? entity.name;
+  const displayDescription = entity.descriptionLocalized ?? entity.description;
 
   return (
     <Link
@@ -30,7 +33,7 @@ export function EntityCard({ entity }: EntityCardProps) {
         <div className="h-48 w-full relative bg-gray-100">
           <img
             src={images.hero}
-            alt={`${entity.name} cover`}
+            alt={`${displayName} cover`}
             className="w-full h-full object-cover"
           />
         </div>
@@ -43,7 +46,7 @@ export function EntityCard({ entity }: EntityCardProps) {
             <div className="w-12 h-12 flex-shrink-0 rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
               <img 
                 src={images.logo} 
-                alt={`${entity.name} logo`}
+                alt={`${displayName} logo`}
                 className="w-full h-full object-contain p-1"
               />
             </div>
@@ -51,7 +54,7 @@ export function EntityCard({ entity }: EntityCardProps) {
           
           {/* Entity Name */}
           <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">
-            {entity.name}
+            {displayName}
           </h3>
         </div>
 
@@ -62,7 +65,7 @@ export function EntityCard({ entity }: EntityCardProps) {
           </span>
           {entity.categories?.map((cat: any) => (
             <span key={cat.id} className="px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md whitespace-nowrap">
-              {cat.name}
+              {cat.nameLocalized ?? cat.name}
             </span>
           ))}
         </div>
@@ -73,7 +76,7 @@ export function EntityCard({ entity }: EntityCardProps) {
             {tags.map((et) => (
               <TagBadge 
                 key={et.id} 
-                name={et.tag.name} 
+                name={et.tag.nameLocalized ?? et.tag.name} 
                 category={et.tag.category} 
                 verified={et.verified}
                 className="text-[10px] px-2 py-0.5"
@@ -88,9 +91,9 @@ export function EntityCard({ entity }: EntityCardProps) {
         )}
 
         {/* Description */}
-        {entity.description && (
+        {displayDescription && (
           <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-1">
-            {truncate(entity.description, 150)}
+            {truncate(displayDescription, 150)}
           </p>
         )}
 
@@ -105,7 +108,7 @@ export function EntityCard({ entity }: EntityCardProps) {
           {entity.phone && (
             <p className="flex items-center gap-2">
               <span>📞</span>
-              <span>{entity.phone}</span>
+              <span>{formatPhoneForDisplay(entity.phone)}</span>
             </p>
           )}
         </div>

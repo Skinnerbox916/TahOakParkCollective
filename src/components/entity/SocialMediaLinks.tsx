@@ -1,19 +1,42 @@
+import type { IconType } from "react-icons";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaTwitter,
+  FaLinkedinIn,
+  FaYelp,
+  FaTiktok,
+  FaYoutube,
+} from "react-icons/fa";
+import { SiThreads } from "react-icons/si";
+import { cn } from "@/lib/utils";
+
 interface SocialMediaLinksProps {
   socialMedia: Record<string, string>;
+  title?: string;
+  opensInNewTabText?: string;
 }
 
-const SOCIAL_PLATFORMS = [
-  { key: "facebook", label: "Facebook", icon: "📘" },
-  { key: "instagram", label: "Instagram", icon: "📷" },
-  { key: "twitter", label: "Twitter", icon: "🐦" },
-  { key: "linkedin", label: "LinkedIn", icon: "💼" },
-  { key: "yelp", label: "Yelp", icon: "⭐" },
-  { key: "tiktok", label: "TikTok", icon: "🎵" },
-  { key: "youtube", label: "YouTube", icon: "▶️" },
-  { key: "threads", label: "Threads", icon: "🧵" },
+const SOCIAL_PLATFORMS: Array<{
+  key: string;
+  label: string;
+  Icon: IconType;
+}> = [
+  { key: "facebook", label: "Facebook", Icon: FaFacebookF },
+  { key: "instagram", label: "Instagram", Icon: FaInstagram },
+  { key: "twitter", label: "Twitter", Icon: FaTwitter }, // Keep bird icon
+  { key: "linkedin", label: "LinkedIn", Icon: FaLinkedinIn },
+  { key: "yelp", label: "Yelp", Icon: FaYelp },
+  { key: "tiktok", label: "TikTok", Icon: FaTiktok },
+  { key: "youtube", label: "YouTube", Icon: FaYoutube },
+  { key: "threads", label: "Threads", Icon: SiThreads },
 ];
 
-export function SocialMediaLinks({ socialMedia }: SocialMediaLinksProps) {
+export function SocialMediaLinks({
+  socialMedia,
+  title,
+  opensInNewTabText = "opens in new tab",
+}: SocialMediaLinksProps) {
   if (!socialMedia || Object.keys(socialMedia).length === 0) {
     return null;
   }
@@ -29,19 +52,27 @@ export function SocialMediaLinks({ socialMedia }: SocialMediaLinksProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">
-        Follow Us
+        {title ?? "Social Media"}
       </h2>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         {availableLinks.map((platform) => (
           <a
             key={platform.key}
             href={socialMedia[platform.key]}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium text-gray-700"
+            aria-label={`${platform.label} (${opensInNewTabText})`}
+            className={cn(
+              "inline-flex h-10 w-10 items-center justify-center rounded-md",
+              "bg-gray-50 text-gray-700 hover:bg-gray-100 focus-visible:outline-none",
+              "focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1"
+            )}
           >
-            <span>{platform.icon}</span>
-            <span>{platform.label}</span>
+            <platform.Icon
+              className="h-5 w-5"
+              aria-hidden="true"
+              focusable="false"
+            />
           </a>
         ))}
       </div>

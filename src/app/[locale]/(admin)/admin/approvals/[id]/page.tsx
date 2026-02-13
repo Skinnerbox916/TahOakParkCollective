@@ -31,14 +31,12 @@ interface ResolvedTag {
 }
 
 interface ApprovalWithEntityDetails extends Approval {
-  entity: {
+  targetEntity?: {
     id: string;
     name: string;
     slug: string;
-    categories: Array<{ id: string; name: string; slug: string }>;
-    owner: { id: string; name: string | null; email: string | null };
-    tags: Array<{ id: string; tag: { id: string; name: string; slug: string; category: string } }>;
   } | null;
+  proposedEntityData: Record<string, unknown>;
   resolvedCategories?: ResolvedCategory[];
   resolvedTags?: ResolvedTag[];
 }
@@ -167,7 +165,7 @@ export default function ApprovalDetailPage() {
     );
   }
 
-  const entityData = approval.entityData as Record<string, unknown> | null;
+  const entityData = approval.proposedEntityData as Record<string, unknown> | null;
 
   return (
     <div>
@@ -196,13 +194,28 @@ export default function ApprovalDetailPage() {
         </Card>
       )}
 
-      {/* Entity Preview (for NEW_ENTITY) */}
-      {approval.type === ApprovalType.NEW_ENTITY && entityData && (
+      {/* Entity Preview (for NEW_ENTITY and UPDATE_ENTITY) */}
+      {(approval.type === ApprovalType.NEW_ENTITY || approval.type === ApprovalType.UPDATE_ENTITY) && entityData && (
         <div className="mb-6">
           <EntityPreview
             entityData={entityData as Record<string, unknown>}
             resolvedCategories={approval.resolvedCategories || []}
             resolvedTags={approval.resolvedTags || []}
+            approvalId={approval.id}
+            entityId={approval.targetEntityId || undefined}
+            editable={approval.status === ApprovalStatus.PENDING}
+            onDataUpdated={(updatedData, resolvedCategories, resolvedTags) => {
+              // Update local approval state with new data
+              setApproval(prev => {
+                if (!prev) return null;
+                return {
+                  ...prev,
+                  proposedEntityData: updatedData as any,
+                  resolvedCategories,
+                  resolvedTags,
+                };
+              });
+            }}
           />
         </div>
       )}
@@ -309,49 +322,6 @@ export default function ApprovalDetailPage() {
           </Card>
         )}
 
-        {/* Change Data (for UPDATE_ENTITY, etc.) */}
-        {approval.type !== ApprovalType.NEW_ENTITY && (
-          <Card>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t("detail.changeDetails")}</h2>
-            {approval.entity && (
-              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">
-                  {t("detail.entity")}{" "}
-                  <Link 
-                    href={`/entities/${approval.entity.slug}`}
-                    className="font-medium text-indigo-600 hover:text-indigo-800"
-                  >
-                    {approval.entity.name}
-                  </Link>
-                </p>
-              </div>
-            )}
-            <dl className="space-y-3">
-              {approval.fieldName && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">{t("detail.field")}</dt>
-                  <dd className="text-gray-900">{approval.fieldName}</dd>
-                </div>
-              )}
-              {approval.oldValue && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">{t("detail.oldValue")}</dt>
-                  <dd className="text-gray-900 bg-red-50 p-2 rounded text-sm">
-                    <pre className="whitespace-pre-wrap">{JSON.stringify(approval.oldValue, null, 2)}</pre>
-                  </dd>
-                </div>
-              )}
-              {approval.newValue && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">{t("detail.newValue")}</dt>
-                  <dd className="text-gray-900 bg-green-50 p-2 rounded text-sm">
-                    <pre className="whitespace-pre-wrap">{JSON.stringify(approval.newValue, null, 2)}</pre>
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </Card>
-        )}
       </div>
 
       {/* Actions */}

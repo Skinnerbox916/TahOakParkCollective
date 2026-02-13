@@ -38,7 +38,10 @@
     "menu": "Menu",
     "closeMenu": "Close menu",
     "directory": "Directory",
-    "more": "more"
+    "more": "more",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "opensInNewTab": "opens in new tab"
   },
   "nav": {
     "home": "Home",
@@ -521,6 +524,24 @@
     "entities": {
       "noEntities": "No entities found",
       "noEntitiesDescription": "Try adjusting your filters",
+      "aiSuggestUpdates": "AI Suggest Updates",
+      "aiSuggestModal": {
+        "title": "AI-Suggested Updates",
+        "loading": "Researching current information...",
+        "noSuggestions": "No updates needed. This entity appears to be current.",
+        "intro": "Review AI-suggested changes below. Accept the ones you want to include, then create a pending approval to review in detail.",
+        "errorRequireSelection": "Please accept at least one suggestion before creating an approval.",
+        "errorCreate": "Failed to create approval",
+        "errorMissingApprovalId": "Approval ID missing from response",
+        "confidence": "Confidence",
+        "actions": {
+          "cancel": "Cancel",
+          "rejectAll": "Reject All",
+          "acceptAll": "Accept All",
+          "createApproval": "Create Approval",
+          "creatingApproval": "Creating Approval..."
+        }
+      },
       "columns": {
         "name": "Name",
         "type": "Type",
@@ -631,6 +652,7 @@
       },
       "sources": {
         "ai": "AI Quick-Add",
+        "ai_suggest": "AI Suggested Updates",
         "public": "Public Suggestion",
         "owner": "Entity Owner",
         "admin": "Admin"
@@ -657,7 +679,34 @@
         "reviewed": "Reviewed",
         "reviewNotes": "Review Notes",
         "source": "Source",
-        "notFound": "Approval not found"
+        "notFound": "Approval not found",
+        "previewTitle": "Preview - How the profile will appear",
+        "editingEntityData": "Editing Entity Data",
+        "unnamedEntity": "Unnamed Entity",
+        "noDescription": "No description",
+        "noContactInfo": "No contact information",
+        "noHours": "No hours specified",
+        "noSocialMedia": "No social media links",
+        "languageEnglish": "English",
+        "languageSpanish": "Spanish",
+        "nameInLanguage": "Name in {language}",
+        "descriptionInLanguage": "Description in {language}",
+        "coordinatesNote": "Note: Coordinates are read-only. If you change the address, re-geocode may be needed after approval.",
+        "clearAddress": "Clear Address",
+        "coordinatesPreserved": "Note: Coordinates are preserved in raw data and can be restored later.",
+        "includeField": "Include",
+        "locationDisabled": "Location/map is hidden. Coordinates are preserved.",
+        "legalName": "Legal Name",
+        "businessEntityType": "Entity Type",
+        "registrationNumber": "Registration Number",
+        "registrationDate": "Registration Date",
+        "businessLicense": "Business License",
+        "licenseStatus": "License Status",
+        "owners": "Owners/Principals",
+        "agentForService": "Agent for Service",
+        "source": "Source",
+        "verifiedDate": "Verified Date",
+        "notes": "Notes"
       }
     },
     "issueReports": {
@@ -765,6 +814,8 @@
         "name": "Entity Name *",
         "entityType": "Entity Type *",
         "category": "Category",
+        "categories": "Categories",
+        "tags": "Tags",
         "address": "Address",
         "phone": "Phone",
         "website": "Website"
@@ -814,8 +865,11 @@
       },
       "validation": {
         "nameRequired": "Entity name is required",
-        "invalidWebsite": "Please enter a valid website URL (e.g., https://example.com)",
-        "invalidSocialUrl": "Please enter a valid {platform} URL"
+        "invalidWebsite": "Must include a valid domain with extension (e.g., example.com, www.example.org)",
+        "invalidSocialUrl": "Must include a valid domain with extension for {platform}",
+        "invalidPhone": "Please enter a valid phone number",
+        "invalidHours": "Invalid business hours format",
+        "fixErrors": "Please fix the errors above"
       },
       "success": {
         "created": "Entity created successfully!",
@@ -915,8 +969,11 @@
       },
       "validation": {
         "nameRequired": "Entity name is required",
-        "invalidWebsite": "Please enter a valid website URL (e.g., https://example.com)",
-        "invalidSocialUrl": "Please enter a valid {platform} URL"
+        "invalidWebsite": "Must include a valid domain with extension (e.g., example.com, www.example.org)",
+        "invalidSocialUrl": "Must include a valid domain with extension for {platform}",
+        "invalidPhone": "Please enter a valid phone number",
+        "invalidHours": "Invalid business hours format",
+        "fixErrors": "Please fix the errors above"
       },
       "success": {
         "created": "Entity created successfully!",

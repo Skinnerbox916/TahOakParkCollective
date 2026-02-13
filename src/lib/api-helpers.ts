@@ -13,12 +13,14 @@ export function createSuccessResponse<T>(data: T, message?: string): NextRespons
 
 export function createErrorResponse(
   error: string,
-  status: number = 400
+  status: number = 400,
+  fieldErrors?: Record<string, string>
 ): NextResponse<ApiResponse> {
   return NextResponse.json(
     {
       success: false,
       error,
+      ...(fieldErrors && { fieldErrors }),
     },
     { status }
   );

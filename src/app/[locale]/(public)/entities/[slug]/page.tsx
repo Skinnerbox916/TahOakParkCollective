@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { EntityDetail } from "@/components/entity/EntityDetail";
 import { getTranslatedField } from "@/lib/translations";
+import { entityIncludeStandard, transformEntity } from "@/lib/entity-helpers";
 import type { EntityWithRelations } from "@/types";
 
 async function getEntityBySlug(slug: string, locale: string): Promise<EntityWithRelations | null> {
@@ -12,76 +13,15 @@ async function getEntityBySlug(slug: string, locale: string): Promise<EntityWith
         slug,
         status: ENTITY_STATUS.ACTIVE, // Only show active entities publicly
       },
-      include: {
-        categories: true,
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      include: entityIncludeStandard,
     });
 
     if (!entity) {
       return null;
     }
 
-    // Apply translations
-    const translatedEntity = {
-      ...entity,
-      name: getTranslatedField(entity.nameTranslations, locale, entity.name),
-      description: entity.description
-        ? getTranslatedField(entity.descriptionTranslations, locale, entity.description)
-        : null,
-    };
-
-    // Translate categories if present
-    if (entity.categories && Array.isArray(entity.categories)) {
-      translatedEntity.categories = entity.categories.map((cat: any) => ({
-        ...cat,
-        name: getTranslatedField(
-          cat.nameTranslations,
-          locale,
-          cat.name
-        ),
-        description: cat.description
-          ? getTranslatedField(
-              cat.descriptionTranslations,
-              locale,
-              cat.description
-            )
-          : null,
-      }));
-    }
-
-    // Translate tags if present
-    if (entity.tags && Array.isArray(entity.tags)) {
-      translatedEntity.tags = entity.tags.map((entityTag: any) => {
-        if (entityTag.tag) {
-          return {
-            ...entityTag,
-            tag: {
-              ...entityTag.tag,
-              name: getTranslatedField(
-                entityTag.tag.nameTranslations,
-                locale,
-                entityTag.tag.name
-              ),
-            },
-          };
-        }
-        return entityTag;
-      });
-    }
-
-    return translatedEntity as EntityWithRelations;
+    const transformed = transformEntity(entity, locale);
+    return transformed as EntityWithRelations;
   } catch (error) {
     console.error("Error fetching entity:", error);
     return null;

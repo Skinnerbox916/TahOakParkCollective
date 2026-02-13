@@ -63,6 +63,8 @@ export function FeaturedBusiness({ rotationInterval = 8000 }: FeaturedBusinessPr
   }
 
   const entity = entities[currentIndex];
+  const displayName = entity.nameLocalized ?? entity.name;
+  const displayDescription = entity.descriptionLocalized ?? entity.description;
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 relative overflow-hidden">
@@ -73,16 +75,16 @@ export function FeaturedBusiness({ rotationInterval = 8000 }: FeaturedBusinessPr
       </div>
       
       <div className="mb-4">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{entity.name}</h3>
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">{displayName}</h3>
         {entity.categories?.length > 0 && (
           <p className="text-indigo-600 font-medium">
-            {entity.categories.map((cat: any) => cat.name).join(", ")}
+            {entity.categories.map((cat: any) => cat.nameLocalized ?? cat.name).join(", ")}
           </p>
         )}
       </div>
 
-      {entity.description && (
-        <p className="text-gray-600 mb-6 line-clamp-3">{entity.description}</p>
+      {displayDescription && (
+        <p className="text-gray-600 mb-6 line-clamp-3">{displayDescription}</p>
       )}
 
       <div className="flex items-center justify-between">

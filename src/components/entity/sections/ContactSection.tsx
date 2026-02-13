@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { EntityWithRelations } from "@/types";
 import type { SectionConfig } from "@/lib/entityDisplayConfig";
-import { formatPhoneNumber } from "@/lib/utils";
+import { formatPhoneForDisplay } from "@/lib/phone";
 
 interface ContactSectionProps {
   entity: EntityWithRelations;
@@ -38,7 +38,7 @@ export function ContactSection({ entity, config }: ContactSectionProps) {
               href={`tel:${entity.phone}`}
               className="text-indigo-600 hover:text-indigo-700"
             >
-              {formatPhoneNumber(entity.phone)}
+            {formatPhoneForDisplay(entity.phone)}
             </a>
           </div>
         )}

@@ -11,6 +11,7 @@ interface PhotosSectionProps {
 
 export function PhotosSection({ entity, config }: PhotosSectionProps) {
   const t = useTranslations("entity");
+  const displayName = entity.nameLocalized ?? entity.name;
   
   const images = entity.images as Record<string, string> | null;
   
@@ -39,7 +40,7 @@ export function PhotosSection({ entity, config }: PhotosSectionProps) {
             <p className="text-sm font-medium text-gray-500">{t("coverImage")}</p>
             <img
               src={images.hero}
-              alt={`${entity.name} - Cover`}
+              alt={`${displayName} - Cover`}
               className="w-full h-48 object-cover rounded-lg"
             />
           </div>
@@ -49,7 +50,7 @@ export function PhotosSection({ entity, config }: PhotosSectionProps) {
             <p className="text-sm font-medium text-gray-500">{t("logo")}</p>
             <img
               src={images.logo}
-              alt={`${entity.name} - Logo`}
+              alt={`${displayName} - Logo`}
               className="w-full h-48 object-contain bg-gray-50 rounded-lg p-4"
             />
           </div>

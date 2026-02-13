@@ -314,6 +314,7 @@ export function shouldShowSection(
   entity: EntityWithRelations
 ): boolean {
   const sectionConfig = config.sections[sectionId];
+  const displaySettings = (entity as any).displaySettings as Record<string, boolean | undefined> | null;
   
   // If section is explicitly disabled, don't show
   if (sectionConfig?.enabled === false) {
@@ -324,17 +325,40 @@ export function shouldShowSection(
   switch (sectionId) {
     case 'description':
       return !!entity.description;
-    case 'hours':
+
+    case 'map': {
+      if (displaySettings?.location === false) return false;
+      return !!(entity.latitude && entity.longitude);
+    }
+
+    case 'contact': {
+      const hasAddress = entity.address && displaySettings?.address !== false;
+      const hasPhone = entity.phone && displaySettings?.phone !== false;
+      const hasWebsite = entity.website && displaySettings?.website !== false;
+      return !!(hasAddress || hasPhone || hasWebsite);
+    }
+
+    case 'hours': {
+      if (displaySettings?.hours === false) return false;
       return !!entity.hours;
-    case 'socialMedia':
-      return !!entity.socialMedia;
-    case 'photos':
+    }
+
+    case 'socialMedia': {
+      if (displaySettings?.socialMedia === false) return false;
+      const sm = entity.socialMedia as Record<string, string> | null;
+      return !!(sm && Object.keys(sm).length > 0);
+    }
+
+    case 'photos': {
       const images = entity.images as any;
       const showHero = sectionConfig?.settings?.showHero !== false && images?.hero;
       const showLogo = sectionConfig?.settings?.showLogo !== false && images?.logo;
       return showHero || showLogo;
+    }
+
     case 'profileImage':
       return !!(entity.images as any)?.hero;
+
     default:
       return true;
   }

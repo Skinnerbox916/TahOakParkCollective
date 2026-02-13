@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { formatPhoneForDisplay } from "@/lib/phone";
 
 // Utility function for combining class names with proper Tailwind class merging
 export function cn(...inputs: ClassValue[]): string {
@@ -15,23 +16,8 @@ export function generateSlug(text: string): string {
     .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
 }
 
-export function formatPhoneNumber(phone: string): string {
-  // US phone number formatting: (XXX) XXX-XXXX
-  const cleaned = phone.replace(/\D/g, "");
-  
-  // Handle 10-digit US numbers
-  if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-  }
-  
-  // Handle 11-digit US numbers with leading 1
-  if (cleaned.length === 11 && cleaned[0] === "1") {
-    return `(${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
-  }
-  
-  // Return original if doesn't match US patterns (e.g., international numbers)
-  return phone.trim();
-}
+// Deprecated: use formatPhoneForDisplay from "@/lib/phone"
+export const formatPhoneNumber = formatPhoneForDisplay;
 
 /**
  * Normalizes a URL by adding https:// if no protocol is present.
@@ -49,6 +35,66 @@ export function normalizeUrl(url: string): string {
   
   // Add https:// by default
   return `https://${trimmed}`;
+}
+
+/**
+ * Validates that a URL has a proper structure with a valid TLD.
+ * Requires at least a domain.tld pattern (e.g., example.com).
+ */
+export function isValidUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url);
+    
+    // Must be http or https
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      return false;
+    }
+    
+    const hostname = urlObj.hostname;
+    
+    // Must have at least one dot (domain.tld)
+    if (!hostname.includes('.')) {
+      return false;
+    }
+    
+    // Split into parts
+    const parts = hostname.split('.');
+    
+    // Must have at least 2 parts (domain + tld)
+    if (parts.length < 2) {
+      return false;
+    }
+    
+    // TLD (last part) must be at least 2 characters and at most 14 characters
+    // (longest current TLD is .cancerresearch at 14 chars)
+    const tld = parts[parts.length - 1];
+    if (tld.length < 2 || tld.length > 14) {
+      return false;
+    }
+    
+    // The second-level domain (the part before TLD) must exist and be reasonable length
+    const secondLevel = parts[parts.length - 2];
+    if (!secondLevel || secondLevel.length < 1 || secondLevel.length > 63) {
+      return false;
+    }
+    
+    // Each part must be valid (alphanumeric + hyphens, but not start/end with hyphen)
+    for (const part of parts) {
+      if (!part || part.length === 0) return false;
+      if (part.startsWith('-') || part.endsWith('-')) return false;
+      if (!/^[a-z0-9-]+$/i.test(part)) return false;
+    }
+    
+    // If the domain has "www" as first part, ensure there are at least 3 parts total
+    // (www.example.com, not www.example)
+    if (parts[0].toLowerCase() === 'www' && parts.length < 3) {
+      return false;
+    }
+    
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function formatAddress(address: string): string {

@@ -6,6 +6,7 @@ import { researchEntity } from "@/lib/ai/entity-research";
 import { generateSlug } from "@/lib/utils";
 import { geocodeAddress } from "@/lib/geocoding";
 import { validateCoverage } from "@/lib/coverage-areas";
+import { normalizeSnapshot } from "@/lib/entitySnapshot";
 
 export async function POST(request: NextRequest) {
   return withRole([ROLE.ADMIN], async (user) => {
@@ -146,75 +147,40 @@ export async function POST(request: NextRequest) {
         researchResult.tagSlugs = tags.map((tag) => tag.slug);
       }
 
-      // Get admin user ID for ownerId
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          roles: { has: ROLE.ADMIN },
-        },
-        select: { id: true },
-      });
-
-      if (!adminUser) {
-        return createErrorResponse("Admin user not found", 500);
-      }
-
-      // Generate slug and ensure uniqueness
-      const baseSlug = generateSlug(researchResult.name);
-      let uniqueSlug = baseSlug;
-      let counter = 1;
-
-      while (await prisma.entity.findUnique({ where: { slug: uniqueSlug } })) {
-        uniqueSlug = `${baseSlug}-${counter}`;
-        counter++;
-      }
-
-      // Clean social media - remove empty values
-      let cleanedSocialMedia = null;
-      if (researchResult.socialMedia && typeof researchResult.socialMedia === "object") {
-        const cleaned: Record<string, string> = {};
-        for (const [key, value] of Object.entries(researchResult.socialMedia)) {
-          if (value && typeof value === "string" && value.trim()) {
-            cleaned[key] = value.trim();
-          }
-        }
-        cleanedSocialMedia = Object.keys(cleaned).length > 0 ? cleaned : null;
-      }
-
-      // Build entity data to store in Approval
-      const entityData = {
+      const snapshot = normalizeSnapshot({
         name: researchResult.name,
-        slug: uniqueSlug,
-        description: researchResult.description,
+        nameTranslations: researchResult.nameTranslations || null,
+        slug: generateSlug(researchResult.name),
+        description: researchResult.description || null,
+        descriptionTranslations: researchResult.descriptionTranslations || null,
         address: researchResult.address || null,
         phone: researchResult.phone || null,
         website: researchResult.website || null,
         latitude: entityLatitude,
         longitude: entityLongitude,
-        entityType: researchResult.entityType,
+        entityType: researchResult.entityType as any,
         hours: researchResult.hours || null,
-        socialMedia: cleanedSocialMedia,
-        nameTranslations: researchResult.nameTranslations || null,
-        descriptionTranslations: researchResult.descriptionTranslations || null,
+        socialMedia: researchResult.socialMedia || null,
         categorySlugs: researchResult.categorySlugs,
         tagSlugs: researchResult.tagSlugs || [],
-        ownerId: adminUser.id,
-      };
+        displaySettings: researchResult.displaySettings || null,
+        seoTitleTranslations: researchResult.seoTitleTranslations || null,
+        seoDescriptionTranslations: researchResult.seoDescriptionTranslations || null,
+      });
 
-      // Create Approval record instead of Entity
       const approval = await prisma.approval.create({
         data: {
           type: ApprovalType.NEW_ENTITY,
           status: ApprovalStatus.PENDING,
-          entityData,
+          targetEntityId: null,
+          proposedEntityData: snapshot as any,
           submittedBy: user.id,
+          submitterEmail: user.email,
           source: "ai",
         },
       });
 
-      return createSuccessResponse(
-        { approval, entityData },
-        `Entity "${researchResult.name}" submitted for approval!`
-      );
+      return createSuccessResponse(approval, `Entity "${researchResult.name}" submitted for approval!`);
     } catch (error: unknown) {
       console.error("Error in AI entity addition:", error);
       

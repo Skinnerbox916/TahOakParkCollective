@@ -23,6 +23,7 @@ interface EntityDetailProps {
  */
 function EntityHeader({ entity }: { entity: EntityWithRelations }) {
   const entityTypeLabels = useEntityTypeLabels();
+  const displayName = entity.nameLocalized ?? entity.name;
   
   // Group tags by category
   const groupedTags = (entity.tags as EntityTagWithTag[] || []).reduce((acc, entityTag) => {
@@ -39,7 +40,7 @@ function EntityHeader({ entity }: { entity: EntityWithRelations }) {
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {entity.name}
+            {displayName}
           </h1>
           <div className="flex flex-wrap gap-2 mb-3">
             <span className="inline-block px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded">
@@ -47,7 +48,7 @@ function EntityHeader({ entity }: { entity: EntityWithRelations }) {
             </span>
             {entity.categories?.map((cat: any) => (
               <span key={cat.id} className="inline-block px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded">
-                {cat.name}
+                {cat.nameLocalized ?? cat.name}
               </span>
             ))}
           </div>
@@ -60,7 +61,7 @@ function EntityHeader({ entity }: { entity: EntityWithRelations }) {
                 return groupedTags[category].map(et => (
                   <TagBadge 
                     key={et.id} 
-                    name={et.tag.name} 
+                    name={et.tag.nameLocalized ?? et.tag.name} 
                     category={et.tag.category}
                     verified={et.verified}
                   />

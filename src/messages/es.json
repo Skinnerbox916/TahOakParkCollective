@@ -38,7 +38,10 @@
     "menu": "Menú",
     "closeMenu": "Cerrar menú",
     "directory": "Directorio",
-    "more": "más"
+    "more": "más",
+    "saveChanges": "Guardar Cambios",
+    "saving": "Guardando...",
+    "opensInNewTab": "se abre en una nueva pestaña"
   },
   "nav": {
     "home": "Inicio",
@@ -521,6 +524,24 @@
     "entities": {
       "noEntities": "No se encontraron entidades",
       "noEntitiesDescription": "Intenta ajustar tus filtros",
+      "aiSuggestUpdates": "Sugerencias de IA",
+      "aiSuggestModal": {
+        "title": "Actualizaciones sugeridas por IA",
+        "loading": "Investigando información actual...",
+        "noSuggestions": "No se necesitan actualizaciones. Esta entidad parece estar al día.",
+        "intro": "Revisa los cambios sugeridos por IA. Acepta los que quieras incluir y crea una aprobación pendiente para revisarlos a detalle.",
+        "errorRequireSelection": "Acepta al menos una sugerencia antes de crear una aprobación.",
+        "errorCreate": "Error al crear la aprobación",
+        "errorMissingApprovalId": "Falta el ID de aprobación en la respuesta",
+        "confidence": "Confianza",
+        "actions": {
+          "cancel": "Cancelar",
+          "rejectAll": "Rechazar todas",
+          "acceptAll": "Aceptar todas",
+          "createApproval": "Crear aprobación",
+          "creatingApproval": "Creando aprobación..."
+        }
+      },
       "columns": {
         "name": "Nombre",
         "type": "Tipo",
@@ -631,6 +652,7 @@
       },
       "sources": {
         "ai": "Agregar Rápido IA",
+        "ai_suggest": "Actualizaciones Sugeridas IA",
         "public": "Sugerencia Pública",
         "owner": "Propietario de Entidad",
         "admin": "Administrador"
@@ -657,7 +679,34 @@
         "reviewed": "Revisado",
         "reviewNotes": "Notas de Revisión",
         "source": "Fuente",
-        "notFound": "Aprobación no encontrada"
+        "notFound": "Aprobación no encontrada",
+        "previewTitle": "Vista Previa - Cómo aparecerá el perfil",
+        "editingEntityData": "Editando Datos de Entidad",
+        "unnamedEntity": "Entidad Sin Nombre",
+        "noDescription": "Sin descripción",
+        "noContactInfo": "Sin información de contacto",
+        "noHours": "Sin horarios especificados",
+        "noSocialMedia": "Sin enlaces de redes sociales",
+        "languageEnglish": "Inglés",
+        "languageSpanish": "Español",
+        "nameInLanguage": "Nombre en {language}",
+        "descriptionInLanguage": "Descripción en {language}",
+        "coordinatesNote": "Nota: Las coordenadas son de solo lectura. Si cambias la dirección, puede ser necesario re-geocodificar después de la aprobación.",
+        "clearAddress": "Limpiar Dirección",
+        "coordinatesPreserved": "Nota: Las coordenadas se conservan en los datos sin procesar y se pueden restaurar más tarde.",
+        "includeField": "Incluir",
+        "locationDisabled": "Ubicación/mapa oculto. Las coordenadas se conservan.",
+        "legalName": "Nombre Legal",
+        "businessEntityType": "Tipo de Entidad",
+        "registrationNumber": "Número de Registro",
+        "registrationDate": "Fecha de Registro",
+        "businessLicense": "Licencia Comercial",
+        "licenseStatus": "Estado de Licencia",
+        "owners": "Propietarios/Principales",
+        "agentForService": "Agente de Servicio",
+        "source": "Fuente",
+        "verifiedDate": "Fecha de Verificación",
+        "notes": "Notas"
       }
     },
     "issueReports": {
@@ -765,6 +814,8 @@
         "name": "Nombre de la entidad *",
         "entityType": "Tipo de entidad *",
         "category": "Categoría",
+        "categories": "Categorías",
+        "tags": "Etiquetas",
         "address": "Dirección",
         "phone": "Teléfono",
         "website": "Sitio web"
@@ -814,8 +865,11 @@
       },
       "validation": {
         "nameRequired": "El nombre de la entidad es obligatorio",
-        "invalidWebsite": "Por favor ingresa una URL válida (ej: https://ejemplo.com)",
-        "invalidSocialUrl": "Por favor ingresa una URL válida para {platform}"
+        "invalidWebsite": "Debe incluir un dominio válido con extensión (ej: ejemplo.com, www.ejemplo.org)",
+        "invalidSocialUrl": "Debe incluir un dominio válido con extensión para {platform}",
+        "invalidPhone": "Por favor ingresa un número de teléfono válido",
+        "invalidHours": "Formato de horario no válido",
+        "fixErrors": "Por favor corrige los errores anteriores"
       },
       "success": {
         "created": "¡Entidad creada exitosamente!",
@@ -915,8 +969,11 @@
       },
       "validation": {
         "nameRequired": "El nombre de la entidad es obligatorio",
-        "invalidWebsite": "Por favor ingresa una URL válida (ej: https://ejemplo.com)",
-        "invalidSocialUrl": "Por favor ingresa una URL válida para {platform}"
+        "invalidWebsite": "Debe incluir un dominio válido con extensión (ej: ejemplo.com, www.ejemplo.org)",
+        "invalidSocialUrl": "Debe incluir un dominio válido con extensión para {platform}",
+        "invalidPhone": "Por favor ingresa un número de teléfono válido",
+        "invalidHours": "Formato de horario no válido",
+        "fixErrors": "Por favor corrige los errores anteriores"
       },
       "success": {
         "created": "¡Entidad creada exitosamente!",

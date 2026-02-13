@@ -85,7 +85,8 @@ export async function researchEntity(
 
   const entityTypes = Object.values(ENTITY_TYPE).join(", ");
 
-  const locationContext = " Location context: Sacramento, CA (Tahoe Park, Oak Park, Elmhurst, Colonial Park, Curtis Park neighborhoods). Assume the entity is in the coverage area.";
+  const locationContext =
+    " Location context: Sacramento, CA (Tahoe Park, Oak Park, Elmhurst, Colonial Park, Curtis Park neighborhoods). Assume the entity is in the coverage area.";
 
   // Build comprehensive prompt based on runbook
   const prompt = `You are researching entities for TahOak Park Collective, a hyper-local business directory for Sacramento neighborhoods (Tahoe Park, Oak Park, Elmhurst, Colonial Park, Curtis Park).
@@ -121,6 +122,7 @@ CRITICAL INSTRUCTIONS:
 - Only mark as duplicate if you are confident it's the same entity
 - If uncertain, err on the side of NOT being a duplicate
 - If entity doesn't fit existing categories, set needsCategoryGuidance: true
+- When checking official sources (e.g., CA Secretary of State, Sacramento business license), use findings to improve address/phone/website if available
 
 Return valid JSON in this exact format:
 {

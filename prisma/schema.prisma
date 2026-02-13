@@ -60,12 +60,14 @@ model Entity {
   images                  Json?           // Array of image URLs
   hours                   Json?           // Business hours structure
   socialMedia             Json?           // Social media links
+  displaySettings         Json?           // Controls which fields are displayed on the public profile
   ownerId                 String
   owner                   User            @relation(fields: [ownerId], references: [id])
   
   // MVP fields
   tags                EntityTag[]
-  approvals           Approval[]
+  approvals           Approval[]       @relation("ApprovalCreatedEntity")
+  approvalTargets     Approval[]       @relation("ApprovalTargetEntity")
   spotCheckDate       DateTime?
   verificationContact String?
   
@@ -110,36 +112,38 @@ model EntityTag {
 }
 
 model Approval {
-  id              String         @id @default(cuid())
-  type            ApprovalType
-  status          ApprovalStatus @default(PENDING)
+  id                 String         @id @default(cuid())
+  type               ApprovalType
+  status             ApprovalStatus @default(PENDING)
   
-  // For NEW_ENTITY: full entity data stored here until approved
-  entityData      Json?
+  // Unified snapshot model
+  proposedEntityData Json
   
-  // For changes to existing entities
-  entityId        String?
-  entity          Entity?        @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  fieldName       String?        // For field-level changes
-  oldValue        Json?          // Previous value
-  newValue        Json?          // Proposed/new value
+  // Target entity for updates (null for NEW_ENTITY)
+  targetEntityId     String?
+  targetEntity       Entity?        @relation("ApprovalTargetEntity", fields: [targetEntityId], references: [id], onDelete: Cascade)
+
+  // Backward link to created entity (for NEW_ENTITY approvals once approved)
+  entityId           String?
+  entity             Entity?        @relation("ApprovalCreatedEntity", fields: [entityId], references: [id], onDelete: Cascade)
   
   // Submitter info
-  submittedBy     String?        // User ID (nullable for public/AI submissions)
-  submitterEmail  String?        // For public submissions
-  source          String?        // "ai", "public", "owner", "admin"
+  submittedBy        String?        // User ID (nullable for public/AI submissions)
+  submitterEmail     String?        // For public submissions
+  source             String?        // "ai", "public", "owner", "admin"
   
   // Review info
-  reviewedBy      String?        // Admin ID who reviewed
-  reviewedAt      DateTime?
-  notes           String?        @db.Text
+  reviewedBy         String?        // Admin ID who reviewed
+  reviewedAt         DateTime?
+  notes              String?        @db.Text
   
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
   
   @@index([status])
   @@index([type])
   @@index([entityId])
+  @@index([targetEntityId])
   @@index([submittedBy])
 }
 
@@ -211,6 +215,7 @@ enum EntityType {
 enum EntityStatus {
   ACTIVE
   INACTIVE
+  PENDING_REVIEW
 }
 
 enum TagCategory {

@@ -9,6 +9,7 @@ export type Role = (typeof ROLE)[keyof typeof ROLE];
 export const ENTITY_STATUS = {
   ACTIVE: "ACTIVE",
   INACTIVE: "INACTIVE",
+  PENDING_REVIEW: "PENDING_REVIEW",
 } as const;
 
 export type EntityStatus =

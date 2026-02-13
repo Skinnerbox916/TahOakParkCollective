@@ -15,7 +15,8 @@ import { TagSelector } from "@/components/tags/TagSelector";
 import { ImageManager } from "@/components/images/ImageManager";
 import { BusinessHoursInput } from "@/components/form/BusinessHoursInput";
 import { getFormConfig, type SocialPlatform } from "@/lib/entityFormConfig";
-import { formatPhoneNumber, normalizeUrl } from "@/lib/utils";
+import { formatPhoneNumber, normalizeUrl, isValidUrl } from "@/lib/utils";
+import { validateEntityInput } from "@/lib/schemas/entitySchema";
 
 interface EntityFormProps {
   entity?: EntityWithRelations;
@@ -190,46 +191,12 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
   const hasMediaData = entity?.images && Object.keys(entity.images as object).length > 0;
   const hasTagsData = selectedTagIds.length > 0;
 
-  const validateForm = (): { error: string; section?: string } | null => {
-    // Clear previous field errors
-    setFieldErrors({});
-
-    if (!name.trim()) {
-      return { error: t("validation.nameRequired") };
-    }
-
-    if (website && website.trim()) {
-      try {
-        new URL(website);
-      } catch {
-        setFieldErrors(prev => ({ ...prev, website: t("validation.invalidWebsite") }));
-        return { error: t("validation.invalidWebsite"), section: "locationContact" };
-      }
-    }
-
-    // Validate social media URLs
-    for (const platform of formConfig.socialPlatforms) {
-      const url = socialMedia[platform];
-      if (url && url.trim()) {
-        try {
-          new URL(url);
-        } catch {
-          const errorMsg = t("validation.invalidSocialUrl", { platform });
-          setFieldErrors(prev => ({ ...prev, [platform]: errorMsg }));
-          return { error: errorMsg, section: "onlinePresence" };
-        }
-      }
-    }
-
-    return null;
-  };
-
-  // Handle phone number formatting on blur
-  const handlePhoneBlur = () => {
-    const formatted = formatPhoneNumber(phone);
-    if (formatted !== phone) {
-      setPhone(formatted);
-    }
+  const getSectionForField = (field: string | undefined): string | undefined => {
+    if (!field) return undefined;
+    if (["address", "phone", "website"].includes(field)) return "locationContact";
+    if (formConfig.socialPlatforms.includes(field as SocialPlatform)) return "onlinePresence";
+    if (field === "hours") return "hours";
+    return undefined;
   };
 
   // Handle website URL normalization and validation on blur
@@ -241,13 +208,12 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
 
     // Validate and show inline error
     if (normalized) {
-      try {
-        new URL(normalized);
+      if (isValidUrl(normalized)) {
         setFieldErrors(prev => {
           const { website: _, ...rest } = prev;
           return rest;
         });
-      } catch {
+      } else {
         setFieldErrors(prev => ({ ...prev, website: t("validation.invalidWebsite") }));
       }
     } else {
@@ -271,13 +237,12 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
 
     // Validate and show inline error
     if (normalized) {
-      try {
-        new URL(normalized);
+      if (isValidUrl(normalized)) {
         setFieldErrors(prev => {
           const { [platform]: _, ...rest } = prev;
           return rest;
         });
-      } catch {
+      } else {
         setFieldErrors(prev => ({ ...prev, [platform]: t("validation.invalidSocialUrl", { platform }) }));
       }
     } else {
@@ -368,17 +333,35 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
     setError(null);
     setSuccess(null);
 
-    const validationResult = validateForm();
-    if (validationResult) {
-      setError(validationResult.error);
-      
-      // Auto-expand section with error and scroll to it
-      if (validationResult.section === "locationContact") {
+    const candidate = {
+      name,
+      description,
+      address,
+      phone,
+      website,
+      socialMedia,
+      hours: formConfig.sections.hours.enabled ? hours : undefined,
+    };
+
+    const validationResult = validateEntityInput(candidate);
+    if (!validationResult.success) {
+      const translated: Record<string, string> = {};
+      for (const [field, message] of Object.entries(validationResult.fieldErrors)) {
+        translated[field] = formConfig.socialPlatforms.includes(field as SocialPlatform)
+          ? t(message, { platform: field })
+          : t(message);
+      }
+      setFieldErrors(translated);
+      const firstField = Object.keys(validationResult.fieldErrors)[0];
+      const section = getSectionForField(firstField);
+      setError(t(validationResult.error));
+
+      if (section === "locationContact") {
         setLocationContactExpanded(true);
         setTimeout(() => {
           locationContactRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 100);
-      } else if (validationResult.section === "onlinePresence") {
+      } else if (section === "onlinePresence") {
         setOnlinePresenceExpanded(true);
         setTimeout(() => {
           onlinePresenceRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -387,22 +370,21 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
       return;
     }
 
+    setFieldErrors({});
     setLoading(true);
 
     try {
-      const cleanedSocialMedia = cleanSocialMedia(socialMedia);
-      const cleanedHours = formConfig.sections.hours.enabled ? cleanHours(hours) : undefined;
-      
+      const normalized = validationResult.data;
       const payload: Record<string, unknown> = {
-        name: name.trim(),
-        description: description.trim() || undefined,
-        address: address.trim() || undefined,
-        phone: phone.trim() || undefined,
-        website: website.trim() || undefined,
+        name: normalized.name,
+        description: normalized.description || undefined,
+        address: normalized.address || undefined,
+        phone: normalized.phone || undefined,
+        website: normalized.website || undefined,
         categoryIds: categoryId ? [categoryId] : undefined,
         entityType,
-        socialMedia: cleanedSocialMedia,
-        hours: cleanedHours,
+        socialMedia: normalized.socialMedia ?? null,
+        hours: normalized.hours ?? undefined,
       };
 
       // Add admin-only fields
@@ -629,9 +611,9 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
                     label={t("fields.phone")}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    onBlur={handlePhoneBlur}
                     disabled={loading}
                     placeholder={t("placeholders.phone")}
+                    error={fieldErrors.phone}
                   />
                 </div>
               </div>

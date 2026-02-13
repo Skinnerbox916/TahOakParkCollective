@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ApiResponse, Category, SocialMediaLinks } from "@/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -9,7 +10,8 @@ import { Card } from "@/components/ui/Card";
 import { ENTITY_TYPES } from "@/lib/constants";
 import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
-import { formatPhoneNumber, normalizeUrl } from "@/lib/utils";
+import { formatPhoneNumber, normalizeUrl, isValidUrl } from "@/lib/utils";
+import { validateEntityInput } from "@/lib/schemas/entitySchema";
 
 interface User {
   id: string;
@@ -23,6 +25,7 @@ interface AdminEntityFormProps {
 
 export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
   const router = useRouter();
+  const t = useTranslations("admin.entityForm");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -55,14 +58,6 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
   // Field-level validation errors
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Handle phone number formatting on blur
-  const handlePhoneBlur = () => {
-    const formatted = formatPhoneNumber(phone);
-    if (formatted !== phone) {
-      setPhone(formatted);
-    }
-  };
-
   // Handle website URL normalization on blur
   const handleWebsiteBlur = () => {
     const normalized = normalizeUrl(website);
@@ -71,13 +66,12 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
     }
     // Validate
     if (normalized) {
-      try {
-        new URL(normalized);
+      if (isValidUrl(normalized)) {
         setFieldErrors(prev => {
           const { website: _, ...rest } = prev;
           return rest;
         });
-      } catch {
+      } else {
         setFieldErrors(prev => ({ ...prev, website: "Please enter a valid URL" }));
       }
     } else {
@@ -99,13 +93,12 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
     }
     // Validate
     if (normalized) {
-      try {
-        new URL(normalized);
+      if (isValidUrl(normalized)) {
         setFieldErrors(prev => {
           const { [platform]: _, ...rest } = prev;
           return rest;
         });
-      } catch {
+      } else {
         setFieldErrors(prev => ({ ...prev, [platform]: `Please enter a valid ${platform} URL` }));
       }
     } else {
@@ -142,88 +135,61 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
     loadData();
   }, [entityType]);
 
-  const validateForm = (): string | null => {
-    if (!name.trim()) {
-      return "Entity name is required";
-    }
-
-    if (!ownerId) {
-      return "Please select an owner";
-    }
-
-    if (!entityType) {
-      return "Entity type is required";
-    }
-
-    if (website && website.trim()) {
-      try {
-        new URL(website);
-      } catch {
-        return "Please enter a valid website URL (e.g., https://example.com)";
-      }
-    }
-
-    // Validate social media URLs
-    const socialPlatforms: (keyof SocialMediaLinks)[] = [
-      "facebook", "instagram", "twitter", "linkedin", "yelp", "tiktok", "youtube", "threads"
-    ];
-    for (const platform of socialPlatforms) {
-      const url = socialMedia[platform];
-      if (url && url.trim()) {
-        try {
-          new URL(url);
-        } catch {
-          return `Please enter a valid ${platform} URL (e.g., https://${platform}.com/...)`;
-        }
-      }
-    }
-
-    return null;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
 
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
+    if (!ownerId) {
+      setFieldErrors(prev => ({ ...prev, ownerId: "Please select an owner" }));
+      setError("Please select an owner");
       return;
     }
 
+    const candidate = {
+      name,
+      description,
+      address,
+      phone,
+      website,
+      socialMedia,
+    };
+
+    const validationResult = validateEntityInput(candidate);
+    if (!validationResult.success) {
+      // Translate i18n error keys to user-facing messages
+      const translated: Record<string, string> = {};
+      for (const [field, message] of Object.entries(validationResult.fieldErrors)) {
+        // Check if message is an i18n key (starts with "validation.")
+        if (message.startsWith("validation.")) {
+          const key = message.replace("validation.", "");
+          translated[field] = t(`validation.${key}`, { platform: field });
+        } else {
+          translated[field] = message;
+        }
+      }
+      setFieldErrors(translated);
+      setError(t("validation.fixErrors"));
+      return;
+    }
+
+    setFieldErrors({});
     setLoading(true);
 
     try {
-      // Helper function to clean social media links - remove empty values
-      const cleanSocialMedia = (social: SocialMediaLinks): SocialMediaLinks | undefined => {
-        const cleaned: SocialMediaLinks = {};
-        const platforms: (keyof SocialMediaLinks)[] = [
-          "facebook", "instagram", "twitter", "linkedin", "yelp", "tiktok", "youtube", "threads"
-        ];
-        
-        for (const platform of platforms) {
-          if (social[platform] && social[platform]?.trim()) {
-            cleaned[platform] = social[platform]?.trim();
-          }
-        }
-        
-        return Object.keys(cleaned).length > 0 ? cleaned : undefined;
-      };
-
-      const cleanedSocialMedia = cleanSocialMedia(socialMedia);
+      const normalized = validationResult.data;
 
       const payload = {
-        name: name.trim(),
-        description: description.trim() || undefined,
-        address: address.trim() || undefined,
-        phone: phone.trim() || undefined,
-        website: website.trim() || undefined,
-        categoryId: categoryId || undefined,
+        name: normalized.name,
+        description: normalized.description || undefined,
+        address: normalized.address || undefined,
+        phone: normalized.phone || undefined,
+        website: normalized.website || undefined,
+        categoryIds: categoryId ? [categoryId] : undefined,
         ownerId,
         status,
         entityType,
-        socialMedia: cleanedSocialMedia,
+        socialMedia: normalized.socialMedia ?? null,
       };
 
       const response = await fetch("/api/entities", {
@@ -337,9 +303,9 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
               label="Phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              onBlur={handlePhoneBlur}
               disabled={loading}
               placeholder="(555) 123-4567"
+              error={fieldErrors.phone}
             />
           </div>
         </div>

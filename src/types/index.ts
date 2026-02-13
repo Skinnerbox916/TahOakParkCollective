@@ -6,11 +6,43 @@ export type { Entity, Category, User, Role, EntityStatus, EntityType, Tag, Entit
 export type EntityTagWithTag = EntityTag & { tag: Tag };
 
 export type ApprovalWithEntity = Approval & {
-  entity: {
+  entity?: {
     id: string;
     name: string;
     slug: string;
   } | null;
+  targetEntity?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  proposedEntityData?: Record<string, unknown>;
+};
+
+type EntityLocalizedFields = {
+  nameLocalized?: string | null;
+  descriptionLocalized?: string | null;
+  categories?: Array<
+    Prisma.EntityGetPayload<{ include: { categories: true } }>["categories"][number] & {
+      nameLocalized?: string | null;
+      descriptionLocalized?: string | null;
+    }
+  >;
+  tags?: Array<
+    EntityTagWithTag & {
+      tag: EntityTagWithTag["tag"] & {
+        nameLocalized?: string | null;
+      };
+    }
+  >;
+  // Legacy single-category support
+  category?: {
+    id?: string;
+    name?: string | null;
+    description?: string | null;
+    nameLocalized?: string | null;
+    descriptionLocalized?: string | null;
+  };
 };
 
 export type EntityWithRelations = Prisma.EntityGetPayload<{
@@ -23,7 +55,11 @@ export type EntityWithRelations = Prisma.EntityGetPayload<{
       };
     };
   };
-}>;
+}> &
+  EntityLocalizedFields;
+
+// Backward-compatible alias if callers want an explicit name
+export type EntityWithLocalized = EntityWithRelations;
 
 export interface ApiResponse<T = unknown> {
   success: boolean;

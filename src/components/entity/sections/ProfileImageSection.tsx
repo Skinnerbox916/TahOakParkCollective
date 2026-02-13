@@ -30,7 +30,7 @@ export function ProfileImageSection({ entity, config }: ProfileImageSectionProps
       </h2>
       <img
         src={heroImage}
-        alt={entity.name}
+        alt={entity.nameLocalized ?? entity.name}
         className="w-full rounded-lg"
         style={{ 
           height: imageHeight, 
