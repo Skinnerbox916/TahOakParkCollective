@@ -155,7 +155,7 @@
     "contentText": "Images, descriptions, and other content you upload",
     "automaticallyCollected": "2.2 Automatically Collected Information",
     "automaticallyCollectedText": "IP address and browser information (for security and analytics)",
-    "usageData": "Usage data through privacy-focused analytics (self-hosted Umami)",
+    "usageData": "Usage data through privacy-focused analytics",
     "howWeUse": "3. How We Use Your Information",
     "howWeUseText": "We use the information we collect to:",
     "providePlatform": "Provide, maintain, and improve the Platform",
@@ -170,7 +170,7 @@
     "transactional": "Transactional Emails:",
     "transactionalText": "We send essential emails related to your account, entity claims, and platform notifications. These cannot be opted out of as they are necessary for Platform functionality.",
     "analytics": "5. Analytics",
-    "analyticsText": "We use a self-hosted, privacy-focused analytics tool (Umami) that does not use cookies or track personal information. We only collect aggregate data about page views and visitor patterns. No cookie banners are required.",
+    "analyticsText": "We use privacy-focused analytics that do not use cookies or track personal information. We only collect aggregate data about page views and visitor patterns. No cookie banners are required.",
     "informationSharing": "6. Information Sharing",
     "informationSharingText": "We do not sell, trade, or rent your personal information. We may share information:",
     "serviceProviders": "With service providers who assist in operating the Platform (e.g., email service)",
@@ -462,7 +462,6 @@
       "spotChecks": "Spot Checks",
       "issueReports": "Issue Reports",
       "subscribers": "Subscribers",
-      "analytics": "Analytics",
       "tags": "Tags",
       "users": "Users"
     },
@@ -780,34 +779,6 @@
       },
       "notVerified": "Not verified",
       "never": "Never"
-    },
-    "analytics": {
-      "title": "Analytics",
-      "description": "View website analytics and visitor statistics using Umami.",
-      "last30Days": "Website visitor statistics and insights (Last 30 days)",
-      "checkingStatus": "Checking Umami status...",
-      "notConfigured": "Analytics Not Configured",
-      "configuredDescription": "Analytics tracking is configured, but the website needs to be set up in Umami.",
-      "serviceRunning": "Umami service is running",
-      "serviceUnreachable": "Umami service is not accessible",
-      "openDashboard": "Open Full Dashboard →",
-      "openUmamiDashboard": "Open Umami Dashboard",
-      "directAccess": "Direct access:",
-      "fullDashboard": "Full Dashboard",
-      "fullDashboardDescription": "View detailed analytics, charts, and reports in the Umami dashboard.",
-      "noData": "No analytics data available yet. Visit your website to start collecting data!",
-      "stats": {
-        "pageviews": "Pageviews",
-        "totalPageViews": "Total page views",
-        "visitors": "Visitors",
-        "uniqueVisitors": "Unique visitors",
-        "visits": "Visits",
-        "totalSessions": "Total sessions",
-        "bounceRate": "Bounce Rate",
-        "singlePageVisits": "Single-page visits",
-        "avgVisitTime": "Avg. Visit Time",
-        "avgSessionDuration": "Average session duration"
-      }
     },
     "entityForm": {
       "fields": {

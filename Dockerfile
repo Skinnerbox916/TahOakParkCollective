@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -23,9 +23,7 @@ COPY . .
 
 # Generate Prisma Client (need DATABASE_URL even though we don't connect)
 ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db"
-RUN npx prisma generate && \
-    ls -la node_modules/.prisma/client/ || true && \
-    ls -la node_modules/@prisma/client/ || true
+RUN npx prisma generate
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
@@ -61,9 +59,8 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma Client and generated files
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+# Copy Prisma generated client
+COPY --from=builder --chown=nextjs:nodejs /app/src/generated ./src/generated
 
 USER nextjs
 

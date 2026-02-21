@@ -18,7 +18,7 @@ const resend = apiKey
       }
     } as Pick<Resend, 'emails'>;
 
-const FROM_EMAIL = process.env.SMTP_FROM || 'noreply@tahoak.skibri.us';
+const FROM_EMAIL = process.env.SMTP_FROM || `noreply@${new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000').hostname}`;
 
 export async function sendVerificationEmail(email: string, token: string) {
   const localePrefix = `/${routing.defaultLocale}`;

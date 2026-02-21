@@ -155,7 +155,7 @@
     "contentText": "Imágenes, descripciones y otro contenido que subes",
     "automaticallyCollected": "2.2 Información Recopilada Automáticamente",
     "automaticallyCollectedText": "Dirección IP e información del navegador (para seguridad y análisis)",
-    "usageData": "Datos de uso a través de análisis centrados en la privacidad (Umami auto-hospedado)",
+    "usageData": "Datos de uso a través de análisis centrados en la privacidad",
     "howWeUse": "3. Cómo Usamos tu Información",
     "howWeUseText": "Usamos la información que recopilamos para:",
     "providePlatform": "Proporcionar, mantener y mejorar la Plataforma",
@@ -170,7 +170,7 @@
     "transactional": "Correos Transaccionales:",
     "transactionalText": "Enviamos correos electrónicos esenciales relacionados con tu cuenta, reclamos de entidades y notificaciones de la plataforma. Estos no se pueden cancelar ya que son necesarios para la funcionalidad de la Plataforma.",
     "analytics": "5. Análisis",
-    "analyticsText": "Usamos una herramienta de análisis auto-hospedada centrada en la privacidad (Umami) que no usa cookies ni rastrea información personal. Solo recopilamos datos agregados sobre vistas de página y patrones de visitantes. No se requieren banners de cookies.",
+    "analyticsText": "Usamos herramientas de análisis centradas en la privacidad que no usan cookies ni rastrean información personal. Solo recopilamos datos agregados sobre vistas de página y patrones de visitantes. No se requieren banners de cookies.",
     "informationSharing": "6. Compartir Información",
     "informationSharingText": "No vendemos, intercambiamos ni alquilamos tu información personal. Podemos compartir información:",
     "serviceProviders": "Con proveedores de servicios que ayudan a operar la Plataforma (por ejemplo, servicio de correo electrónico)",
@@ -462,7 +462,6 @@
       "spotChecks": "Verificaciones",
       "issueReports": "Reportes de Problemas",
       "subscribers": "Suscriptores",
-      "analytics": "Analítica",
       "tags": "Etiquetas",
       "users": "Usuarios"
     },
@@ -780,34 +779,6 @@
       },
       "notVerified": "No verificado",
       "never": "Nunca"
-    },
-    "analytics": {
-      "title": "Analítica",
-      "description": "Ve estadísticas de analítica y visitantes del sitio web usando Umami.",
-      "last30Days": "Estadísticas e información de visitantes del sitio web (Últimos 30 días)",
-      "checkingStatus": "Verificando estado de Umami...",
-      "notConfigured": "Analítica No Configurada",
-      "configuredDescription": "El seguimiento de analítica está configurado, pero el sitio web necesita ser configurado en Umami.",
-      "serviceRunning": "El servicio de Umami está corriendo",
-      "serviceUnreachable": "El servicio de Umami no está accesible",
-      "openDashboard": "Abrir Panel Completo →",
-      "openUmamiDashboard": "Abrir Panel de Umami",
-      "directAccess": "Acceso directo:",
-      "fullDashboard": "Panel Completo",
-      "fullDashboardDescription": "Ve analíticas detalladas, gráficos y reportes en el panel de Umami.",
-      "noData": "¡Aún no hay datos de analítica disponibles. Visita tu sitio web para comenzar a recopilar datos!",
-      "stats": {
-        "pageviews": "Vistas de Página",
-        "totalPageViews": "Total de vistas de página",
-        "visitors": "Visitantes",
-        "uniqueVisitors": "Visitantes únicos",
-        "visits": "Visitas",
-        "totalSessions": "Sesiones totales",
-        "bounceRate": "Tasa de Rebote",
-        "singlePageVisits": "Visitas de una sola página",
-        "avgVisitTime": "Tiempo Promedio de Visita",
-        "avgSessionDuration": "Duración promedio de sesión"
-      }
     },
     "entityForm": {
       "fields": {
