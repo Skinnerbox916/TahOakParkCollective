@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ENTITY_TYPES } from "@/lib/constants";
 import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 import type { EntityType } from "@/lib/prismaEnums";
-import type { Category } from "@prisma/client";
+import type { Category } from "@/generated/prisma/client";
 import { TagBadge } from "@/components/tags/TagBadge";
 import type { TagCategory } from "@/lib/prismaEnums";
 

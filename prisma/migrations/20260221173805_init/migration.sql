@@ -1,23 +1,20 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN', 'BUSINESS_OWNER');
+CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN', 'ENTITY_OWNER');
 
 -- CreateEnum
-CREATE TYPE "EntityType" AS ENUM ('COMMERCE', 'CIVIC', 'ADVOCACY', 'PUBLIC_SPACE', 'NON_PROFIT', 'EVENT', 'SERVICE_PROVIDER');
+CREATE TYPE "EntityType" AS ENUM ('COMMERCE', 'CIVIC', 'PUBLIC_SPACE', 'NON_PROFIT', 'EVENT', 'SERVICE_PROVIDER');
 
 -- CreateEnum
-CREATE TYPE "BusinessStatus" AS ENUM ('ACTIVE', 'PENDING', 'INACTIVE');
+CREATE TYPE "EntityStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'PENDING_REVIEW');
 
 -- CreateEnum
 CREATE TYPE "TagCategory" AS ENUM ('IDENTITY', 'FRIENDLINESS', 'AMENITY');
 
 -- CreateEnum
-CREATE TYPE "ChangeType" AS ENUM ('CREATE_ENTITY', 'UPDATE_ENTITY', 'ADD_TAG', 'REMOVE_TAG', 'UPDATE_IMAGE');
+CREATE TYPE "ApprovalType" AS ENUM ('NEW_ENTITY', 'UPDATE_ENTITY', 'ADD_TAG', 'REMOVE_TAG', 'UPDATE_IMAGE');
 
 -- CreateEnum
-CREATE TYPE "ChangeStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
-
--- CreateEnum
-CREATE TYPE "SuggestionStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+CREATE TYPE "ApprovalStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- CreateEnum
 CREATE TYPE "IssueType" AS ENUM ('INCORRECT_INFO', 'CLOSED', 'INELIGIBLE', 'OTHER');
@@ -65,21 +62,23 @@ CREATE TABLE "Entity" (
     "slug" TEXT NOT NULL,
     "description" TEXT,
     "descriptionTranslations" JSONB,
+    "seoTitleTranslations" JSONB,
+    "seoDescriptionTranslations" JSONB,
     "address" TEXT,
     "phone" TEXT,
     "website" TEXT,
     "latitude" DOUBLE PRECISION,
     "longitude" DOUBLE PRECISION,
     "entityType" "EntityType" NOT NULL DEFAULT 'COMMERCE',
-    "status" "BusinessStatus" NOT NULL DEFAULT 'PENDING',
+    "status" "EntityStatus" NOT NULL DEFAULT 'ACTIVE',
     "featured" BOOLEAN NOT NULL DEFAULT false,
     "images" JSONB,
     "hours" JSONB,
     "socialMedia" JSONB,
+    "displaySettings" JSONB,
     "ownerId" TEXT NOT NULL,
     "spotCheckDate" TIMESTAMP(3),
     "verificationContact" TEXT,
-    "coverageArea" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -112,42 +111,23 @@ CREATE TABLE "EntityTag" (
 );
 
 -- CreateTable
-CREATE TABLE "PendingChange" (
+CREATE TABLE "Approval" (
     "id" TEXT NOT NULL,
-    "entityId" TEXT NOT NULL,
-    "changeType" "ChangeType" NOT NULL,
-    "fieldName" TEXT,
-    "oldValue" JSONB,
-    "newValue" JSONB NOT NULL,
+    "type" "ApprovalType" NOT NULL,
+    "status" "ApprovalStatus" NOT NULL DEFAULT 'PENDING',
+    "proposedEntityData" JSONB NOT NULL,
+    "targetEntityId" TEXT,
+    "entityId" TEXT,
     "submittedBy" TEXT,
     "submitterEmail" TEXT,
-    "status" "ChangeStatus" NOT NULL DEFAULT 'PENDING',
+    "source" TEXT,
     "reviewedBy" TEXT,
     "reviewedAt" TIMESTAMP(3),
     "notes" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "PendingChange_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "EntitySuggestion" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-    "address" TEXT,
-    "website" TEXT,
-    "submitterEmail" TEXT NOT NULL,
-    "submitterName" TEXT,
-    "status" "SuggestionStatus" NOT NULL DEFAULT 'PENDING',
-    "reviewedBy" TEXT,
-    "reviewedAt" TIMESTAMP(3),
-    "notes" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "EntitySuggestion_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Approval_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -287,16 +267,19 @@ CREATE INDEX "EntityTag_tagId_idx" ON "EntityTag"("tagId");
 CREATE UNIQUE INDEX "EntityTag_entityId_tagId_key" ON "EntityTag"("entityId", "tagId");
 
 -- CreateIndex
-CREATE INDEX "PendingChange_status_idx" ON "PendingChange"("status");
+CREATE INDEX "Approval_status_idx" ON "Approval"("status");
 
 -- CreateIndex
-CREATE INDEX "PendingChange_entityId_idx" ON "PendingChange"("entityId");
+CREATE INDEX "Approval_type_idx" ON "Approval"("type");
 
 -- CreateIndex
-CREATE INDEX "PendingChange_submittedBy_idx" ON "PendingChange"("submittedBy");
+CREATE INDEX "Approval_entityId_idx" ON "Approval"("entityId");
 
 -- CreateIndex
-CREATE INDEX "EntitySuggestion_status_idx" ON "EntitySuggestion"("status");
+CREATE INDEX "Approval_targetEntityId_idx" ON "Approval"("targetEntityId");
+
+-- CreateIndex
+CREATE INDEX "Approval_submittedBy_idx" ON "Approval"("submittedBy");
 
 -- CreateIndex
 CREATE INDEX "IssueReport_status_idx" ON "IssueReport"("status");
@@ -350,7 +333,10 @@ ALTER TABLE "EntityTag" ADD CONSTRAINT "EntityTag_entityId_fkey" FOREIGN KEY ("e
 ALTER TABLE "EntityTag" ADD CONSTRAINT "EntityTag_tagId_fkey" FOREIGN KEY ("tagId") REFERENCES "Tag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PendingChange" ADD CONSTRAINT "PendingChange_entityId_fkey" FOREIGN KEY ("entityId") REFERENCES "Entity"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Approval" ADD CONSTRAINT "Approval_targetEntityId_fkey" FOREIGN KEY ("targetEntityId") REFERENCES "Entity"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Approval" ADD CONSTRAINT "Approval_entityId_fkey" FOREIGN KEY ("entityId") REFERENCES "Entity"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

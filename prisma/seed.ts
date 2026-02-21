@@ -1,4 +1,4 @@
-import { Role, BusinessStatus, EntityType, TagCategory } from "@prisma/client";
+import { Role, EntityType, TagCategory } from "../src/generated/prisma/client";
 import { prisma } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/password";
 
@@ -216,12 +216,12 @@ async function main() {
     where: { email: "owner@tahoak.com" },
     update: {
       password: ownerPassword,
-      roles: [Role.USER, Role.BUSINESS_OWNER],
+      roles: [Role.USER, Role.ENTITY_OWNER],
     },
     create: {
       email: "owner@tahoak.com",
       name: "Business Owner",
-      roles: [Role.USER, Role.BUSINESS_OWNER],
+      roles: [Role.USER, Role.ENTITY_OWNER],
       password: ownerPassword,
     },
   });

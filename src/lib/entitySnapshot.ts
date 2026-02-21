@@ -1,7 +1,7 @@
 import { normalizeEntityInput } from "@/lib/normalizeEntityInput";
 import { generateSlug } from "@/lib/utils";
 import type { BusinessHours, SocialMediaLinks } from "@/types";
-import type { EntityType } from "@prisma/client";
+import type { EntityType } from "@/generated/prisma/client";
 
 export interface EntitySnapshot {
   name: string;

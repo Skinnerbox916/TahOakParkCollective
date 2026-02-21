@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { normalizeSnapshot, type EntitySnapshot } from "@/lib/entitySnapshot";
 import { generateSlug } from "@/lib/utils";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 
 interface ApplySnapshotOptions {
   targetEntityId?: string | null;

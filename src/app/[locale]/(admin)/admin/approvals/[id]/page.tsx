@@ -9,7 +9,7 @@ import { ApprovalStatus, ApprovalType } from "@/lib/prismaEnums";
 import { Link } from "@/i18n/routing";
 import { EntityPreview } from "@/components/admin/EntityPreview";
 import { useAdminTranslations } from "@/lib/admin-translations";
-import type { Approval } from "@prisma/client";
+import type { Approval } from "@/generated/prisma/client";
 
 const STATUS_COLORS: Record<ApprovalStatus, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",

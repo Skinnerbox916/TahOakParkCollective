@@ -1,4 +1,4 @@
-import type { Entity, Category, User, Prisma, Tag, EntityTag, Approval } from "@prisma/client";
+import type { Entity, Category, User, Prisma, Tag, EntityTag, Approval } from "@/generated/prisma/client";
 import type { Role, EntityStatus, EntityType, TagCategory, ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
 
 export type { Entity, Category, User, Role, EntityStatus, EntityType, Tag, EntityTag, TagCategory, Approval, ApprovalType, ApprovalStatus };
