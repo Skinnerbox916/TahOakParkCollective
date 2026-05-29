@@ -100,7 +100,7 @@ function VerifySubscriptionContent() {
   return null;
 }
 
-export default function VerifySubscriptionFallback() {
+function VerifySubscriptionFallback() {
   const t = useTranslations("subscribe");
   
   return (

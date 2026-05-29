@@ -101,7 +101,7 @@ function ClaimVerifyContent() {
   return null;
 }
 
-export default function ClaimVerifyFallback() {
+function ClaimVerifyFallback() {
   const tCommon = useTranslations("common");
   
   return (
