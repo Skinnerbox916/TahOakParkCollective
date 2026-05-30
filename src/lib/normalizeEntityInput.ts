@@ -1,7 +1,7 @@
-import type { BusinessHours } from "@/types";
+import type { BusinessHours, SocialMediaLinks } from "@/types";
 import { entityInputSchema } from "@/lib/schemas/entitySchema";
 
-type SocialMedia = Record<string, string> | null | undefined;
+type SocialMedia = SocialMediaLinks | Record<string, string> | null | undefined;
 
 interface NormalizableFields {
   address?: string | null;

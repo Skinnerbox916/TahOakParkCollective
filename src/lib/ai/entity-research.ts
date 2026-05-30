@@ -25,6 +25,9 @@ export interface EntityResearchResult {
   socialMedia: any | null;
   nameTranslations?: { en: string; es: string } | null;
   descriptionTranslations?: { en: string; es: string } | null;
+  seoTitleTranslations?: { en: string; es: string } | null;
+  seoDescriptionTranslations?: { en: string; es: string } | null;
+  displaySettings?: Record<string, boolean | undefined> | null;
   duplicateCheck: {
     isDuplicate: boolean;
     existingEntityName?: string;

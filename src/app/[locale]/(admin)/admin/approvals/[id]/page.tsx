@@ -30,7 +30,7 @@ interface ResolvedTag {
   category: string;
 }
 
-interface ApprovalWithEntityDetails extends Approval {
+interface ApprovalWithEntityDetails extends Omit<Approval, "proposedEntityData"> {
   targetEntity?: {
     id: string;
     name: string;
@@ -273,7 +273,7 @@ export default function ApprovalDetailPage() {
                   <dt className="text-sm font-medium text-gray-500">{t("detail.slug")}</dt>
                   <dd className="text-gray-900 font-mono text-sm">{entityData.slug as string || "N/A"}</dd>
                 </div>
-                {entityData.latitude && entityData.longitude && (
+                {!!(entityData.latitude && entityData.longitude) && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">{t("detail.coordinates")}</dt>
                     <dd className="text-gray-900 font-mono text-sm">
@@ -281,19 +281,19 @@ export default function ApprovalDetailPage() {
                     </dd>
                   </div>
                 )}
-                {entityData.categorySlugs && (
+                {!!entityData.categorySlugs && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">{t("detail.categorySlugs")}</dt>
                     <dd className="text-gray-900 font-mono text-sm">{(entityData.categorySlugs as string[]).join(", ")}</dd>
                   </div>
                 )}
-                {entityData.tagSlugs && (entityData.tagSlugs as string[]).length > 0 && (
+                {!!entityData.tagSlugs && (entityData.tagSlugs as string[]).length > 0 && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">{t("detail.tagSlugs")}</dt>
                     <dd className="text-gray-900 font-mono text-sm">{(entityData.tagSlugs as string[]).join(", ")}</dd>
                   </div>
                 )}
-                {entityData.hours && (
+                {!!entityData.hours && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">{t("detail.hoursRaw")}</dt>
                     <dd className="text-gray-900 text-sm whitespace-pre-line font-mono bg-gray-50 p-2 rounded">
@@ -301,7 +301,7 @@ export default function ApprovalDetailPage() {
                     </dd>
                   </div>
                 )}
-                {entityData.nameTranslations && (
+                {!!entityData.nameTranslations && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">{t("detail.nameTranslations")}</dt>
                     <dd className="text-gray-900 font-mono text-sm bg-gray-50 p-2 rounded">
@@ -309,7 +309,7 @@ export default function ApprovalDetailPage() {
                     </dd>
                   </div>
                 )}
-                {entityData.descriptionTranslations && (
+                {!!entityData.descriptionTranslations && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500">{t("detail.descriptionTranslations")}</dt>
                     <dd className="text-gray-900 font-mono text-sm bg-gray-50 p-2 rounded">

@@ -3,7 +3,7 @@
 import { SelectHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
-interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "size"> {
   label?: string;
   error?: string;
   size?: "sm" | "md" | "lg";

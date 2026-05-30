@@ -1,4 +1,4 @@
-import { HTMLAttributes, ReactNode } from "react";
+import { HTMLAttributes, ReactNode, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
@@ -13,21 +13,19 @@ const paddingClasses = {
   none: "",
 };
 
-export function Card({
-  children,
-  padding = "md",
-  className,
-  ...props
-}: CardProps) {
+export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
+  { children, padding = "md", className, ...props },
+  ref
+) {
   const baseClasses = "bg-white rounded-lg shadow";
   const classes = cn(baseClasses, paddingClasses[padding], className);
 
   return (
-    <div className={classes} {...props}>
+    <div ref={ref} className={classes} {...props}>
       {children}
     </div>
   );
-}
+});
 
 
 

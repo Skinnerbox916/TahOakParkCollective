@@ -76,7 +76,7 @@ export function EntityCard({ entity }: EntityCardProps) {
             {tags.map((et) => (
               <TagBadge 
                 key={et.id} 
-                name={et.tag.nameLocalized ?? et.tag.name} 
+                name={(et.tag as { nameLocalized?: string; name: string }).nameLocalized ?? et.tag.name}
                 category={et.tag.category} 
                 verified={et.verified}
                 className="text-[10px] px-2 py-0.5"

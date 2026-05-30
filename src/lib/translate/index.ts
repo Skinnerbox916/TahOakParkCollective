@@ -4,7 +4,7 @@ import { MockProvider } from './mock';
 import { TranslationCache } from './cache';
 
 // Re-export types
-export { TranslationPair, SupportedLocale } from './types';
+export type { TranslationPair, SupportedLocale } from './types';
 
 // Singleton instance
 let translationService: TranslationService | null = null;

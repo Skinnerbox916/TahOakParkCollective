@@ -61,7 +61,7 @@ function EntityHeader({ entity }: { entity: EntityWithRelations }) {
                 return groupedTags[category].map(et => (
                   <TagBadge 
                     key={et.id} 
-                    name={et.tag.nameLocalized ?? et.tag.name} 
+                    name={(et.tag as { nameLocalized?: string; name: string }).nameLocalized ?? et.tag.name}
                     category={et.tag.category}
                     verified={et.verified}
                   />

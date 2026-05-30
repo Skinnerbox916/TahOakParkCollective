@@ -214,10 +214,10 @@ const getEntityDisplayName = (approval: ApprovalWithEntity): string => {
 
                   {approval.type === ApprovalType.NEW_ENTITY && (approval as any).proposedEntityData && (
                     <div className="space-y-1 text-sm text-gray-600 mb-3">
-                      {((approval as any).proposedEntityData as Record<string, unknown>).address && (
+                      {!!((approval as any).proposedEntityData as Record<string, unknown>).address && (
                         <p>📍 {((approval as any).proposedEntityData as Record<string, unknown>).address as string}</p>
                       )}
-                      {((approval as any).proposedEntityData as Record<string, unknown>).website && (
+                      {!!((approval as any).proposedEntityData as Record<string, unknown>).website && (
                         <p>
                           🌐{" "}
                           <a
@@ -230,7 +230,7 @@ const getEntityDisplayName = (approval: ApprovalWithEntity): string => {
                           </a>
                         </p>
                       )}
-                      {((approval as any).proposedEntityData as Record<string, unknown>).entityType && (
+                      {!!((approval as any).proposedEntityData as Record<string, unknown>).entityType && (
                         <p>Type: {((approval as any).proposedEntityData as Record<string, unknown>).entityType as string}</p>
                       )}
                     </div>

@@ -5,14 +5,17 @@ import { portalNavItems } from "@/lib/navigation";
 
 export default async function PortalLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   try {
     // Any authenticated user can access the portal to manage their entities
     await requireAuth();
   } catch {
-    redirect("/auth/signin");
+    redirect({ href: "/auth/signin", locale });
   }
 
   return (

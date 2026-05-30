@@ -233,8 +233,8 @@ export function getLayoutConfig(
   entityType: EntityType,
   entity: EntityWithRelations
 ): EntityLayoutConfig {
-  const hasLocation = entity.latitude && entity.longitude;
-  const hasHeroImage = (entity.images as any)?.hero;
+  const hasLocation = !!(entity.latitude && entity.longitude);
+  const hasHeroImage = !!(entity.images as any)?.hero;
   
   // Get base config for entity type
   let config: EntityLayoutConfig;

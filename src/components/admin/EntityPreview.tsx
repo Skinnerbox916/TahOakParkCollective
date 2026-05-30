@@ -49,6 +49,9 @@ interface EntityData {
   socialMedia?: Record<string, string> | null;
   nameTranslations?: Record<string, string> | null;
   descriptionTranslations?: Record<string, string> | null;
+  seoTitleTranslations?: Record<string, string> | null;
+  seoDescriptionTranslations?: Record<string, string> | null;
+  images?: unknown;
   categorySlugs?: string[];
   tagSlugs?: string[];
   displaySettings?: {

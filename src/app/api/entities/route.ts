@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
 import { ENTITY_STATUS, ROLE, ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
@@ -172,8 +173,8 @@ export async function POST(request: NextRequest) {
             entityType: finalEntityType,
             status,
             ownerId: finalOwnerId,
-            socialMedia: cleanedSocialMedia,
-            hours: cleanedHours,
+            socialMedia: cleanedSocialMedia ?? Prisma.DbNull,
+            hours: cleanedHours ?? Prisma.DbNull,
             seoTitleTranslations: cleanedSeoTitleTranslations,
             seoDescriptionTranslations: cleanedSeoDescriptionTranslations,
           },

@@ -11,7 +11,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { KebabIcon } from "@/components/ui/KebabIcon";
 import { SortableTableHeader } from "./SortableTableHeader";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
-import type { EntityStatus } from "@/lib/prismaEnums";
+import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import { ApiResponse } from "@/types";
 import { cn } from "@/lib/utils";
 import { formatPhoneForDisplay } from "@/lib/phone";

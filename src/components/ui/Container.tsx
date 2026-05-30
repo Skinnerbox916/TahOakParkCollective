@@ -1,11 +1,11 @@
-import { HTMLAttributes, ReactNode } from "react";
+import { HTMLAttributes, ReactNode, ElementType } from "react";
 import { cn } from "@/lib/utils";
 
 interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   size?: "sm" | "md" | "lg" | "full";
   padding?: "none" | "sm" | "md" | "lg";
-  as?: keyof JSX.IntrinsicElements;
+  as?: ElementType;
 }
 
 const sizeClasses = {

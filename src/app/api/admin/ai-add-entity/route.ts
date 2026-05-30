@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         ENTITY_TYPE.PUBLIC_SPACE,
         ENTITY_TYPE.NON_PROFIT,
       ];
-      const addressRequired = addressRequiredTypes.includes(researchResult.entityType as typeof ENTITY_TYPE[keyof typeof ENTITY_TYPE]);
+      const addressRequired = (addressRequiredTypes as readonly string[]).includes(researchResult.entityType);
       
       if (researchResult.address) {
         // Check if address looks like a street address (contains numbers)

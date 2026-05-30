@@ -2,12 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { normalizeSnapshot, type EntitySnapshot } from "@/lib/entitySnapshot";
 import { generateSlug } from "@/lib/utils";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma, type EntityStatus } from "@/generated/prisma/client";
 
 interface ApplySnapshotOptions {
   targetEntityId?: string | null;
   defaultOwnerId: string;
-  statusForNew?: Prisma.EntityUpdateInput["status"];
+  statusForNew?: EntityStatus;
 }
 
 async function ensureUniqueSlug(baseSlug: string, excludeEntityId?: string | null): Promise<string> {
@@ -69,27 +69,26 @@ export async function applyEntitySnapshot(
 
   const slug = await ensureUniqueSlug(snapshot.slug || generateSlug(snapshot.name), targetEntityId);
 
-  const scalarData: Prisma.EntityUpdateInput = {
+  // Shared scalar/JSON fields. Relations (owner, categories) are applied per
+  // path below since their shape differs between create and update.
+  const scalarData: Omit<Prisma.EntityCreateInput, "owner" | "categories"> = {
     name: snapshot.name.trim(),
     slug,
     description: snapshot.description ?? null,
-    descriptionTranslations: snapshot.descriptionTranslations ?? null,
-    nameTranslations: snapshot.nameTranslations ?? null,
+    descriptionTranslations: snapshot.descriptionTranslations ?? Prisma.DbNull,
+    nameTranslations: snapshot.nameTranslations ?? Prisma.DbNull,
     address: snapshot.address ?? null,
     phone: snapshot.phone ?? null,
     website: snapshot.website ?? null,
     latitude: snapshot.latitude ?? null,
     longitude: snapshot.longitude ?? null,
-    owner: snapshot.ownerId
-      ? { connect: { id: snapshot.ownerId } }
-      : undefined,
     entityType: snapshot.entityType ?? undefined,
-    hours: snapshot.hours ?? null,
-    socialMedia: snapshot.socialMedia ?? null,
-    displaySettings: snapshot.displaySettings ?? null,
-    images: snapshot.images ?? undefined,
-    seoTitleTranslations: snapshot.seoTitleTranslations ?? null,
-    seoDescriptionTranslations: snapshot.seoDescriptionTranslations ?? null,
+    hours: (snapshot.hours ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
+    socialMedia: (snapshot.socialMedia ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
+    displaySettings: (snapshot.displaySettings ?? Prisma.DbNull) as Prisma.InputJsonValue | typeof Prisma.DbNull,
+    images: (snapshot.images ?? undefined) as Prisma.InputJsonValue | undefined,
+    seoTitleTranslations: snapshot.seoTitleTranslations ?? Prisma.DbNull,
+    seoDescriptionTranslations: snapshot.seoDescriptionTranslations ?? Prisma.DbNull,
   };
 
   if (!targetEntityId) {
@@ -99,7 +98,7 @@ export async function applyEntitySnapshot(
         data: {
           ...scalarData,
           status: statusForNew ?? ENTITY_STATUS.ACTIVE,
-          ownerId: snapshot.ownerId || defaultOwnerId,
+          owner: { connect: { id: snapshot.ownerId || defaultOwnerId } },
           categories: { connect: categories.map((c) => ({ id: c.id })) },
         },
       });
@@ -135,6 +134,7 @@ export async function applyEntitySnapshot(
       where: { id: targetEntityId },
       data: {
         ...scalarData,
+        ...(snapshot.ownerId ? { owner: { connect: { id: snapshot.ownerId } } } : {}),
         categories: { set: categories.map((c) => ({ id: c.id })) },
       },
       include: {

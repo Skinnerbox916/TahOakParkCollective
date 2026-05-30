@@ -5,13 +5,16 @@ import { adminNavItems } from "@/lib/navigation";
 
 export default async function AdminLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   try {
     await requireRole(["ADMIN" as const]);
   } catch {
-    redirect("/auth/unauthorized");
+    redirect({ href: "/auth/unauthorized", locale });
   }
 
   return (

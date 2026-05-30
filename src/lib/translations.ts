@@ -31,7 +31,7 @@ export function getTranslatedField(
     return fallback;
   }
 
-  const translationObj = translations as TranslationJson;
+  const translationObj = translations as { [locale: string]: string };
 
   // Try requested locale first
   if (translationObj[locale] && typeof translationObj[locale] === "string") {
