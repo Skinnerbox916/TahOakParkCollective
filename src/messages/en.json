@@ -245,6 +245,7 @@
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm Password",
+    "name": "Your name",
     "nameOptional": "Name (Optional)",
     "enterEntityName": "Enter entity name",
     "enterBusinessName": "Enter business name",

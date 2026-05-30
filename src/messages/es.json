@@ -245,6 +245,7 @@
     "email": "Correo Electrónico",
     "password": "Contraseña",
     "confirmPassword": "Confirmar Contraseña",
+    "name": "Tu nombre",
     "nameOptional": "Nombre (Opcional)",
     "enterEntityName": "Ingresa el nombre de la entidad",
     "enterBusinessName": "Ingresa el nombre del negocio",
