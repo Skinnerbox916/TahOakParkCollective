@@ -98,12 +98,18 @@ npm run db:seed
 ```
 
 This creates:
-- 13 entity categories
-- Admin user: `admin@tahoak.com` / `password123`
-- Entity owner: `owner@tahoak.com` / `owner123`
-- Sample entities and tags
+- 13 entity categories and the default tags
+- Admin user `admin@tahoak.com`, only if it doesn't exist yet. Its password comes from `SEED_ADMIN_PASSWORD`; if that's unset, a random password is generated and printed once. Re-running the seed never changes an existing admin's password.
+- Entity owner `owner@tahoak.com` / `owner123`, only when `SEED_TEST_USERS=true` (local development only)
 
-**Warning**: These are test credentials. Change them in production!
+For local development, set these in `.env` to get the usual test logins:
+
+```bash
+SEED_ADMIN_PASSWORD=password123
+SEED_TEST_USERS=true
+```
+
+**Warning**: Never set `SEED_TEST_USERS` or a guessable `SEED_ADMIN_PASSWORD` in production.
 
 ### 7. Generate Prisma Client
 

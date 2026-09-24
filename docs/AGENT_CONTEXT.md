@@ -451,6 +451,8 @@ docker restart tahoak-web
 
 ## Test Users
 
+Local only, with `SEED_ADMIN_PASSWORD=password123` and `SEED_TEST_USERS=true` in `.env` (see README):
+
 - `admin@tahoak.com` / `password123` (ADMIN)
 - `owner@tahoak.com` / `owner123` (ENTITY_OWNER)
 

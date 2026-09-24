@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Link } from "@/i18n/routing";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -184,9 +185,9 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
           </p>
           <p className="text-sm text-gray-500">
             To resubscribe, please visit the{" "}
-            <a href="/subscribe" className="text-indigo-600 hover:underline">
+            <Link href="/subscribe" className="text-indigo-600 hover:underline">
               subscription page
-            </a>
+            </Link>
             .
           </p>
         </div>

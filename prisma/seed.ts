@@ -1,6 +1,9 @@
 import { Role, EntityType, TagCategory } from "../src/generated/prisma/client";
 import { prisma } from "../src/lib/prisma";
+import { randomBytes } from "crypto";
 import { hashPassword } from "../src/lib/password";
+
+const ADMIN_EMAIL = "admin@tahoak.com";
 
 // =============================================================================
 // CATEGORIES - The canonical list of categories for the TahOak Park Collective
@@ -190,42 +193,50 @@ async function main() {
   // -------------------------------------------------------------------------
   // Create Admin User
   // -------------------------------------------------------------------------
+  // Created only if missing — an existing admin's password is never touched,
+  // so re-running the seed against production can't reset credentials.
   console.log("Creating admin user...");
-  const adminPassword = await hashPassword("password123");
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@tahoak.com" },
-    update: {
-      password: adminPassword,
-      roles: [Role.USER, Role.ADMIN],
-    },
-    create: {
-      email: "admin@tahoak.com",
-      name: "Admin User",
-      roles: [Role.USER, Role.ADMIN],
-      password: adminPassword,
-    },
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: ADMIN_EMAIL },
+    select: { id: true },
   });
-  console.log(`  ✓ ${admin.email}\n`);
+  if (existingAdmin) {
+    console.log(`  - ${ADMIN_EMAIL} already exists, leaving it unchanged\n`);
+  } else {
+    const envPassword = process.env.SEED_ADMIN_PASSWORD;
+    const adminPassword = envPassword || randomBytes(18).toString("base64url");
+    await prisma.user.create({
+      data: {
+        email: ADMIN_EMAIL,
+        name: "Admin User",
+        roles: [Role.USER, Role.ADMIN],
+        password: await hashPassword(adminPassword),
+      },
+    });
+    console.log(`  ✓ ${ADMIN_EMAIL}`);
+    if (!envPassword) {
+      console.log(`    Generated password (shown once): ${adminPassword}`);
+    }
+    console.log();
+  }
 
   // -------------------------------------------------------------------------
-  // Create Business Owner User (for development/testing)
+  // Create Business Owner User (local development only)
   // -------------------------------------------------------------------------
-  console.log("Creating business owner user...");
-  const ownerPassword = await hashPassword("owner123");
-  const businessOwner = await prisma.user.upsert({
-    where: { email: "owner@tahoak.com" },
-    update: {
-      password: ownerPassword,
-      roles: [Role.USER, Role.ENTITY_OWNER],
-    },
-    create: {
-      email: "owner@tahoak.com",
-      name: "Business Owner",
-      roles: [Role.USER, Role.ENTITY_OWNER],
-      password: ownerPassword,
-    },
-  });
-  console.log(`  ✓ ${businessOwner.email}\n`);
+  if (process.env.SEED_TEST_USERS === "true") {
+    console.log("Creating test business owner user...");
+    await prisma.user.upsert({
+      where: { email: "owner@tahoak.com" },
+      update: {},
+      create: {
+        email: "owner@tahoak.com",
+        name: "Business Owner",
+        roles: [Role.USER, Role.ENTITY_OWNER],
+        password: await hashPassword("owner123"),
+      },
+    });
+    console.log("  ✓ owner@tahoak.com\n");
+  }
 
   console.log("Seed completed successfully!");
 }
