@@ -52,7 +52,7 @@ export function DashboardSidebar({
     onDrawerClose();
   }, [pathname, onDrawerClose]);
 
-  const NavContent = () => (
+  const navContent = (
     <nav className="p-4">
       <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
         {sectionTitle}
@@ -88,7 +88,7 @@ export function DashboardSidebar({
     <>
       {/* Desktop Sidebar - Always visible on md+ screens */}
       <aside className="hidden md:block w-64 bg-white shadow-sm border-r border-gray-200 min-h-[calc(100vh-4rem)] flex-shrink-0">
-        <NavContent />
+        {navContent}
       </aside>
 
       {/* Mobile Drawer Overlay */}
@@ -136,7 +136,7 @@ export function DashboardSidebar({
 
           {/* Drawer Navigation */}
           <div className="flex-1 overflow-y-auto">
-            <NavContent />
+            {navContent}
           </div>
         </div>
       </aside>
