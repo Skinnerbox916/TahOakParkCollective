@@ -4,14 +4,14 @@ import { parsePhoneToE164 } from "@/lib/phone";
 import type { BusinessHours, SocialMediaLinks } from "@/types";
 
 // Helper for fields that should be trimmed and nulled if empty
-const normalizedString = z.any().transform((val) => {
+const normalizedString = z.any().optional().transform((val) => {
   if (val === undefined || val === null) return null;
   const str = String(val).trim();
   return str === "" ? null : str;
 });
 
 // Phone field with normalization and validation
-const phoneField = z.any().transform((val, ctx) => {
+const phoneField = z.any().optional().transform((val, ctx) => {
   if (val === undefined || val === null) return null;
   const str = String(val).trim();
   if (str === "") return null;
@@ -28,7 +28,7 @@ const phoneField = z.any().transform((val, ctx) => {
 });
 
 // URL field with normalization and validation
-const urlField = z.any().transform((val, ctx) => {
+const urlField = z.any().optional().transform((val, ctx) => {
   if (val === undefined || val === null) return null;
   const str = String(val).trim();
   if (str === "") return null;
@@ -48,7 +48,7 @@ const urlField = z.any().transform((val, ctx) => {
 });
 
 // Social media field with normalization and validation
-const socialMediaField = z.any().transform((val, ctx) => {
+const socialMediaField = z.any().optional().transform((val, ctx) => {
   if (!val || typeof val !== "object" || Array.isArray(val)) return null;
   const cleaned: Record<string, string> = {};
   const entries = Object.entries(val as Record<string, any>);
@@ -76,7 +76,7 @@ const socialMediaField = z.any().transform((val, ctx) => {
 });
 
 // Hours field with normalization and validation
-const hoursField = z.any().transform((val, ctx) => {
+const hoursField = z.any().optional().transform((val, ctx) => {
   if (!val || typeof val !== "object" || Array.isArray(val)) return null;
   const cleaned: BusinessHours = {};
   const entries = Object.entries(val as Record<string, any>);
