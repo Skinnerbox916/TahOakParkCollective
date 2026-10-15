@@ -23,7 +23,7 @@ function ManagePreferencesContent() {
           <p className="text-gray-600 mb-6">{t("invalidLink")}</p>
           <p className="text-sm text-gray-500">
             {t("ifYouNeed")}{" "}
-            <Link href="/subscribe" className="text-indigo-600 hover:underline">
+            <Link href="/subscribe" className="text-primary-600 hover:underline">
               {t("subscribeAgain")}
             </Link>
             {" "}{t("orContactUs")}
@@ -41,7 +41,7 @@ function ManagePreferencesFallback() {
   
   return (
     <Card className="p-8 text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
       <p className="text-gray-600">{t("loading")}</p>
     </Card>
   );

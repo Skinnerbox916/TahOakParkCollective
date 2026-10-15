@@ -133,7 +133,7 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
   if (loading) {
     return (
       <Card className="p-8 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
         <p className="text-gray-600">Loading your preferences...</p>
       </Card>
     );
@@ -163,13 +163,13 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm mb-6">
+        <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm mb-6">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm mb-6">
+        <div className="p-3 bg-success-50 border border-success-200 text-success-700 rounded-lg text-sm mb-6">
           Preferences updated successfully!
         </div>
       )}
@@ -185,7 +185,7 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
           </p>
           <p className="text-sm text-gray-500">
             To resubscribe, please visit the{" "}
-            <Link href="/subscribe" className="text-indigo-600 hover:underline">
+            <Link href="/subscribe" className="text-primary-600 hover:underline">
               subscription page
             </Link>
             .
@@ -205,7 +205,7 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
                   onChange={(e) =>
                     setPreferences({ ...preferences, newsletter: e.target.checked })
                   }
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <span className="ml-3 text-gray-700">
                   Newsletter (general updates and community news)
@@ -222,7 +222,7 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
                       newBusinesses: e.target.checked,
                     })
                   }
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <span className="ml-3 text-gray-700">
                   New Businesses (notifications when new businesses join)
@@ -236,7 +236,7 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
                   onChange={(e) =>
                     setPreferences({ ...preferences, events: e.target.checked })
                   }
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <span className="ml-3 text-gray-700">
                   Events (upcoming events and activities)
@@ -250,7 +250,7 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
                   onChange={(e) =>
                     setPreferences({ ...preferences, updates: e.target.checked })
                   }
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <span className="ml-3 text-gray-700">
                   Community Updates (important announcements)

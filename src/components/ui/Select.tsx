@@ -28,7 +28,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           className={cn(
             "w-full border rounded-lg focus-ring focus:border-transparent",
-            error ? "border-red-500" : "border-gray-300",
+            error ? "border-error-500" : "border-gray-300",
             sizeClasses[size],
             className
           )}
@@ -37,7 +37,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {children}
         </select>
         {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
+          <p className="mt-1 text-sm text-error-600">{error}</p>
         )}
       </div>
     );

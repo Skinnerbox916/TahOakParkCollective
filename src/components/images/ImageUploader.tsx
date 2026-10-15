@@ -113,8 +113,8 @@ export function ImageUploader({
         className={`
           relative border-2 border-dashed rounded-lg transition-colors cursor-pointer
           aspect-video w-full
-          ${dragging ? "border-indigo-500 bg-indigo-50" : "border-gray-300"}
-          ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-indigo-400"}
+          ${dragging ? "border-primary-500 bg-primary-50" : "border-gray-300"}
+          ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-primary-400"}
           ${currentImage ? "bg-gray-100" : "bg-gray-50"}
         `}
       >
@@ -129,7 +129,7 @@ export function ImageUploader({
 
         {uploading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-90">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-2"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-2"></div>
             <p className="text-sm text-gray-600">Uploading...</p>
           </div>
         ) : currentImage ? (
@@ -172,7 +172,7 @@ export function ImageUploader({
       </div>
 
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-error-600">{error}</p>
       )}
     </div>
   );

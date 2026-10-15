@@ -69,7 +69,7 @@ export function FeaturedBusiness({ rotationInterval = 8000 }: FeaturedBusinessPr
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 relative overflow-hidden">
       <div className="absolute top-4 right-4">
-        <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full">
+        <span className="bg-primary-100 text-primary-800 text-xs font-semibold px-3 py-1 rounded-full">
           {t("featured")}
         </span>
       </div>
@@ -77,7 +77,7 @@ export function FeaturedBusiness({ rotationInterval = 8000 }: FeaturedBusinessPr
       <div className="mb-4">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">{displayName}</h3>
         {entity.categories?.length > 0 && (
-          <p className="text-indigo-600 font-medium">
+          <p className="text-primary-600 font-medium">
             {entity.categories.map((cat: any) => cat.nameLocalized ?? cat.name).join(", ")}
           </p>
         )}
@@ -90,7 +90,7 @@ export function FeaturedBusiness({ rotationInterval = 8000 }: FeaturedBusinessPr
       <div className="flex items-center justify-between">
         <Link
           href={`/entities/${entity.slug}`}
-          className="text-indigo-600 hover:text-indigo-700 font-medium"
+          className="text-primary-600 hover:text-primary-700 font-medium"
         >
           {t("learnMore")}
         </Link>
@@ -102,7 +102,7 @@ export function FeaturedBusiness({ rotationInterval = 8000 }: FeaturedBusinessPr
                 key={index}
                 onClick={() => setCurrentIndex(index)}
                 className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentIndex ? "bg-indigo-600" : "bg-gray-300"
+                  index === currentIndex ? "bg-primary-600" : "bg-gray-300"
                 }`}
                 aria-label={`Go to featured entity ${index + 1}`}
               />

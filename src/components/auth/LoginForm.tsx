@@ -54,13 +54,13 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {successMessage && (
-        <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+        <div className="p-3 bg-success-50 border border-success-200 text-success-700 rounded-lg text-sm">
           {successMessage}
         </div>
       )}
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -89,7 +89,7 @@ export function LoginForm() {
 
       <div className="text-center text-sm text-gray-600">
         {t("dontHaveAccount")}{" "}
-        <Link href="/auth/signup" className="text-indigo-600 hover:text-indigo-700 font-medium">
+        <Link href="/auth/signup" className="text-primary-600 hover:text-primary-700 font-medium">
           {t("signUpLink")}
         </Link>
       </div>

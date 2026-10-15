@@ -1,0 +1,80 @@
+/*
+ * TahOak design tokens: the single source for site colors and fonts.
+ *
+ * Every --color-* below becomes a Tailwind utility (--color-primary-600 →
+ * bg-primary-600, text-primary-600, ring-primary-600, ...). Components use
+ * these semantic names, not raw palette hues like indigo/red/green/yellow.
+ *
+ * The ramps started as exact copies of Tailwind's default indigo, green,
+ * yellow and red so the migration was visually identical. To rebrand,
+ * edit the values here; no component changes needed.
+ *
+ * Radii, spacing and shadows use Tailwind's defaults; add overrides here
+ * if the design ever needs them.
+ */
+@theme {
+  /* Page surface and default text */
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+
+  /* Brand */
+  --color-primary-50: oklch(96.2% 0.018 272.314);
+  --color-primary-100: oklch(93% 0.034 272.788);
+  --color-primary-200: oklch(87% 0.065 274.039);
+  --color-primary-300: oklch(78.5% 0.115 274.713);
+  --color-primary-400: oklch(67.3% 0.182 276.935);
+  --color-primary-500: oklch(58.5% 0.233 277.117);
+  --color-primary-600: oklch(51.1% 0.262 276.966);
+  --color-primary-700: oklch(45.7% 0.24 277.023);
+  --color-primary-800: oklch(39.8% 0.195 277.366);
+  --color-primary-900: oklch(35.9% 0.144 278.697);
+  --color-primary-950: oklch(25.7% 0.09 281.288);
+
+  /* Status: success (active, approved, saved) */
+  --color-success-50: oklch(98.2% 0.018 155.826);
+  --color-success-100: oklch(96.2% 0.044 156.743);
+  --color-success-200: oklch(92.5% 0.084 155.995);
+  --color-success-300: oklch(87.1% 0.15 154.449);
+  --color-success-400: oklch(79.2% 0.209 151.711);
+  --color-success-500: oklch(72.3% 0.219 149.579);
+  --color-success-600: oklch(62.7% 0.194 149.214);
+  --color-success-700: oklch(52.7% 0.154 150.069);
+  --color-success-800: oklch(44.8% 0.119 151.328);
+  --color-success-900: oklch(39.3% 0.095 152.535);
+  --color-success-950: oklch(26.6% 0.065 152.934);
+
+  /* Status: warning (pending, needs attention) */
+  --color-warning-50: oklch(98.7% 0.026 102.212);
+  --color-warning-100: oklch(97.3% 0.071 103.193);
+  --color-warning-200: oklch(94.5% 0.129 101.54);
+  --color-warning-300: oklch(90.5% 0.182 98.111);
+  --color-warning-400: oklch(85.2% 0.199 91.936);
+  --color-warning-500: oklch(79.5% 0.184 86.047);
+  --color-warning-600: oklch(68.1% 0.162 75.834);
+  --color-warning-700: oklch(55.4% 0.135 66.442);
+  --color-warning-800: oklch(47.6% 0.114 61.907);
+  --color-warning-900: oklch(42.1% 0.095 57.708);
+  --color-warning-950: oklch(28.6% 0.066 53.813);
+
+  /* Status: error (failures, rejected, destructive actions) */
+  --color-error-50: oklch(97.1% 0.013 17.38);
+  --color-error-100: oklch(93.6% 0.032 17.717);
+  --color-error-200: oklch(88.5% 0.062 18.334);
+  --color-error-300: oklch(80.8% 0.114 19.571);
+  --color-error-400: oklch(70.4% 0.191 22.216);
+  --color-error-500: oklch(63.7% 0.237 25.331);
+  --color-error-600: oklch(57.7% 0.245 27.325);
+  --color-error-700: oklch(50.5% 0.213 27.518);
+  --color-error-800: oklch(44.4% 0.177 26.899);
+  --color-error-900: oklch(39.6% 0.141 25.723);
+  --color-error-950: oklch(25.8% 0.092 26.042);
+}
+
+/*
+ * Fonts are loaded with next/font in src/app/layout.tsx, which sets
+ * --font-body / --font-geist-mono on <html>. Change the typeface there.
+ */
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-geist-mono);
+}

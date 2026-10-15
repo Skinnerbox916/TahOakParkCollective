@@ -460,13 +460,13 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
     <Card>
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+          <div className="p-3 bg-success-50 border border-success-200 text-success-700 rounded-lg text-sm">
             {success}
           </div>
         )}
@@ -493,7 +493,7 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
               value={entityType}
               onChange={(e) => setEntityType(e.target.value as EntityType)}
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               {ENTITY_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
@@ -511,7 +511,7 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="">{t("placeholders.selectCategory")}</option>
               {filteredCategories.map((category) => (
@@ -538,7 +538,7 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
                   value={status}
                   onChange={(e) => setStatus(e.target.value as EntityStatus)}
                   disabled={loading}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value={ENTITY_STATUS.ACTIVE}>Active</option>
                   <option value={ENTITY_STATUS.INACTIVE}>Inactive</option>
@@ -553,7 +553,7 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
                   value={ownerId}
                   onChange={(e) => setOwnerId(e.target.value)}
                   disabled={loading}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value="">Select an owner</option>
                   {users.map((user) => (
@@ -578,7 +578,7 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
             onChange={(e) => setDescription(e.target.value)}
             disabled={loading}
             rows={4}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             placeholder={t("placeholders.description")}
           />
         </FormSection>

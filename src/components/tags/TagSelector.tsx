@@ -71,7 +71,7 @@ export function TagSelector({ selectedTagIds, onChange }: TagSelectorProps) {
                   onClick={() => toggleTag(tag.id)}
                   className={`inline-flex items-center px-3 py-1 rounded-full text-sm border transition-colors ${
                     isSelected
-                      ? "bg-indigo-50 border-indigo-200 ring-1 ring-indigo-500"
+                      ? "bg-primary-50 border-primary-200 ring-1 ring-primary-500"
                       : "bg-white border-gray-200 hover:bg-gray-50"
                   }`}
                 >

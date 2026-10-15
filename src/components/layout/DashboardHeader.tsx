@@ -42,13 +42,13 @@ export function DashboardHeader({ type, onMenuClick }: DashboardHeaderProps) {
             {/* Logo - links to main site */}
             <Link
               href="/"
-              className="text-lg sm:text-xl font-bold text-indigo-600"
+              className="text-lg sm:text-xl font-bold text-primary-600"
             >
               TahOak Park Collective
             </Link>
 
             {/* Dashboard type badge */}
-            <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+            <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
               {type === "admin" ? "Admin" : "Portal"}
             </span>
           </div>

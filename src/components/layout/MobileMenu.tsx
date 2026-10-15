@@ -181,7 +181,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   onClose();
                   signOut({ callbackUrl: "/" });
                 }}
-                className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="w-full px-4 py-2 text-sm text-error-600 hover:bg-error-50 rounded-lg transition-colors"
               >
                 {t("signOut")}
               </button>

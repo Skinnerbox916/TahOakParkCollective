@@ -65,7 +65,7 @@ export function SocialMediaLinks({
             className={cn(
               "inline-flex h-10 w-10 items-center justify-center rounded-md",
               "bg-gray-50 text-gray-700 hover:bg-gray-100 focus-visible:outline-none",
-              "focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1"
+              "focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1"
             )}
           >
             <platform.Icon

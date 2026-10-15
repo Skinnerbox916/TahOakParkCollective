@@ -26,7 +26,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type={isPassword && showPassword ? "text" : type}
             className={cn(
               "w-full px-4 py-2 border rounded-lg focus-ring focus:border-transparent",
-              error ? "border-red-500" : "border-gray-300",
+              error ? "border-error-500" : "border-gray-300",
               isPassword && "pr-10",
               className
             )}
@@ -78,7 +78,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
+          <p className="mt-1 text-sm text-error-600">{error}</p>
         )}
       </div>
     );

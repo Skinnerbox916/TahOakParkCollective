@@ -142,7 +142,7 @@ export function SearchFilters({
               onChange={(e) =>
                 onEntityTypeChange((e.target.value || "") as EntityType | "")
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="">{t("allTypes")}</option>
               {ENTITY_TYPES.map((type) => (
@@ -161,7 +161,7 @@ export function SearchFilters({
             <select
               value={selectedCategory}
               onChange={(e) => onCategoryChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="">{t("allCategories")}</option>
               {filteredCategories.map((category) => (
@@ -182,7 +182,7 @@ export function SearchFilters({
             <button
               type="button"
               onClick={() => setShowTags(!showTags)}
-              className="text-xs text-indigo-600 hover:text-indigo-700"
+              className="text-xs text-primary-600 hover:text-primary-700"
             >
               {showTags ? t("hideTags") : t("showTags")}
             </button>
@@ -213,7 +213,7 @@ export function SearchFilters({
                 placeholder={t("searchTags")}
                 value={tagSearch}
                 onChange={(e) => setTagSearch(e.target.value)}
-                className="w-full mb-3 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full mb-3 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               <div className="space-y-3">
                 {Object.entries(groupedTags).map(([category, categoryTags]) => (
@@ -236,7 +236,7 @@ export function SearchFilters({
                             <TagBadge 
                               name={tag.name} 
                               category={tag.category}
-                              className={isSelected ? "ring-2 ring-indigo-500" : ""}
+                              className={isSelected ? "ring-2 ring-primary-500" : ""}
                             />
                           </button>
                         );
@@ -254,18 +254,18 @@ export function SearchFilters({
           <div className="flex items-center justify-between pt-2 border-t border-gray-200">
             <div className="flex flex-wrap gap-2">
               {localSearchQuery && (
-                <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
+                <span className="px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded">
                   {tCommon("search")}: {localSearchQuery}
                 </span>
               )}
               {selectedCategory && (
-                <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
+                <span className="px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded">
                   {filteredCategories.find((c) => c.id === selectedCategory)?.name ||
                     categories.find((c) => c.id === selectedCategory)?.name}
                 </span>
               )}
               {selectedEntityType && (
-                <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
+                <span className="px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded">
                   {entityTypeLabels[selectedEntityType]}
                 </span>
               )}

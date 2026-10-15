@@ -12,9 +12,9 @@ import { useAdminTranslations } from "@/lib/admin-translations";
 import type { Approval } from "@/generated/prisma/client";
 
 const STATUS_COLORS: Record<ApprovalStatus, string> = {
-  PENDING: "bg-yellow-100 text-yellow-800",
-  APPROVED: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
+  PENDING: "bg-warning-100 text-warning-800",
+  APPROVED: "bg-success-100 text-success-800",
+  REJECTED: "bg-error-100 text-error-800",
 };
 
 interface ResolvedCategory {
@@ -155,9 +155,9 @@ export default function ApprovalDetailPage() {
     return (
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-6">{t("detail.title")}</h1>
-        <Card className="bg-red-50 border-red-200">
-          <p className="text-red-600">{error || t("detail.notFound")}</p>
-          <Link href="/admin/approvals" className="text-indigo-600 hover:text-indigo-800 mt-4 inline-block">
+        <Card className="bg-error-50 border-error-200">
+          <p className="text-error-600">{error || t("detail.notFound")}</p>
+          <Link href="/admin/approvals" className="text-primary-600 hover:text-primary-800 mt-4 inline-block">
             {t("detail.backToApprovals")}
           </Link>
         </Card>
@@ -171,7 +171,7 @@ export default function ApprovalDetailPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <Link href="/admin/approvals" className="text-sm text-indigo-600 hover:text-indigo-800 mb-2 inline-block">
+          <Link href="/admin/approvals" className="text-sm text-primary-600 hover:text-primary-800 mb-2 inline-block">
             {t("detail.backToApprovals")}
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">{t("detail.title")}</h1>
@@ -189,8 +189,8 @@ export default function ApprovalDetailPage() {
 
       {/* Error State */}
       {error && (
-        <Card className="mb-6 bg-red-50 border-red-200">
-          <p className="text-red-600">{error}</p>
+        <Card className="mb-6 bg-error-50 border-error-200">
+          <p className="text-error-600">{error}</p>
         </Card>
       )}
 
@@ -338,7 +338,7 @@ export default function ApprovalDetailPage() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder={tCommon("notesPlaceholder")}
                 disabled={processing}
               />
@@ -354,7 +354,7 @@ export default function ApprovalDetailPage() {
                 variant="outline"
                 onClick={() => handleAction("REJECT")}
                 disabled={processing}
-                className="text-red-600 border-red-300 hover:bg-red-50"
+                className="text-error-600 border-error-300 hover:bg-error-50"
               >
                 {processing ? tCommon("processing") : `✗ ${tCommon("reject")}`}
               </Button>

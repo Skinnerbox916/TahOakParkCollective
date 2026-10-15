@@ -13,9 +13,9 @@ interface AlertProps {
 }
 
 const variantClasses = {
-  error: "bg-red-50 border-red-200 text-red-700",
-  warning: "bg-yellow-50 border-yellow-200 text-yellow-700",
-  success: "bg-green-50 border-green-200 text-green-700",
+  error: "bg-error-50 border-error-200 text-error-700",
+  warning: "bg-warning-50 border-warning-200 text-warning-700",
+  success: "bg-success-50 border-success-200 text-success-700",
   info: "bg-blue-50 border-blue-200 text-blue-700",
 };
 

@@ -176,7 +176,7 @@ function ReportIssueContent() {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -215,7 +215,7 @@ function ReportIssueContent() {
               </div>
             </div>
           ) : entity ? (
-            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <div className="p-4 bg-primary-50 border border-primary-200 rounded-lg">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="font-medium text-gray-900">{entity.name}</div>
@@ -230,7 +230,7 @@ function ReportIssueContent() {
                     setEntity(null);
                     setFormData((prev) => ({ ...prev, entityId: "" }));
                   }}
-                  className="text-sm text-indigo-600 hover:text-indigo-700"
+                  className="text-sm text-primary-600 hover:text-primary-700"
                 >
                   {t("change")}
                 </button>
@@ -248,7 +248,7 @@ function ReportIssueContent() {
               value={formData.issueType}
               onChange={handleChange}
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               {ISSUE_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
@@ -270,7 +270,7 @@ function ReportIssueContent() {
               required
               disabled={loading}
               rows={5}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder={t("descriptionPlaceholder")}
             />
           </div>
@@ -338,7 +338,7 @@ export default function ReportIssuePage() {
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <Suspense fallback={
           <Card className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p className="text-gray-600">{t("loading")}</p>
           </Card>
         }>

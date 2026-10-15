@@ -23,7 +23,7 @@ export function ReportSection({ entity, config }: ReportSectionProps) {
       </p>
       <Link
         href={`/report?entityId=${entity.id}`}
-        className="inline-block w-full text-center px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+        className="inline-block w-full text-center px-4 py-2 bg-error-50 text-error-700 border border-error-200 rounded-lg hover:bg-error-100 transition-colors text-sm font-medium"
       >
         {t("reportAnIssue")}
       </Link>

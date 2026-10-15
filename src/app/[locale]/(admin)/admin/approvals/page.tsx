@@ -192,7 +192,7 @@ const getEntityDisplayName = (approval: ApprovalWithEntity): string => {
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <Link
                       href={`/admin/approvals/${approval.id}`}
-                      className="text-xl font-semibold text-indigo-600 hover:text-indigo-800"
+                      className="text-xl font-semibold text-primary-600 hover:text-primary-800"
                     >
                       {getEntityDisplayName(approval)}
                     </Link>
@@ -224,7 +224,7 @@ const getEntityDisplayName = (approval: ApprovalWithEntity): string => {
                             href={((approval as any).proposedEntityData as Record<string, unknown>).website as string}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-indigo-600 hover:text-indigo-800"
+                            className="text-primary-600 hover:text-primary-800"
                           >
                             {((approval as any).proposedEntityData as Record<string, unknown>).website as string}
                           </a>
@@ -270,7 +270,7 @@ const getEntityDisplayName = (approval: ApprovalWithEntity): string => {
                       size="sm"
                       onClick={() => handleReview(approval.id, "REJECT")}
                       disabled={processing !== null}
-                      className="text-red-600 border-red-300 hover:bg-red-50"
+                      className="text-error-600 border-error-300 hover:bg-error-50"
                     >
                       {processing === approval.id ? "..." : `✗ ${tCommon("reject")}`}
                     </Button>

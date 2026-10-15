@@ -50,7 +50,7 @@ export function LanguageSwitcher() {
           onClick={() => switchLocale(loc)}
           className={`w-full text-left px-4 py-2 text-sm transition-colors ${
             locale === loc
-              ? 'bg-indigo-50 text-indigo-700 font-medium'
+              ? 'bg-primary-50 text-primary-700 font-medium'
               : 'text-gray-700 hover:bg-gray-50'
           }`}
           aria-label={`Switch to ${localeLabels[loc]}`}
@@ -59,7 +59,7 @@ export function LanguageSwitcher() {
             <span>{localeLabels[loc]}</span>
             {locale === loc && (
               <svg
-                className="w-4 h-4 text-indigo-600"
+                className="w-4 h-4 text-primary-600"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >

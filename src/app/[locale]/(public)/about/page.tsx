@@ -61,7 +61,7 @@ export default function AboutPage() {
                 href="https://canopydigital.services"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-600 hover:text-indigo-800 font-medium"
+                className="text-primary-600 hover:text-primary-800 font-medium"
               >
                 Canopy Digital Services
               </a>{" "}

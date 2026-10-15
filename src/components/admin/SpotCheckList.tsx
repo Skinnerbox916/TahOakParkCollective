@@ -52,11 +52,11 @@ export function SpotCheckList({ entities, onMarkChecked, loading }: SpotCheckLis
   };
 
   const getStatusColor = (date: Date | string | null): string => {
-    if (!date) return "bg-red-100 text-red-800";
+    if (!date) return "bg-error-100 text-error-800";
     const daysAgo = Math.floor((NOW - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
-    if (daysAgo < 30) return "bg-green-100 text-green-800";
-    if (daysAgo < 180) return "bg-yellow-100 text-yellow-800";
-    return "bg-red-100 text-red-800";
+    if (daysAgo < 30) return "bg-success-100 text-success-800";
+    if (daysAgo < 180) return "bg-warning-100 text-warning-800";
+    return "bg-error-100 text-error-800";
   };
 
   return (
@@ -68,7 +68,7 @@ export function SpotCheckList({ entities, onMarkChecked, loading }: SpotCheckLis
               <div className="flex items-center gap-3 mb-2">
                 <Link
                   href={`/entities/${entity.slug}`}
-                  className="text-lg font-semibold text-indigo-600 hover:text-indigo-800"
+                  className="text-lg font-semibold text-primary-600 hover:text-primary-800"
                   target="_blank"
                 >
                   {entity.name}
@@ -96,7 +96,7 @@ export function SpotCheckList({ entities, onMarkChecked, loading }: SpotCheckLis
                       href={entity.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-indigo-600 hover:text-indigo-800"
+                      className="text-primary-600 hover:text-primary-800"
                     >
                       {entity.website}
                     </a>

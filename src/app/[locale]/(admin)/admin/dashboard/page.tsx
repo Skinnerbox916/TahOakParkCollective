@@ -108,7 +108,7 @@ export default function AdminDashboard() {
           <div className="mt-2 text-xs text-gray-600 space-y-1">
             <div className="flex justify-between">
               <span>{tDashboard("active")}:</span>
-              <span className="font-medium text-green-600">
+              <span className="font-medium text-success-600">
                 {stats.entities.active}
               </span>
             </div>
@@ -150,10 +150,10 @@ export default function AdminDashboard() {
           <h3 className="text-sm font-medium text-gray-500 mb-1">
             {tDashboard("activeEntities")}
           </h3>
-          <p className="text-3xl font-bold text-green-600">{stats.entities.active}</p>
+          <p className="text-3xl font-bold text-success-600">{stats.entities.active}</p>
           <Link
             href="/admin/entities?status=ACTIVE"
-            className="text-sm text-indigo-600 hover:text-indigo-700 mt-2 inline-block"
+            className="text-sm text-primary-600 hover:text-primary-700 mt-2 inline-block"
           >
             {tDashboard("viewAll")}
           </Link>
@@ -164,10 +164,10 @@ export default function AdminDashboard() {
           <h3 className="text-sm font-medium text-gray-500 mb-1">
             {tDashboard("pendingApprovals")}
           </h3>
-          <p className="text-3xl font-bold text-yellow-600">{stats.pendingApprovals}</p>
+          <p className="text-3xl font-bold text-warning-600">{stats.pendingApprovals}</p>
           <Link
             href="/admin/approvals"
-            className="text-sm text-indigo-600 hover:text-indigo-700 mt-2 inline-block"
+            className="text-sm text-primary-600 hover:text-primary-700 mt-2 inline-block"
           >
             {tDashboard("reviewNow")}
           </Link>

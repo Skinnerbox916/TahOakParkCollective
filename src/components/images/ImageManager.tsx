@@ -134,7 +134,7 @@ export function ImageManager({
   return (
     <div className="space-y-6">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -155,7 +155,7 @@ export function ImageManager({
                 size="sm"
                 onClick={() => handleDelete("logo")}
                 disabled={deleting === "logo"}
-                className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                className="w-full text-error-600 border-error-300 hover:bg-error-50"
               >
                 {deleting === "logo" ? "Deleting..." : "Delete Logo"}
               </Button>
@@ -178,7 +178,7 @@ export function ImageManager({
                 size="sm"
                 onClick={() => handleDelete("hero")}
                 disabled={deleting === "hero"}
-                className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                className="w-full text-error-600 border-error-300 hover:bg-error-50"
               >
                 {deleting === "hero" ? "Deleting..." : "Delete Hero Image"}
               </Button>

@@ -225,13 +225,13 @@ export function AISuggestUpdatesModal({ entity, open, onClose }: AISuggestUpdate
     >
       {generating && (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
           <p className="text-gray-600">{t("aiSuggestModal.loading")}</p>
         </div>
       )}
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+        <div className="mb-4 p-3 bg-error-50 border border-error-200 rounded text-error-700 text-sm">
           {error}
         </div>
       )}
@@ -270,17 +270,17 @@ function SuggestionCard({
 }) {
   const badgeColor =
     suggestion.confidence === "high"
-      ? "bg-green-100 text-green-800"
+      ? "bg-success-100 text-success-800"
       : suggestion.confidence === "medium"
-      ? "bg-yellow-100 text-yellow-800"
+      ? "bg-warning-100 text-warning-800"
       : suggestion.confidence === "low"
-      ? "bg-red-100 text-red-700"
+      ? "bg-error-100 text-error-700"
       : "bg-gray-100 text-gray-700";
 
   return (
     <div
       className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
-        suggestion.accepted ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-gray-300"
+        suggestion.accepted ? "border-success-500 bg-success-50" : "border-gray-200 hover:border-gray-300"
       }`}
       onClick={onToggle}
     >
@@ -301,7 +301,7 @@ function SuggestionCard({
           checked={!!suggestion.accepted}
           onChange={onToggle}
           onClick={(e) => e.stopPropagation()}
-          className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
+          className="h-5 w-5 text-primary-600 rounded focus:ring-primary-500"
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -313,7 +313,7 @@ function SuggestionCard({
         </div>
         <div>
           <div className="text-xs font-medium text-gray-500 mb-1">Suggested</div>
-          <div className="p-2 bg-indigo-50 rounded whitespace-pre-wrap break-words">
+          <div className="p-2 bg-primary-50 rounded whitespace-pre-wrap break-words">
             {formatValue(suggestion.suggestedValue)}
           </div>
         </div>

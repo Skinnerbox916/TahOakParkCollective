@@ -122,7 +122,7 @@ export default function SuggestEntityPage() {
         <Card className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -150,7 +150,7 @@ export default function SuggestEntityPage() {
                 onChange={handleChange}
                 disabled={loading}
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder={tForms("describeEntity")}
               />
             </div>

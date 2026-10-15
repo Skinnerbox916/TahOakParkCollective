@@ -73,7 +73,7 @@ export function SubscribeForm({ onSuccess }: SubscribeFormProps) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
             {error}
           </div>
         )}

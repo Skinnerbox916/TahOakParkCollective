@@ -68,11 +68,11 @@ export default function PortalEditEntityPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-6">
           {tPortal("editTitle")}
         </h1>
-        <Card className="bg-red-50 border-red-200">
-          <p className="text-red-600">{error || tPortal("notFound")}</p>
+        <Card className="bg-error-50 border-error-200">
+          <p className="text-error-600">{error || tPortal("notFound")}</p>
           <button
             onClick={() => router.push("/portal/dashboard")}
-            className="mt-4 text-sm text-indigo-600 hover:text-indigo-700"
+            className="mt-4 text-sm text-primary-600 hover:text-primary-700"
           >
             {tPortal("back")}
           </button>

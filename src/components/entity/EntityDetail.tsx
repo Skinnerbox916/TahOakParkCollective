@@ -47,7 +47,7 @@ function EntityHeader({ entity }: { entity: EntityWithRelations }) {
               {entityTypeLabels[entity.entityType as EntityType]}
             </span>
             {entity.categories?.map((cat: any) => (
-              <span key={cat.id} className="inline-block px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded">
+              <span key={cat.id} className="inline-block px-3 py-1 text-sm font-medium text-primary-700 bg-primary-100 rounded">
                 {cat.nameLocalized ?? cat.name}
               </span>
             ))}

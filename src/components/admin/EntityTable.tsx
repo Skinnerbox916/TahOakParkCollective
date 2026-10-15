@@ -173,7 +173,7 @@ export function EntityTable({
                 <div>
                   <Link
                     href={`/entities/${entity.slug}`}
-                    className="text-sm font-medium text-indigo-600 hover:text-indigo-900"
+                    className="text-sm font-medium text-primary-600 hover:text-primary-900"
                     target="_blank"
                   >
                     {entity.name}
@@ -207,8 +207,8 @@ export function EntityTable({
                       }}
                       disabled={updating === entity.id}
                       className={cn(
-                        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
-                        entity.status === ENTITY_STATUS.ACTIVE ? "bg-green-600" : "bg-gray-300",
+                        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
+                        entity.status === ENTITY_STATUS.ACTIVE ? "bg-success-600" : "bg-gray-300",
                         updating === entity.id && "opacity-50 cursor-not-allowed"
                       )}
                       title={entity.status === ENTITY_STATUS.ACTIVE ? "Click to deactivate" : "Click to activate"}
@@ -222,7 +222,7 @@ export function EntityTable({
                     </button>
                     <span className={cn(
                       "text-xs font-medium",
-                      entity.status === ENTITY_STATUS.ACTIVE ? "text-green-700" : "text-gray-500"
+                      entity.status === ENTITY_STATUS.ACTIVE ? "text-success-700" : "text-gray-500"
                     )}>
                       {entity.status === ENTITY_STATUS.ACTIVE ? "Active" : "Inactive"}
                     </span>
@@ -268,7 +268,7 @@ export function EntityTable({
                         onClick={() => handleDelete(entity.id)}
                         disabled={deleting === entity.id}
                         className={cn(
-                          "flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors",
+                          "flex items-center w-full px-4 py-2 text-sm text-error-600 hover:bg-error-50 transition-colors",
                           deleting === entity.id && "opacity-50 cursor-not-allowed"
                         )}
                       >
