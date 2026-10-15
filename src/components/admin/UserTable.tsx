@@ -144,7 +144,7 @@ export function UserTable({ users, onRoleChange }: UserTableProps) {
                             checked={editingRoles.includes(role)}
                             onChange={() => handleRoleToggle(role)}
                             disabled={role === ROLE.USER || updating === user.id}
-                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                           />
                           <span className={role === ROLE.USER ? "text-gray-400" : ""}>
                             {role === ROLE.USER ? "User (required)" : role.replace("_", " ")}

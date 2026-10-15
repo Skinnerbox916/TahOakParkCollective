@@ -88,7 +88,7 @@ export default function ContactPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
                   {error}
                 </div>
               )}
@@ -127,7 +127,7 @@ export default function ContactPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value="">{t("selectSubject")}</option>
                   <option value="general">{t("generalInquiry")}</option>
@@ -149,7 +149,7 @@ export default function ContactPage() {
                   required
                   disabled={loading}
                   rows={6}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder={t("messagePlaceholder")}
                 />
               </div>
@@ -160,11 +160,11 @@ export default function ContactPage() {
 
               <p className="text-xs text-gray-500 text-center">
                 {t("termsAgreement")}{" "}
-                <Link href="/terms" className="text-indigo-600 hover:text-indigo-800">
+                <Link href="/terms" className="text-primary-600 hover:text-primary-800">
                   {t("termsLink")}
                 </Link>{" "}
                 {t("and")}{" "}
-                <Link href="/privacy" className="text-indigo-600 hover:text-indigo-800">
+                <Link href="/privacy" className="text-primary-600 hover:text-primary-800">
                   {t("privacyLink")}
                 </Link>
                 .

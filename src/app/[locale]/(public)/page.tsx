@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { OmniSearch } from "@/components/home/OmniSearch";
@@ -13,13 +14,23 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-indigo-600 to-indigo-800 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden text-white py-16">
+        <Image
+          src="/images/home-hero.jpg"
+          alt=""
+          fill
+          preload
+          sizes="100vw"
+          className="object-cover"
+        />
+        {/* Scrim keeps white text legible over the light image */}
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               {t("welcome")}
             </h1>
-            <p className="text-xl text-indigo-100 mb-6">
+            <p className="text-xl text-primary-100 mb-6">
               {t("subtitle")}
             </p>
           </div>

@@ -94,20 +94,20 @@ export default function AdminSubscribersPage() {
   const getStatusBadge = (subscriber: Subscriber) => {
     if (subscriber.unsubscribed) {
       return (
-        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
           {t("stats.unsubscribed")}
         </span>
       );
     }
     if (subscriber.verified) {
       return (
-        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
           {t("stats.verified")}
         </span>
       );
     }
     return (
-      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
         {t("stats.unverified")}
       </span>
     );
@@ -140,15 +140,15 @@ export default function AdminSubscribersPage() {
         </Card>
         <Card className="p-4">
           <div className="text-sm text-gray-600 mb-1">{t("stats.verified")}</div>
-          <div className="text-2xl font-bold text-green-600">{verifiedCount}</div>
+          <div className="text-2xl font-bold text-success-600">{verifiedCount}</div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-gray-600 mb-1">{t("stats.unverified")}</div>
-          <div className="text-2xl font-bold text-yellow-600">{unverifiedCount}</div>
+          <div className="text-2xl font-bold text-warning-600">{unverifiedCount}</div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-gray-600 mb-1">{t("stats.unsubscribed")}</div>
-          <div className="text-2xl font-bold text-red-600">{unsubscribedCount}</div>
+          <div className="text-2xl font-bold text-error-600">{unsubscribedCount}</div>
         </Card>
       </div>
 
@@ -172,7 +172,7 @@ export default function AdminSubscribersPage() {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as FilterType)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">{t("filters.all")}</option>
                 <option value="verified">{t("filters.verified")}</option>
@@ -189,8 +189,8 @@ export default function AdminSubscribersPage() {
 
       {/* Error State */}
       {error && (
-        <Card className="mb-6 bg-red-50 border-red-200">
-          <p className="text-red-600">{error}</p>
+        <Card className="mb-6 bg-error-50 border-error-200">
+          <p className="text-error-600">{error}</p>
         </Card>
       )}
 
@@ -198,7 +198,7 @@ export default function AdminSubscribersPage() {
       {loading ? (
         <Card>
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p className="text-gray-500">{t("loading")}</p>
           </div>
         </Card>
@@ -273,7 +273,7 @@ export default function AdminSubscribersPage() {
                               </span>
                             )}
                             {subscriber.preferences.updates && (
-                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-indigo-100 text-indigo-800">
+                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-primary-100 text-primary-800">
                                 {t("preferences.updates")}
                               </span>
                             )}
@@ -288,7 +288,7 @@ export default function AdminSubscribersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {subscriber.verified ? (
-                        <span className="text-green-600">
+                        <span className="text-success-600">
                           {formatDate(subscriber.verifiedAt)}
                         </span>
                       ) : (

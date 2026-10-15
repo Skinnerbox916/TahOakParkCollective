@@ -12,10 +12,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses = {
-  primary: "bg-indigo-600 text-white hover:bg-indigo-700",
+  primary: "bg-primary-600 text-white hover:bg-primary-700",
   secondary: "bg-gray-600 text-white hover:bg-gray-700",
-  danger: "bg-red-600 text-white hover:bg-red-700",
-  outline: "border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50",
+  danger: "bg-error-600 text-white hover:bg-error-700",
+  outline: "border-2 border-primary-600 text-primary-600 hover:bg-primary-50",
 };
 
 const sizeClasses = {

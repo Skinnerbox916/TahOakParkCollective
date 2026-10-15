@@ -253,7 +253,7 @@ function SearchPageContent() {
             {isLoading ? (
               <span>{t('searching')}</span>
             ) : error ? (
-              <span className="text-red-600">{error}</span>
+              <span className="text-error-600">{error}</span>
             ) : (
               <span>
                 {t('found', { count: entities.length })}
@@ -267,7 +267,7 @@ function SearchPageContent() {
 
         {/* Error State */}
         {error && !isLoading && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg mb-6">
             <p>{error}</p>
           </div>
         )}

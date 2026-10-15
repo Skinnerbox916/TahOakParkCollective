@@ -11,7 +11,7 @@ interface RoleBadgeProps {
 const roleClasses: Record<Role, string> = {
   USER: "bg-gray-100 text-gray-800 border-gray-200",
   ENTITY_OWNER: "bg-blue-100 text-blue-800 border-blue-200",
-  ADMIN: "bg-indigo-100 text-indigo-800 border-indigo-200",
+  ADMIN: "bg-primary-100 text-primary-800 border-primary-200",
 };
 
 export function RoleBadge({ role, roles }: RoleBadgeProps) {

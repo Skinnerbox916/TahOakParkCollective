@@ -128,7 +128,7 @@ export function FormSection({
         <div className="flex items-center">
           {hasData ? (
             <span
-              className="w-2.5 h-2.5 rounded-full bg-green-500"
+              className="w-2.5 h-2.5 rounded-full bg-success-500"
               aria-label="Section has data"
               title="Has data"
             />

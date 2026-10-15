@@ -103,8 +103,8 @@ export default function PortalDashboard() {
       </div>
 
       {error && (
-        <Card className="mb-6 bg-red-50 border-red-200">
-          <p className="text-red-600">{error || tPortal("errorLoading")}</p>
+        <Card className="mb-6 bg-error-50 border-error-200">
+          <p className="text-error-600">{error || tPortal("errorLoading")}</p>
         </Card>
       )}
 

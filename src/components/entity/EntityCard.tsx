@@ -64,7 +64,7 @@ export function EntityCard({ entity }: EntityCardProps) {
             {entityTypeLabels[entity.entityType as EntityType]}
           </span>
           {entity.categories?.map((cat: any) => (
-            <span key={cat.id} className="px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-md whitespace-nowrap">
+            <span key={cat.id} className="px-2.5 py-1 text-xs font-medium text-primary-700 bg-primary-100 rounded-md whitespace-nowrap">
               {cat.nameLocalized ?? cat.name}
             </span>
           ))}
@@ -115,7 +115,7 @@ export function EntityCard({ entity }: EntityCardProps) {
 
         {/* Footer */}
         <div className="mt-auto pt-4 border-t border-gray-200">
-          <span className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+          <span className="text-sm font-medium text-primary-600 hover:text-primary-700">
             {t("viewDetails")}
           </span>
         </div>

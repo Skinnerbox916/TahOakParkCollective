@@ -25,7 +25,7 @@ export function PublicNavbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center gap-4">
             <div className="flex items-center min-w-0 flex-shrink">
-              <Link href="/" className="text-lg sm:text-xl font-bold text-indigo-600 truncate">
+              <Link href="/" className="text-lg sm:text-xl font-bold text-primary-600 truncate">
                 TahOak Park Collective
               </Link>
             </div>
@@ -65,7 +65,7 @@ export function PublicNavbar() {
               )}
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 aria-label="Open menu"
               >
                 <svg

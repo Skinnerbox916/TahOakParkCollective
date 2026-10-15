@@ -117,7 +117,7 @@ export function TagManager() {
   return (
     <div className="space-y-8">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
@@ -136,7 +136,7 @@ export function TagManager() {
                   type="text"
                   value={newNameEn}
                   onChange={(e) => setNewNameEn(e.target.value)}
-                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-3 py-2 border"
                   placeholder="e.g. WiFi, Black-owned"
                 />
                 <button
@@ -170,7 +170,7 @@ export function TagManager() {
                   type="text"
                   value={newNameEs}
                   onChange={(e) => setNewNameEs(e.target.value)}
-                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-3 py-2 border"
                   placeholder="ej. WiFi, Negocio Afroamericano"
                 />
               </div>
@@ -186,7 +186,7 @@ export function TagManager() {
               <select
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value as TagCategory)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-3 py-2 border"
               >
                 {Object.values(TagCategory).map((cat) => (
                   <option key={cat} value={cat}>
@@ -239,7 +239,7 @@ export function TagManager() {
                   <button
                     onClick={() => handleDelete(tag.id)}
                     disabled={deleting === tag.id}
-                    className="text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed"
+                    className="text-error-600 hover:text-error-800 disabled:text-gray-400 disabled:cursor-not-allowed"
                   >
                     {deleting === tag.id ? t("deleting") : t("delete")}
                   </button>

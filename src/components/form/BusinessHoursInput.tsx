@@ -126,7 +126,7 @@ export function BusinessHoursInput({
             <button
               type="button"
               onClick={() => onChange({})}
-              className="text-xs px-2 py-1 rounded border border-red-200 hover:bg-red-50 text-red-600 transition-colors"
+              className="text-xs px-2 py-1 rounded border border-error-200 hover:bg-error-50 text-error-600 transition-colors"
             >
               Clear All
             </button>
@@ -163,7 +163,7 @@ export function BusinessHoursInput({
                   checked={isClosed}
                   onChange={() => toggleClosed(day.key)}
                   disabled={disabled}
-                  className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
                 />
                 <span className="text-xs text-gray-500">Closed</span>
               </label>
@@ -175,7 +175,7 @@ export function BusinessHoursInput({
                   value={isClosed ? "" : dayHours.open}
                   onChange={(e) => updateDay(day.key, { open: e.target.value })}
                   disabled={disabled || isClosed}
-                  className="w-full sm:w-28 px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
+                  className="w-full sm:w-28 px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:text-gray-400"
                   aria-label={`${day.label} open time`}
                 />
                 <span className="text-gray-400 text-sm">–</span>
@@ -184,7 +184,7 @@ export function BusinessHoursInput({
                   value={isClosed ? "" : dayHours.close}
                   onChange={(e) => updateDay(day.key, { close: e.target.value })}
                   disabled={disabled || isClosed}
-                  className="w-full sm:w-28 px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
+                  className="w-full sm:w-28 px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:text-gray-400"
                   aria-label={`${day.label} close time`}
                 />
               </div>
@@ -194,7 +194,7 @@ export function BusinessHoursInput({
                 <button
                   type="button"
                   onClick={() => copyToRemaining(day.key)}
-                  className="flex-shrink-0 text-xs text-indigo-600 hover:text-indigo-700 hover:underline hidden sm:inline"
+                  className="flex-shrink-0 text-xs text-primary-600 hover:text-primary-700 hover:underline hidden sm:inline"
                   title="Copy these hours to all days below"
                 >
                   Copy ↓

@@ -87,7 +87,7 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -135,7 +135,7 @@ export function RegisterForm() {
 
       <div className="text-center text-sm text-gray-600">
         {t("alreadyHaveAccount")}{" "}
-        <Link href="/auth/signin" className="text-indigo-600 hover:text-indigo-700 font-medium">
+        <Link href="/auth/signin" className="text-primary-600 hover:text-primary-700 font-medium">
           {t("signInLink")}
         </Link>
       </div>

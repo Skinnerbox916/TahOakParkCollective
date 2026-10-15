@@ -23,7 +23,7 @@ export function ClaimSection({ entity, config }: ClaimSectionProps) {
       </p>
       <Link
         href={`/claim?entityId=${entity.id}`}
-        className="inline-block w-full text-center px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium mb-3"
+        className="inline-block w-full text-center px-4 py-2 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors text-sm font-medium mb-3"
       >
         {t("claimThisEntity")}
       </Link>

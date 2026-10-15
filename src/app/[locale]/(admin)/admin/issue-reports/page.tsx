@@ -144,7 +144,7 @@ export default function AdminIssueReportsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as ReportStatus)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value={ReportStatus.PENDING}>{getStatusLabel(ReportStatus.PENDING)}</option>
             <option value={ReportStatus.RESOLVED}>{getStatusLabel(ReportStatus.RESOLVED)}</option>
@@ -158,8 +158,8 @@ export default function AdminIssueReportsPage() {
 
       {/* Error State */}
       {error && (
-        <Card className="mb-6 bg-red-50 border-red-200">
-          <p className="text-red-600">{error}</p>
+        <Card className="mb-6 bg-error-50 border-error-200">
+          <p className="text-error-600">{error}</p>
         </Card>
       )}
 
@@ -192,7 +192,7 @@ export default function AdminIssueReportsPage() {
                     {report.entity ? (
                       <Link
                         href={`/entities/${report.entity.slug}`}
-                        className="text-xl font-semibold text-indigo-600 hover:text-indigo-800"
+                        className="text-xl font-semibold text-primary-600 hover:text-primary-800"
                         target="_blank"
                       >
                         {report.entity.name} →
@@ -205,10 +205,10 @@ export default function AdminIssueReportsPage() {
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         report.status === ReportStatus.PENDING
-                          ? "bg-yellow-100 text-yellow-800"
+                          ? "bg-warning-100 text-warning-800"
                           : report.status === ReportStatus.RESOLVED
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                          ? "bg-success-100 text-success-800"
+                          : "bg-error-100 text-error-800"
                       }`}
                     >
                       {getStatusLabel(report.status)}
@@ -261,7 +261,7 @@ export default function AdminIssueReportsPage() {
                       size="sm"
                       onClick={() => handleOpenModal(report, "DISMISS")}
                       disabled={processing !== null}
-                      className="text-red-600 border-red-300 hover:bg-red-50"
+                      className="text-error-600 border-error-300 hover:bg-error-50"
                     >
                       ✗ {tCommon("dismiss")}
                     </Button>
@@ -283,7 +283,7 @@ export default function AdminIssueReportsPage() {
               </h2>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                <div className="mb-4 p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
                   {error}
                 </div>
               )}
@@ -308,7 +308,7 @@ export default function AdminIssueReportsPage() {
                   onChange={(e) => setResolution(e.target.value)}
                   required
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder={action === "RESOLVE" ? t("resolvePlaceholder") : t("dismissPlaceholder")}
                 />
               </div>
@@ -329,7 +329,7 @@ export default function AdminIssueReportsPage() {
                 <Button
                   onClick={handleSubmitAction}
                   disabled={processing !== null || !resolution.trim()}
-                  className={action === "DISMISS" ? "bg-red-600 hover:bg-red-700" : ""}
+                  className={action === "DISMISS" ? "bg-error-600 hover:bg-error-700" : ""}
                 >
                   {processing ? tCommon("processing") : action === "RESOLVE" ? tCommon("resolve") : tCommon("dismiss")}
                 </Button>

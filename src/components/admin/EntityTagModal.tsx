@@ -98,7 +98,7 @@ export function EntityTagModal({ entity, onClose, onTagChange }: EntityTagModalP
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -111,7 +111,7 @@ export function EntityTagModal({ entity, onClose, onTagChange }: EntityTagModalP
               </label>
               <Link
                 href={`/entities/${entity.slug}`}
-                className="text-indigo-600 hover:text-indigo-800 font-medium"
+                className="text-primary-600 hover:text-primary-800 font-medium"
                 target="_blank"
               >
                 {entity.name} →
@@ -128,7 +128,7 @@ export function EntityTagModal({ entity, onClose, onTagChange }: EntityTagModalP
                   {currentTags.map((et) => (
                     <span
                       key={et.id}
-                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
                     >
                       {et.tag.name}
                     </span>

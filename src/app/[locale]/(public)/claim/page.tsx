@@ -154,7 +154,7 @@ function ClaimEntityContent() {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -193,7 +193,7 @@ function ClaimEntityContent() {
               </div>
             </div>
           ) : entity ? (
-            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <div className="p-4 bg-primary-50 border border-primary-200 rounded-lg">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="font-medium text-gray-900">{entity.name}</div>
@@ -208,7 +208,7 @@ function ClaimEntityContent() {
                     setEntity(null);
                     setFormData((prev) => ({ ...prev, entityId: "" }));
                   }}
-                  className="text-sm text-indigo-600 hover:text-indigo-700"
+                  className="text-sm text-primary-600 hover:text-primary-700"
                 >
                   {t("change")}
                 </button>
@@ -284,7 +284,7 @@ export default function ClaimEntityPage() {
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <Suspense fallback={
           <Card className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p className="text-gray-600">{tCommon("loading")}</p>
           </Card>
         }>

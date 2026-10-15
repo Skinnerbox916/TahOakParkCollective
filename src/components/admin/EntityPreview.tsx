@@ -354,9 +354,9 @@ export function EntityPreview({
       );
 
   return (
-    <div className="border-2 border-dashed border-indigo-300 rounded-lg p-4 bg-indigo-50/50">
+    <div className="border-2 border-dashed border-primary-300 rounded-lg p-4 bg-primary-50/50">
       <div className="flex items-center justify-between mb-4">
-        <div className="text-xs text-indigo-600 font-medium uppercase tracking-wide">
+        <div className="text-xs text-primary-600 font-medium uppercase tracking-wide">
           {isEditing ? tAdmin("editingEntityData") : tAdmin("previewTitle")}
         </div>
         {editable && (approvalId || entityId) && (
@@ -393,7 +393,7 @@ export function EntityPreview({
       </div>
       
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+        <div className="mb-4 p-3 bg-error-50 border border-error-200 rounded text-error-700 text-sm">
           {error}
         </div>
       )}
@@ -418,7 +418,7 @@ export function EntityPreview({
                 <select
                   value={editedData.entityType || "COMMERCE"}
                   onChange={(e) => updateField("entityType", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   {ENTITY_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -440,7 +440,7 @@ export function EntityPreview({
                         key={cat.slug}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded border cursor-pointer transition-colors ${
                           (editedData.categorySlugs || []).includes(cat.slug)
-                            ? "bg-indigo-100 border-indigo-300 text-indigo-700"
+                            ? "bg-primary-100 border-primary-300 text-primary-700"
                             : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
                         }`}
                       >
@@ -476,7 +476,7 @@ export function EntityPreview({
                                 key={tag.slug}
                                 className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${
                                   (editedData.tagSlugs || []).includes(tag.slug)
-                                    ? "bg-green-100 border border-green-300 text-green-700"
+                                    ? "bg-success-100 border border-success-300 text-success-700"
                                     : "bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100"
                                 }`}
                               >
@@ -511,7 +511,7 @@ export function EntityPreview({
                 {resolvedCategories.map((cat) => (
                   <span
                     key={cat.id}
-                    className="inline-block px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded"
+                    className="inline-block px-3 py-1 text-sm font-medium text-primary-700 bg-primary-100 rounded"
                   >
                     {cat.name}
                   </span>
@@ -552,7 +552,7 @@ export function EntityPreview({
                   value={editedData.description || ""}
                   onChange={(e) => updateField("description", e.target.value)}
                   rows={6}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder={tEntityForm("placeholders.description")}
                 />
               ) : (
@@ -571,14 +571,14 @@ export function EntityPreview({
                     <div className="flex border-b bg-gray-50">
                       <button
                         type="button"
-                        className={`px-4 py-2 text-sm font-medium ${nameTranslationLocale === "en" ? "bg-white border-b-2 border-indigo-500 text-indigo-600" : "text-gray-500"}`}
+                        className={`px-4 py-2 text-sm font-medium ${nameTranslationLocale === "en" ? "bg-white border-b-2 border-primary-500 text-primary-600" : "text-gray-500"}`}
                         onClick={() => setNameTranslationLocale("en")}
                       >
                         {tAdmin("languageEnglish")}
                       </button>
                       <button
                         type="button"
-                        className={`px-4 py-2 text-sm font-medium ${nameTranslationLocale === "es" ? "bg-white border-b-2 border-indigo-500 text-indigo-600" : "text-gray-500"}`}
+                        className={`px-4 py-2 text-sm font-medium ${nameTranslationLocale === "es" ? "bg-white border-b-2 border-primary-500 text-primary-600" : "text-gray-500"}`}
                         onClick={() => setNameTranslationLocale("es")}
                       >
                         {tAdmin("languageSpanish")}
@@ -603,14 +603,14 @@ export function EntityPreview({
                     <div className="flex border-b bg-gray-50">
                       <button
                         type="button"
-                        className={`px-4 py-2 text-sm font-medium ${descTranslationLocale === "en" ? "bg-white border-b-2 border-indigo-500 text-indigo-600" : "text-gray-500"}`}
+                        className={`px-4 py-2 text-sm font-medium ${descTranslationLocale === "en" ? "bg-white border-b-2 border-primary-500 text-primary-600" : "text-gray-500"}`}
                         onClick={() => setDescTranslationLocale("en")}
                       >
                         {tAdmin("languageEnglish")}
                       </button>
                       <button
                         type="button"
-                        className={`px-4 py-2 text-sm font-medium ${descTranslationLocale === "es" ? "bg-white border-b-2 border-indigo-500 text-indigo-600" : "text-gray-500"}`}
+                        className={`px-4 py-2 text-sm font-medium ${descTranslationLocale === "es" ? "bg-white border-b-2 border-primary-500 text-primary-600" : "text-gray-500"}`}
                         onClick={() => setDescTranslationLocale("es")}
                       >
                         {tAdmin("languageSpanish")}
@@ -624,7 +624,7 @@ export function EntityPreview({
                           [descTranslationLocale]: e.target.value,
                         })}
                         rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder={tAdmin("descriptionInLanguage", { language: descTranslationLocale === "en" ? tAdmin("languageEnglish") : tAdmin("languageSpanish") })}
                       />
                     </div>
@@ -646,7 +646,7 @@ export function EntityPreview({
                         type="checkbox"
                         checked={fieldEnabled.location}
                         onChange={(e) => toggleField("location", e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <span className="text-xs text-gray-600">{tAdmin("includeField")}</span>
                     </label>
@@ -714,7 +714,7 @@ export function EntityPreview({
                           type="checkbox"
                           checked={fieldEnabled.address}
                           onChange={(e) => toggleField("address", e.target.checked)}
-                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                         />
                         <span className="text-xs text-gray-600">{tAdmin("includeField")}</span>
                       </label>
@@ -737,7 +737,7 @@ export function EntityPreview({
                           type="checkbox"
                           checked={fieldEnabled.phone}
                           onChange={(e) => toggleField("phone", e.target.checked)}
-                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                         />
                         <span className="text-xs text-gray-600">{tAdmin("includeField")}</span>
                       </label>
@@ -760,7 +760,7 @@ export function EntityPreview({
                           type="checkbox"
                           checked={fieldEnabled.website}
                           onChange={(e) => toggleField("website", e.target.checked)}
-                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                         />
                         <span className="text-xs text-gray-600">{tAdmin("includeField")}</span>
                       </label>
@@ -796,7 +796,7 @@ export function EntityPreview({
                         href={displayData.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-indigo-600 hover:text-indigo-800 break-all"
+                        className="text-primary-600 hover:text-primary-800 break-all"
                       >
                         {displayData.website}
                       </a>
@@ -824,7 +824,7 @@ export function EntityPreview({
                         type="checkbox"
                         checked={fieldEnabled.hours}
                         onChange={(e) => toggleField("hours", e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <span className="text-xs text-gray-600">{tAdmin("includeField")}</span>
                     </label>
@@ -866,7 +866,7 @@ export function EntityPreview({
                         type="checkbox"
                         checked={fieldEnabled.socialMedia}
                         onChange={(e) => toggleField("socialMedia", e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <span className="text-xs text-gray-600">{tAdmin("includeField")}</span>
                     </label>
@@ -896,7 +896,7 @@ export function EntityPreview({
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-600 hover:text-indigo-800 truncate"
+                          className="text-primary-600 hover:text-primary-800 truncate"
                         >
                           {url}
                         </a>

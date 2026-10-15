@@ -22,13 +22,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           rows={rows}
           className={cn(
             "w-full px-4 py-2 border rounded-lg focus-ring focus:border-transparent resize-vertical",
-            error ? "border-red-500" : "border-gray-300",
+            error ? "border-error-500" : "border-gray-300",
             className
           )}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
+          <p className="mt-1 text-sm text-error-600">{error}</p>
         )}
       </div>
     );

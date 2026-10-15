@@ -36,7 +36,7 @@ export function ContactSection({ entity, config }: ContactSectionProps) {
             </p>
             <a
               href={`tel:${entity.phone}`}
-              className="text-indigo-600 hover:text-indigo-700"
+              className="text-primary-600 hover:text-primary-700"
             >
             {formatPhoneForDisplay(entity.phone)}
             </a>
@@ -51,7 +51,7 @@ export function ContactSection({ entity, config }: ContactSectionProps) {
               href={entity.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-indigo-600 hover:text-indigo-700 break-all"
+              className="text-primary-600 hover:text-primary-700 break-all"
             >
               {entity.website}
             </a>

@@ -8,9 +8,9 @@ interface StatusBadgeProps {
 }
 
 const statusClasses: Record<EntityStatus, string> = {
-  ACTIVE: "bg-green-100 text-green-800 border-green-200",
+  ACTIVE: "bg-success-100 text-success-800 border-success-200",
   INACTIVE: "bg-gray-100 text-gray-800 border-gray-200",
-  PENDING_REVIEW: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  PENDING_REVIEW: "bg-warning-100 text-warning-800 border-warning-200",
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {

@@ -90,7 +90,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">{t("contact")}</h2>
             <p className="text-gray-700 leading-relaxed">
               {t("contactText")}{" "}
-              <Link href="/contact" className="text-indigo-600 hover:text-indigo-800 font-medium">
+              <Link href="/contact" className="text-primary-600 hover:text-primary-800 font-medium">
                 {t("contactLink")}
               </Link>
               .

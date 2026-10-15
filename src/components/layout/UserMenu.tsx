@@ -52,12 +52,12 @@ export function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         aria-label={t("userMenu") || "User menu"}
         aria-expanded={isOpen}
       >
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-medium">
+          <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm font-medium">
             {userDisplayName.charAt(0).toUpperCase()}
           </div>
           <span className="text-sm text-gray-700 hidden sm:inline max-w-[120px] truncate">
@@ -125,7 +125,7 @@ export function UserMenu() {
                 setIsOpen(false);
                 signOut({ callbackUrl: "/" });
               }}
-              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+              className="flex items-center w-full px-4 py-2 text-sm text-error-600 hover:bg-error-50 transition-colors"
             >
               <span className="mr-3">🚪</span>
               {t("signOut")}
