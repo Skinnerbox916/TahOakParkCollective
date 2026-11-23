@@ -5,18 +5,11 @@ import { expandSearchQuery, getMatchingCategories } from "@/lib/keyword-search";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 
 /**
- * Standard includes for entity queries
- * Includes categories, owner (with selected fields), and tags
+ * Includes for anything a visitor can see: categories and tags, no owner.
+ * Use this for every unauthenticated read (public API routes, public pages).
  */
-export const entityIncludeStandard = {
+export const entityIncludePublic = {
   categories: true,
-  owner: {
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-  },
   tags: {
     include: {
       tag: true,
@@ -25,7 +18,26 @@ export const entityIncludeStandard = {
 } as const;
 
 /**
- * Transforms an entity with translations for entity, categories, and tags
+ * Includes for admin and owner views: adds the owner's name and email.
+ * Never use this in a response an anonymous visitor can receive.
+ */
+export const entityIncludeWithOwner = {
+  ...entityIncludePublic,
+  owner: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+} as const;
+
+/** Entity fields only admins should see. */
+const ADMIN_ONLY_ENTITY_FIELDS = ["verificationContact"] as const;
+
+/**
+ * Transforms an entity with translations for entity, categories, and tags.
+ * Admin-only fields are dropped unless includeAdminFields is true.
  */
 export function transformEntity(entity: any, locale: string, includeAdminFields = false) {
   // Translate entity name and description
@@ -80,6 +92,12 @@ export function transformEntity(entity: any, locale: string, includeAdminFields 
         ? getTranslatedField(entity.category.descriptionTranslations, locale, entity.category.description)
         : null,
     };
+  }
+
+  if (!includeAdminFields) {
+    for (const field of ADMIN_ONLY_ENTITY_FIELDS) {
+      delete translatedEntity[field];
+    }
   }
 
   return translatedEntity;

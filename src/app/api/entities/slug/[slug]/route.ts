@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
-import { entityIncludeStandard, transformEntity } from "@/lib/entity-helpers";
+import { entityIncludePublic, transformEntity } from "@/lib/entity-helpers";
 
 export async function GET(
   request: NextRequest,
@@ -17,7 +17,7 @@ export async function GET(
         slug,
         status: ENTITY_STATUS.ACTIVE, // Only return active entities for public API
       },
-      include: entityIncludeStandard,
+      include: entityIncludePublic,
     });
 
     if (!entity) {

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createSuccessResponse, createErrorResponse, withRole } from '@/lib/api-helpers';
 import { ROLE } from '@/lib/prismaEnums';
-import { getTranslationService, SupportedLocale } from '@/lib/translate';
+import { getTranslationService, isTranslationConfigured, SupportedLocale } from '@/lib/translate';
 
 export async function POST(request: NextRequest) {
   // Only allow admins and business owners to use translation API
@@ -16,6 +16,10 @@ export async function POST(request: NextRequest) {
 
       if (!['en', 'es'].includes(targetLocale) || !['en', 'es'].includes(sourceLocale)) {
         return createErrorResponse('Invalid locale. Supported: en, es', 400);
+      }
+
+      if (!isTranslationConfigured()) {
+        return createErrorResponse('Machine translation is not configured', 503);
       }
 
       const service = getTranslationService();

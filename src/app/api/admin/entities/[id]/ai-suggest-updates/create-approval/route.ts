@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createErrorResponse, createSuccessResponse, withRole } from "@/lib/api-helpers";
 import { ApprovalStatus, ApprovalType, ROLE } from "@/lib/prismaEnums";
-import { entityIncludeStandard } from "@/lib/entity-helpers";
+import { entityIncludeWithOwner } from "@/lib/entity-helpers";
 import { normalizeSnapshot, type EntitySnapshot } from "@/lib/entitySnapshot";
 import type { BusinessHours, SocialMediaLinks } from "@/types";
 
@@ -39,7 +39,7 @@ export async function POST(
 
       const entity = await prisma.entity.findUnique({
         where: { id },
-        include: entityIncludeStandard,
+        include: entityIncludeWithOwner,
       });
 
       if (!entity) {

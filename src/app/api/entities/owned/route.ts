@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { entityIncludeStandard } from "@/lib/entity-helpers";
+import { entityIncludeWithOwner } from "@/lib/entity-helpers";
 
 export async function GET(request: NextRequest) {
   // Any authenticated user can view their owned entities (may be empty for new users)
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
         where: {
           ownerId: user.id,
         },
-        include: entityIncludeStandard,
+        include: entityIncludeWithOwner,
         orderBy: {
           createdAt: "desc",
         },

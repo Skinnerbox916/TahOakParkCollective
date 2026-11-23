@@ -30,6 +30,8 @@ services:
       - ./postcss.config.mjs:/app/postcss.config.mjs
       - ./eslint.config.mjs:/app/eslint.config.mjs
       - ./prisma.config.ts:/app/prisma.config.ts
+      # User uploads (UPLOAD_DIR defaults to /app/uploads)
+      - ./uploads:/app/uploads
       # Use container's node_modules
       - /app/node_modules
       - /app/.next

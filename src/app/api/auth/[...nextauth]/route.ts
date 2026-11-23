@@ -20,8 +20,10 @@ export const authOptions: NextAuthOptions = {
         // Trim email to handle any whitespace
         const email = credentials.email.trim().toLowerCase();
         
-        const user = await prisma.user.findUnique({
-          where: { email },
+        // Case-insensitive so accounts registered before emails were
+        // normalized to lowercase can still sign in
+        const user = await prisma.user.findFirst({
+          where: { email: { equals: email, mode: "insensitive" } },
         });
 
         if (!user) {

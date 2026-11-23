@@ -949,7 +949,8 @@
       },
       "success": {
         "created": "¡Entidad creada exitosamente!",
-        "updated": "¡Entidad actualizada exitosamente!"
+        "updated": "¡Entidad actualizada exitosamente!",
+        "submittedForReview": "¡Gracias! Tu listado fue enviado. Un administrador lo revisará antes de que aparezca en el directorio."
       },
       "buttons": {
         "create": "Crear Entidad",

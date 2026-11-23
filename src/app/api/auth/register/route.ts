@@ -7,7 +7,9 @@ import { ROLE } from "@/lib/prismaEnums";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, name } = body;
+    const { password, name } = body;
+    // Stored lowercased: sign-in lowercases the address before looking it up
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
 
     // Validation
     if (!email || !password) {
@@ -25,9 +27,11 @@ export async function POST(request: NextRequest) {
       return createErrorResponse("Password must be at least 8 characters long", 400);
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    // Check if user already exists (case-insensitive, for accounts created
+    // before emails were normalized)
+    const existingUser = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
+      select: { id: true },
     });
 
     if (existingUser) {

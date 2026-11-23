@@ -44,5 +44,8 @@ next-env.d.ts
 
 /src/generated/prisma
 
+# user uploads (UPLOAD_DIR, see src/lib/storage.ts)
+/uploads
+
 # test files with secrets
 test-*.js

@@ -144,7 +144,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `POSTGRES_PASSWORD` | PostgreSQL password | `tahoak_password` |
 | `POSTGRES_DB` | PostgreSQL database name | `tahoak_db` |
 | `POSTGRES_PORT` | PostgreSQL port | `5432` |
-| `DEEPL_API_KEY` | DeepL API key for auto-translation | - |
+| `DEEPL_API_KEY` | DeepL API key for auto-translation. Required in production for the translate buttons; dev falls back to a mock that prefixes `[ES] ` | - |
+| `UPLOAD_DIR` | Where uploaded images are stored, served at `/uploads/...`. In production, mount a persistent volume here or uploads are lost on redeploy | `<cwd>/uploads` (`/app/uploads` in the Docker image) |
 
 ## Database Management
 

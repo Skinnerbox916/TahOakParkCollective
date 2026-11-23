@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createErrorResponse, createSuccessResponse, withRole } from "@/lib/api-helpers";
 import { ROLE } from "@/lib/prismaEnums";
-import { entityIncludeStandard } from "@/lib/entity-helpers";
+import { entityIncludeWithOwner } from "@/lib/entity-helpers";
 import { suggestEntityUpdates } from "@/lib/ai/entity-update-suggestions";
 
 export async function GET(
@@ -15,7 +15,7 @@ export async function GET(
 
       const entity = await prisma.entity.findUnique({
         where: { id },
-        include: entityIncludeStandard,
+        include: entityIncludeWithOwner,
       });
 
       if (!entity) {
