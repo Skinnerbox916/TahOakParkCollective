@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { EntityDetail } from "@/components/entity/EntityDetail";
 import { getTranslatedField } from "@/lib/translations";
-import { entityIncludeStandard, transformEntity } from "@/lib/entity-helpers";
+import { entityIncludePublic, transformEntity } from "@/lib/entity-helpers";
 import type { EntityWithRelations } from "@/types";
 
 async function getEntityBySlug(slug: string, locale: string): Promise<EntityWithRelations | null> {
@@ -13,7 +13,7 @@ async function getEntityBySlug(slug: string, locale: string): Promise<EntityWith
         slug,
         status: ENTITY_STATUS.ACTIVE, // Only show active entities publicly
       },
-      include: entityIncludeStandard,
+      include: entityIncludePublic,
     });
 
     if (!entity) {

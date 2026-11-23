@@ -1,15 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
+import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE } from "@/lib/prismaEnums";
-import { join } from "path";
-import { unlink } from "fs/promises";
+import { deleteUpload, keyFromPublicUrl } from "@/lib/storage";
 
+// Admin-only, matching the upload route: removing an image publishes
+// immediately, so owner changes need to go through approvals first.
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; type: string }> }
 ) {
-  return withAuth(async (user) => {
+  return withRole([ROLE.ADMIN], async () => {
     try {
       const { id, type } = await params;
 
@@ -17,43 +18,21 @@ export async function DELETE(
         return createErrorResponse("Invalid image type", 400);
       }
 
-      // Verify ownership
       const entity = await prisma.entity.findUnique({
         where: { id },
+        select: { id: true, images: true },
       });
 
       if (!entity) {
         return createErrorResponse("Entity not found", 404);
       }
 
-      if (!user.roles.includes(ROLE.ADMIN) && entity.ownerId !== user.id) {
-        return createErrorResponse("Forbidden", 403);
-      }
+      const currentImages = (entity.images as Record<string, string> | null) || {};
 
-      const currentImages = (entity.images as Record<string, string>) || {};
-      
       if (!currentImages[type]) {
         return createErrorResponse("Image not found", 404);
       }
 
-      // Try to delete file from filesystem
-      // Parse the filename from the stored URL (e.g., /uploads/entities/ID/logo.png?t=...)
-      const imagePath = currentImages[type];
-      const urlPath = imagePath.split("?")[0]; // Remove query string
-      const fileName = urlPath.split("/").pop(); // Get filename
-      
-      if (fileName) {
-        const filePath = join(process.cwd(), "public", "uploads", "entities", id, fileName);
-        console.log("Deleting file:", filePath);
-        try {
-          await unlink(filePath);
-          console.log("File deleted successfully");
-        } catch (e) {
-          console.warn("File not found on disk:", filePath);
-        }
-      }
-
-      // Update DB
       const updatedImages = { ...currentImages };
       delete updatedImages[type];
 
@@ -64,6 +43,16 @@ export async function DELETE(
         },
       });
 
+      // Files from before UPLOAD_DIR existed live in public/ and are left alone;
+      // keyFromPublicUrl still maps them, but deleteUpload only touches
+      // UPLOAD_DIR and ignores missing files.
+      const key = keyFromPublicUrl(currentImages[type]);
+      if (key) {
+        await deleteUpload(key).catch((error) =>
+          console.warn("Could not delete upload:", key, error)
+        );
+      }
+
       return createSuccessResponse(null, "Image removed successfully");
     } catch (error) {
       console.error("Error removing image:", error);
@@ -71,5 +60,3 @@ export async function DELETE(
     }
   });
 }
-
-

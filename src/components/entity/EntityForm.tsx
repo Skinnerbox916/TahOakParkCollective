@@ -415,10 +415,19 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
         });
       }
 
-      const data: ApiResponse<EntityWithRelations> = await response.json();
+      const data: ApiResponse<EntityWithRelations | { pendingReview: true }> = await response.json();
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Failed to save entity");
+      }
+
+      // Non-admin submissions go to the approval queue; there's no entity yet.
+      if (data.data && "pendingReview" in data.data) {
+        setSuccess(t("success.submittedForReview"));
+        setTimeout(() => {
+          router.push("/portal/dashboard");
+        }, 4000);
+        return;
       }
 
       const savedEntity = data.data;

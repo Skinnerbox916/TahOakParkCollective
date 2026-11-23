@@ -9,8 +9,14 @@ export type { TranslationPair, SupportedLocale } from './types';
 // Singleton instance
 let translationService: TranslationService | null = null;
 
-// DeepL API Key - free tier
-const DEEPL_API_KEY = '2dbbafd3-ac08-4d25-8ca0-230dde061aa9:fx';
+/**
+ * True when real machine translation is available. In production without
+ * DEEPL_API_KEY there is no provider at all: the mock provider would write
+ * "[ES] ..." placeholder text into the database.
+ */
+export function isTranslationConfigured(): boolean {
+  return Boolean(process.env.DEEPL_API_KEY) || process.env.NODE_ENV !== 'production';
+}
 
 export class TranslationService {
   private provider: TranslationProvider;
@@ -140,8 +146,12 @@ export class TranslationService {
  */
 export function getTranslationService(): TranslationService {
   if (!translationService) {
-    const apiKey = process.env.DEEPL_API_KEY || DEEPL_API_KEY;
-    
+    const apiKey = process.env.DEEPL_API_KEY;
+
+    if (!apiKey && process.env.NODE_ENV === 'production') {
+      throw new Error('DEEPL_API_KEY is not set; machine translation is unavailable');
+    }
+
     const provider = apiKey
       ? new DeepLProvider(apiKey)
       : new MockProvider();

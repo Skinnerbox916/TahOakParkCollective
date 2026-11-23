@@ -2,17 +2,17 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { ENTITY_STATUS, ROLE, ENTITY_TYPE } from "@/lib/prismaEnums";
-import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
+import { ENTITY_STATUS, ROLE, ENTITY_TYPE, ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
+import type { EntityType } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
-import { entityIncludeStandard, transformEntity, buildEntityWhereClause } from "@/lib/entity-helpers";
+import { entityIncludePublic, transformEntity, buildEntityWhereClause } from "@/lib/entity-helpers";
 import { validateEntityInput } from "@/lib/schemas/entitySchema";
+import { normalizeSnapshot } from "@/lib/entitySnapshot";
 
 export async function GET(request: NextRequest) {
   try {
     const locale = getLocaleFromRequest(request);
     const searchParams = request.nextUrl.searchParams;
-    const status = searchParams.get("status") as EntityStatus | null;
     const categoryId = searchParams.get("categoryId");
     const category = searchParams.get("category"); 
     const entityType = searchParams.get("entityType") as EntityType | null;
@@ -21,8 +21,10 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get("sort") || "random"; // Default to random
 
     // Build where clause using helper
+    // Public endpoint: always ACTIVE only. Admins list other statuses via
+    // /api/admin/entities.
     const where = await buildEntityWhereClause({
-      status,
+      status: ENTITY_STATUS.ACTIVE,
       categoryId: categoryId || null,
       category: category || null,
       entityType,
@@ -41,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     const entities = await prisma.entity.findMany({
       where,
-      include: entityIncludeStandard,
+      include: entityIncludePublic,
       orderBy: sort !== "random" ? orderBy : undefined,
     });
 
@@ -59,10 +61,7 @@ export async function GET(request: NextRequest) {
     return createSuccessResponse(translatedEntities);
   } catch (error: any) {
     console.error("Error fetching entities:", error);
-    return createErrorResponse(
-      `Failed to fetch entities: ${error?.message || "Unknown error"}`,
-      500
-    );
+    return createErrorResponse("Failed to fetch entities", 500);
   }
 }
 
@@ -89,6 +88,53 @@ export async function POST(request: NextRequest) {
 
       const normalized = validation.data;
 
+      // Non-admins never write entities directly. Their submission becomes a
+      // pending NEW_ENTITY approval; the entity is created, owned by them, only
+      // when an admin approves it (see /api/admin/approvals/[id]).
+      if (!user.roles.includes(ROLE.ADMIN)) {
+        const [categories, tags] = await Promise.all([
+          Array.isArray(categoryIds) && categoryIds.length > 0
+            ? prisma.category.findMany({ where: { id: { in: categoryIds } }, select: { slug: true } })
+            : Promise.resolve([] as { slug: string }[]),
+          Array.isArray(tagIds) && tagIds.length > 0
+            ? prisma.tag.findMany({ where: { id: { in: tagIds } }, select: { slug: true } })
+            : Promise.resolve([] as { slug: string }[]),
+        ]);
+
+        const validEntityTypes: readonly string[] = Object.values(ENTITY_TYPE);
+        const snapshot = normalizeSnapshot({
+          name: normalized.name,
+          description: normalized.description ?? null,
+          address: normalized.address ?? null,
+          phone: normalized.phone ?? null,
+          website: normalized.website ?? null,
+          hours: normalized.hours ?? null,
+          socialMedia: normalized.socialMedia ?? null,
+          entityType: validEntityTypes.includes(entityType) ? entityType : ENTITY_TYPE.COMMERCE,
+          categorySlugs: categories.map((c) => c.slug),
+          tagSlugs: tags.map((t) => t.slug),
+          ownerId: user.id,
+        });
+
+        const approval = await prisma.approval.create({
+          data: {
+            type: ApprovalType.NEW_ENTITY,
+            status: ApprovalStatus.PENDING,
+            proposedEntityData: snapshot as unknown as Prisma.InputJsonValue,
+            submittedBy: user.id,
+            submitterEmail: user.email ?? null,
+            source: "owner",
+          },
+          select: { id: true, status: true },
+        });
+
+        return createSuccessResponse(
+          { approval, pendingReview: true },
+          "Submitted for review"
+        );
+      }
+
+      // Admin path: create the entity directly.
       // Determine the owner ID
       let finalOwnerId = user.id;
       if (ownerId && user.roles.includes(ROLE.ADMIN)) {
@@ -124,11 +170,8 @@ export async function POST(request: NextRequest) {
         counter++;
       }
 
-      // Only admins can directly create entities; they default to ACTIVE unless specified
-      // Non-admin entity creation should go through the approval workflow
-      const status = user.roles.includes(ROLE.ADMIN) && body.status 
-        ? body.status 
-        : ENTITY_STATUS.ACTIVE;
+      // Admin-created entities default to ACTIVE unless a status is given
+      const status = body.status || ENTITY_STATUS.ACTIVE;
 
       const finalEntityType = entityType || ENTITY_TYPE.COMMERCE;
 

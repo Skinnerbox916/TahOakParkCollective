@@ -949,7 +949,8 @@
       },
       "success": {
         "created": "Entity created successfully!",
-        "updated": "Entity updated successfully!"
+        "updated": "Entity updated successfully!",
+        "submittedForReview": "Thanks! Your listing was submitted. An admin will review it before it appears in the directory."
       },
       "buttons": {
         "create": "Create Entity",

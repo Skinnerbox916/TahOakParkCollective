@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
-import { entityIncludeStandard, transformEntity } from "@/lib/entity-helpers";
+import { entityIncludePublic, transformEntity } from "@/lib/entity-helpers";
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
         featured: true,
         status: ENTITY_STATUS.ACTIVE,
       },
-      include: entityIncludeStandard,
+      include: entityIncludePublic,
       orderBy: {
         createdAt: "desc",
       },

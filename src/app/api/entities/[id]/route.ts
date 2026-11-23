@@ -1,39 +1,59 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { ROLE, ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
+import { ROLE, ApprovalType, ApprovalStatus, ENTITY_STATUS } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
-import { entityIncludeStandard, transformEntity } from "@/lib/entity-helpers";
+import { getCurrentUser } from "@/lib/auth";
+import { entityIncludePublic, entityIncludeWithOwner, transformEntity } from "@/lib/entity-helpers";
 import { normalizeSnapshot } from "@/lib/entitySnapshot";
 import { applyEntitySnapshot } from "@/lib/applyEntitySnapshot";
 
+/**
+ * Admins and the entity's owner get the full record (any status, with owner).
+ * Everyone else, including anonymous visitors on the claim and report pages,
+ * gets the public view of ACTIVE entities only.
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  return withAuth(async (user) => {
-    try {
-      const locale = getLocaleFromRequest(request);
-      const { id } = await params;
-      const entity = await prisma.entity.findUnique({
-        where: { id },
-        include: entityIncludeStandard,
-      });
+  try {
+    const locale = getLocaleFromRequest(request);
+    const { id } = await params;
+    const user = await getCurrentUser();
 
-      if (!entity) {
-        return createErrorResponse("Entity not found", 404);
-      }
+    const entity = await prisma.entity.findUnique({
+      where: { id },
+      include: entityIncludeWithOwner,
+    });
 
-      // Include admin-only fields for admin users
-      const isAdmin = user.roles.includes(ROLE.ADMIN);
-      const translatedEntity = transformEntity(entity, locale, isAdmin);
-
-      return createSuccessResponse(translatedEntity);
-    } catch (error) {
-      console.error("Error fetching entity:", error);
-      return createErrorResponse("Failed to fetch entity", 500);
+    if (!entity) {
+      return createErrorResponse("Entity not found", 404);
     }
-  });
+
+    const isAdmin = user?.roles?.includes(ROLE.ADMIN) ?? false;
+    const isOwner = !!user?.id && entity.ownerId === user.id;
+
+    if (isAdmin || isOwner) {
+      return createSuccessResponse(transformEntity(entity, locale, isAdmin));
+    }
+
+    if (entity.status !== ENTITY_STATUS.ACTIVE) {
+      return createErrorResponse("Entity not found", 404);
+    }
+
+    const publicEntity = await prisma.entity.findUnique({
+      where: { id },
+      include: entityIncludePublic,
+    });
+    if (!publicEntity) {
+      return createErrorResponse("Entity not found", 404);
+    }
+    return createSuccessResponse(transformEntity(publicEntity, locale));
+  } catch (error) {
+    console.error("Error fetching entity:", error);
+    return createErrorResponse("Failed to fetch entity", 500);
+  }
 }
 
 export async function PUT(

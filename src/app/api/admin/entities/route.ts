@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
-import { entityIncludeStandard, buildAdminEntitySearchWhere } from "@/lib/entity-helpers";
+import { entityIncludeWithOwner, buildAdminEntitySearchWhere } from "@/lib/entity-helpers";
 
 export async function GET(request: NextRequest) {
   return withRole([ROLE.ADMIN], async (user) => {
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
       const entities = await prisma.entity.findMany({
         where,
-        include: entityIncludeStandard,
+        include: entityIncludeWithOwner,
         orderBy,
       });
 
