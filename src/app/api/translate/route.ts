@@ -1,12 +1,16 @@
 import { NextRequest } from 'next/server';
-import { createSuccessResponse, createErrorResponse, withRole } from '@/lib/api-helpers';
+import { createSuccessResponse, createErrorResponse, withAuth } from '@/lib/api-helpers';
+import { managesAnyEntity } from '@/lib/entities';
 import { ROLE } from '@/lib/prismaEnums';
 import { getTranslationService, isTranslationConfigured, SupportedLocale } from '@/lib/translate';
 
 export async function POST(request: NextRequest) {
-  // Only allow admins and business owners to use translation API
-  return withRole([ROLE.ADMIN, ROLE.ENTITY_OWNER], async () => {
+  // Admins, and people who manage at least one listing
+  return withAuth(async (user) => {
     try {
+      if (!user.roles.includes(ROLE.ADMIN) && !(await managesAnyEntity(user.id))) {
+        return createErrorResponse('Forbidden', 403);
+      }
       const body = await request.json();
       const { text, targetLocale, sourceLocale = 'en' } = body;
 

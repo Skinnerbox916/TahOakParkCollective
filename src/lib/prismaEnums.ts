@@ -1,7 +1,6 @@
 export const ROLE = {
   USER: "USER",
   ADMIN: "ADMIN",
-  ENTITY_OWNER: "ENTITY_OWNER",
 } as const;
 
 export type Role = (typeof ROLE)[keyof typeof ROLE];
@@ -39,6 +38,7 @@ export type TagCategory =
 export const ApprovalType = {
   NEW_ENTITY: "NEW_ENTITY",
   UPDATE_ENTITY: "UPDATE_ENTITY",
+  CLAIM_ENTITY: "CLAIM_ENTITY",
 } as const;
 
 export type ApprovalType =
@@ -75,8 +75,14 @@ export type ReportStatus =
 export const MagicLinkPurpose = {
   VERIFY_SUBSCRIPTION: "VERIFY_SUBSCRIPTION",
   MANAGE_PREFERENCES: "MANAGE_PREFERENCES",
-  CLAIM_ENTITY: "CLAIM_ENTITY",
 } as const;
+
+export const MemberRole = {
+  OWNER: "OWNER",
+  MANAGER: "MANAGER",
+} as const;
+
+export type MemberRole = (typeof MemberRole)[keyof typeof MemberRole];
 
 export type MagicLinkPurpose =
   (typeof MagicLinkPurpose)[keyof typeof MagicLinkPurpose];

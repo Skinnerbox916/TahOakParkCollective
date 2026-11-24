@@ -1,4 +1,6 @@
+import { prisma } from "@/lib/prisma";
 import type { Role } from "@/lib/prismaEnums";
+import type { Tx } from "./apply";
 import { isAdminActor } from "./fields";
 
 /** Whoever is making a change. Public submitters have no id. */
@@ -8,8 +10,19 @@ export interface Actor {
   email?: string | null;
 }
 
-/** Admins manage every listing; owners manage their own. */
-export function canManage(actor: Actor, entity: { ownerId: string }): boolean {
+/** Admins manage every listing; members (owners and managers) manage theirs. */
+export async function canManage(actor: Actor, entityId: string, db: Tx = prisma): Promise<boolean> {
   if (isAdminActor(actor.roles)) return true;
-  return !!actor.id && entity.ownerId === actor.id;
+  if (!actor.id) return false;
+  const membership = await db.entityMember.findUnique({
+    where: { entityId_userId: { entityId, userId: actor.id } },
+    select: { id: true },
+  });
+  return !!membership;
+}
+
+/** Whether the user manages at least one listing. */
+export async function managesAnyEntity(userId: string): Promise<boolean> {
+  const membership = await prisma.entityMember.findFirst({ where: { userId }, select: { id: true } });
+  return !!membership;
 }

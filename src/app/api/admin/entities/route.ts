@@ -4,7 +4,7 @@ import { createSuccessResponse, createErrorResponse, entityErrorResponse, withRo
 import { proposeUpdate } from "@/lib/entities";
 import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
-import { entityIncludeWithOwner, buildAdminEntitySearchWhere } from "@/lib/entity-helpers";
+import { entityIncludeWithMembers, buildAdminEntitySearchWhere } from "@/lib/entity-helpers";
 
 export async function GET(request: NextRequest) {
   return withRole([ROLE.ADMIN], async (user) => {
@@ -50,12 +50,8 @@ export async function GET(request: NextRequest) {
       // Build dynamic orderBy based on sortBy parameter
       let orderBy: any;
       if (sortBy === "owner") {
-        // Sort by owner name via relation
-        orderBy = {
-          owner: {
-            name: sortOrder,
-          },
-        };
+        // Unclaimed listings first (asc) or last (desc)
+        orderBy = { members: { _count: sortOrder } };
       } else {
         // Sort by direct field
         orderBy = {
@@ -65,7 +61,7 @@ export async function GET(request: NextRequest) {
 
       const entities = await prisma.entity.findMany({
         where,
-        include: entityIncludeWithOwner,
+        include: entityIncludeWithMembers,
         orderBy,
       });
 
@@ -97,7 +93,7 @@ export async function PUT(request: NextRequest) {
       }
 
       await proposeUpdate(user, id, fields, { source: "admin" });
-      const entity = await prisma.entity.findUnique({ where: { id }, include: entityIncludeWithOwner });
+      const entity = await prisma.entity.findUnique({ where: { id }, include: entityIncludeWithMembers });
 
       return createSuccessResponse(entity, "Entity updated successfully");
     } catch (error) {

@@ -10,6 +10,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { Alert } from "@/components/ui/Alert";
 import { useAdminTranslations } from "@/lib/admin-translations";
 import { AISuggestUpdatesModal } from "@/components/admin/AISuggestUpdatesModal";
+import { MembersPanel } from "@/components/admin/MembersPanel";
 
 export default function AdminEditEntityPage() {
   const params = useParams();
@@ -111,6 +112,7 @@ export default function AdminEditEntityPage() {
       <h1 className="text-3xl font-bold text-gray-900 mb-6">
         Edit Entity: {entity.name}
       </h1>
+      <MembersPanel entityId={entity.id} />
       <EntityPreview
         entityData={{
           version: entity.version,

@@ -1,23 +1,25 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { entityIncludeWithOwner } from "@/lib/entity-helpers";
+import { ApprovalStatus } from "@/lib/prismaEnums";
+import { entityIncludeWithMembers } from "@/lib/entity-helpers";
 
+/** Listings the signed-in user manages, with how many changes await review. */
 export async function GET(request: NextRequest) {
-  // Any authenticated user can view their owned entities (may be empty for new users)
   return withAuth(async (user) => {
     try {
       const entities = await prisma.entity.findMany({
-        where: {
-          ownerId: user.id,
+        where: { members: { some: { userId: user.id } } },
+        include: {
+          ...entityIncludeWithMembers,
+          _count: { select: { approvalTargets: { where: { status: ApprovalStatus.PENDING } } } },
         },
-        include: entityIncludeWithOwner,
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: { createdAt: "desc" },
       });
 
-      return createSuccessResponse(entities);
+      return createSuccessResponse(
+        entities.map(({ _count, ...entity }) => ({ ...entity, pendingChanges: _count.approvalTargets }))
+      );
     } catch (error) {
       console.error("Error fetching user entities:", error);
       return createErrorResponse("Failed to fetch entities", 500);

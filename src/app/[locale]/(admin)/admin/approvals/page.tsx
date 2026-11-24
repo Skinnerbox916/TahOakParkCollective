@@ -214,9 +214,7 @@ const getEntityDisplayName = (approval: ApprovalWithEntity): string => {
 
                   {approval.type === ApprovalType.UPDATE_ENTITY && (approval as any).payload && (
                     <p className="text-sm text-gray-600 mt-1">
-                      {approval.source === "claim"
-                        ? t("sources.claim")
-                        : t("changedFields", { fields: Object.keys((approval as any).payload).join(", ") })}
+                      {t("changedFields", { fields: Object.keys((approval as any).payload).join(", ") })}
                     </p>
                   )}
                   {approval.type === ApprovalType.NEW_ENTITY && (approval as any).payload && (

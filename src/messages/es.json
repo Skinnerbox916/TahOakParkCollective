@@ -319,25 +319,26 @@
     "findEntity": "Encontrar la Entidad *",
     "searchPlaceholder": "Buscar un negocio u organización...",
     "change": "Cambiar",
-    "yourInformation": "Tu Información",
     "selectEntityError": "Por favor selecciona una entidad para reclamar",
     "note": "Nota:",
-    "noteText": "Después de enviar este formulario, recibirás un correo electrónico de verificación. Una vez que verifiques tu correo electrónico, un administrador revisará tu solicitud de reclamación.",
+    "noteText": "Un administrador confirmará que diriges este negocio, normalmente contactándolo directamente, antes de que puedas administrar el listado.",
     "submitting": "Enviando...",
     "submitClaimRequest": "Enviar Solicitud de Reclamación",
-    "checkEmail": "Revisa tu Correo Electrónico",
-    "emailSent": "Hemos enviado un correo electrónico de verificación a {email}.",
-    "clickLink": "Haz clic en el enlace del correo electrónico para verificar tu solicitud de reclamación.",
     "backToDirectory": "Volver al Directorio",
     "loading": "Cargando...",
     "failedToSubmit": "Error al enviar la solicitud de reclamación",
-    "verificationFailed": "Verificación Fallida",
-    "invalidVerificationLink": "Enlace de verificación inválido",
-    "failedToVerify": "Error al verificar la reclamación",
-    "verifying": "Verificando tu solicitud de reclamación...",
-    "claimRequestSubmitted": "¡Solicitud de Reclamación Enviada!",
-    "requestSubmitted": "Tu solicitud para reclamar {entityName} ha sido enviada.",
-    "adminWillReview": "Un administrador revisará tu reclamación y te responderá pronto."
+    "signInTitle": "Inicia sesión para reclamar este listado",
+    "signInBody": "Los reclamos están vinculados a tu cuenta, así podrás administrar el listado cuando se apruebe.",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear una cuenta",
+    "signedInAs": "Reclamando como {email}",
+    "messageLabel": "¿Cuál es tu relación con este negocio?",
+    "messagePlaceholder": "Por ejemplo: soy la dueña. La mejor forma de confirmarlo es llamar a la tienda y preguntar por María.",
+    "submitted": "Reclamo enviado",
+    "submittedBody": "Un administrador revisará tu reclamo de {entityName}. Cuando se apruebe, el listado aparecerá en tu portal.",
+    "alreadyMember": "Ya administras este listado.",
+    "claimPending": "Ya tienes un reclamo de este listado esperando revisión.",
+    "goToPortal": "Ir a mis listados"
   },
   "suggest": {
     "title": "Sugerir una Entidad",
@@ -505,8 +506,7 @@
       },
       "roles": {
         "USER": "Usuario",
-        "ADMIN": "Administrador",
-        "ENTITY_OWNER": "Propietario de Entidad"
+        "ADMIN": "Administrador"
       },
       "refresh": "Actualizar",
       "processing": "Procesando...",
@@ -584,6 +584,21 @@
       },
       "newPage": {
         "title": "Agregar Nueva Entidad"
+      },
+      "unclaimed": "Sin reclamar",
+      "members": {
+        "title": "Miembros",
+        "description": "Personas que pueden administrar este listado. Sus cambios siguen pasando por aprobación.",
+        "empty": "Nadie administra este listado todavía (sin reclamar).",
+        "emailPlaceholder": "Correo de una cuenta existente",
+        "add": "Agregar",
+        "remove": "Quitar",
+        "removeConfirm": "¿Quitar a {name} de este listado?",
+        "error": "No se pudieron actualizar los miembros",
+        "roles": {
+          "OWNER": "Dueño",
+          "MANAGER": "Administrador"
+        }
       }
     },
     "quickAdd": {
@@ -645,7 +660,8 @@
       "submittedBy": "Por:",
       "types": {
         "NEW_ENTITY": "Nueva Entidad",
-        "UPDATE_ENTITY": "Actualizar Entidad"
+        "UPDATE_ENTITY": "Actualizar Entidad",
+        "CLAIM_ENTITY": "Reclamo de Propiedad"
       },
       "sources": {
         "ai": "Agregar Rápido IA",
@@ -713,10 +729,15 @@
         "conflictBody": "Cambió desde entonces: {fields}. Edita la propuesta para basarla en el listado actual y luego apruébala.",
         "geocodeFailed": "No se encontró la dirección en el mapa, así que el listado no tiene marcador.",
         "outOfCoverage": "Esta ubicación está fuera del área de cobertura.",
-        "claimNote": "Reclamo de propiedad: al aprobarlo, este listado pasa a {email}.",
+        "claimNote": "Al aprobarlo, la persona que reclama se vuelve dueña de este listado. Primero confirma que dirige el negocio, por ejemplo llamándolo.",
         "staleVersion": "Este listado cambió desde que lo abriste. Recarga para ver la versión más reciente y vuelve a hacer tus cambios.",
         "submittedForReview": "Tus cambios fueron enviados. Un administrador los revisará antes de que aparezcan.",
-        "noChanges": "No hubo cambios."
+        "noChanges": "No hubo cambios.",
+        "claimTitle": "Reclamo de {entity}",
+        "claimant": "Quien reclama",
+        "claimMessage": "Su nota",
+        "currentMembers": "Administrado actualmente por",
+        "unclaimed": "Nadie (sin reclamar)"
       },
       "changedFields": "Cambios: {fields}"
     },
@@ -879,7 +900,7 @@
       "loading": "Cargando entidades...",
       "errorLoading": "Error al cargar las entidades",
       "emptyHeading": "Aún no hay entidades",
-      "emptyDescription": "Comienza agregando tu primera entidad al directorio.",
+      "emptyDescription": "Agrega un nuevo listado o reclama uno existente desde su página en el directorio.",
       "addFirst": "Agrega tu primera entidad",
       "view": "Ver",
       "edit": "Editar",
@@ -889,7 +910,8 @@
       "pageViews": "Visitas",
       "visitors": "Visitantes",
       "last30Days": "Últimos 30 días",
-      "removalRequested": "Solicitud enviada. Un administrador la revisará."
+      "removalRequested": "Solicitud enviada. Un administrador la revisará.",
+      "pendingChanges": "{count, plural, one {# cambio} other {# cambios}} esperando revisión"
     },
     "entity": {
       "editTitle": "Editar Entidad",

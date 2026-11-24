@@ -34,13 +34,14 @@ const json = (value: unknown) => value as Prisma.InputJsonValue;
 
 /**
  * Propose a new entity. Non-admin proposals wait for review; the entity is
- * created when an admin approves. Returns the approval and, if it was applied
- * immediately, the new entity's id.
+ * created when an admin approves, with the submitter as its OWNER. Admins
+ * create directly, unclaimed unless `initialOwnerId` names an owner.
+ * Returns the approval and, if it was applied immediately, the new entity's id.
  */
 export async function proposeNewEntity(
   actor: Actor,
   input: Record<string, unknown>,
-  opts: ProposeOptions & { ownerId?: string }
+  opts: ProposeOptions & { initialOwnerId?: string }
 ) {
   const isAdmin = isAdminActor(actor.roles);
   const state = normalizeFields(input);
@@ -75,9 +76,9 @@ export async function proposeNewEntity(
   if (isAdmin && opts.autoApprove !== false) {
     return prisma.$transaction(async (tx) => {
       const entityId = await createEntity(tx, state, {
-        ownerId: opts.ownerId ?? actor.id!,
         createdBy: actor.id,
         status: state.status ?? ENTITY_STATUS.ACTIVE,
+        owner: opts.initialOwnerId ? { userId: opts.initialOwnerId, addedBy: actor.id } : undefined,
       });
       const approval = await tx.approval.create({
         data: {
@@ -109,7 +110,7 @@ export async function proposeUpdate(
   opts: ProposeOptions & { expectedVersion?: number }
 ) {
   const current = await loadEntityState(prisma, entityId);
-  if (!canManage(actor, current)) throw new ForbiddenError();
+  if (!(await canManage(actor, entityId))) throw new ForbiddenError();
   if (opts.expectedVersion !== undefined && opts.expectedVersion !== current.version) {
     throw new StaleVersionError(current.version);
   }

@@ -10,11 +10,16 @@ import { prisma } from "@/lib/prisma";
 import {
   AlreadyProcessedError,
   ConflictError,
+  EntityServiceError,
   ForbiddenError,
   NoChangesError,
   StaleVersionError,
   ValidationError,
+  addMember,
   approveApproval,
+  listMembers,
+  proposeClaim,
+  removeMember,
   deleteEntity,
   proposeNewEntity,
   proposeUpdate,
@@ -29,7 +34,7 @@ let stranger: Actor;
 
 async function resetDatabase() {
   await prisma.$executeRawUnsafe(
-    `TRUNCATE "Approval", "EntityTag", "IssueReport", "Entity", "Tag", "Category", "User" RESTART IDENTITY CASCADE`
+    `TRUNCATE "Approval", "EntityMember", "EntityTag", "IssueReport", "Entity", "Tag", "Category", "User" RESTART IDENTITY CASCADE`
   );
   await prisma.category.createMany({
     data: [
@@ -68,13 +73,16 @@ async function seedEntity(overrides: Record<string, unknown> = {}) {
       tagSlugs: ["wifi"],
       ...overrides,
     },
-    { source: "admin", ownerId: owner.id! }
+    { source: "admin", initialOwnerId: owner.id! }
   );
   return entityId!;
 }
 
 const entity = (id: string) =>
-  prisma.entity.findUniqueOrThrow({ where: { id }, include: { tags: { include: { tag: true } }, categories: true } });
+  prisma.entity.findUniqueOrThrow({
+    where: { id },
+    include: { tags: { include: { tag: true } }, categories: true, members: true },
+  });
 
 beforeEach(resetDatabase);
 afterAll(() => prisma.$disconnect());
@@ -209,9 +217,9 @@ describe("approvals", () => {
     expect(pending).toBe(true);
 
     await Promise.allSettled([approveApproval(admin, approval.id), approveApproval(admin, approval.id)]);
-    const created = await prisma.entity.findMany({ where: { name: "Taqueria" } });
+    const created = await prisma.entity.findMany({ where: { name: "Taqueria" }, include: { members: true } });
     expect(created).toHaveLength(1);
-    expect(created[0].ownerId).toBe(owner.id);
+    expect(created[0].members).toMatchObject([{ userId: owner.id, role: "OWNER" }]);
     expect(created[0].featured).toBe(false); // owners can't set admin-only fields on new listings
   });
 
@@ -281,26 +289,76 @@ describe("approvals", () => {
     expect((await entity(id)).description).toBe("Coffee");
     await expect(approveApproval(admin, approval.id)).rejects.toBeInstanceOf(AlreadyProcessedError);
   });
+});
 
-  it("transfers ownership on an approved claim without wiping translations", async () => {
+describe("members and claims", () => {
+  it("makes an approved claimant an owner, without touching the listing", async () => {
     const id = await seedEntity();
-    const current = await entity(id);
-    const claim = await prisma.approval.create({
-      data: {
-        type: "UPDATE_ENTITY",
-        status: "PENDING",
-        targetEntityId: id,
-        payload: {},
-        baseValues: {},
-        baseVersion: current.version,
-        submittedBy: stranger.id,
-        source: "claim",
-      },
-    });
-    await approveApproval(admin, claim.id);
+    const before = await entity(id);
+
+    await expect(proposeClaim({ id: null, roles: [] }, id, "hi")).rejects.toBeInstanceOf(ForbiddenError);
+    await expect(proposeUpdate(stranger, id, { description: "x" }, { source: "owner" })).rejects.toBeInstanceOf(
+      ForbiddenError
+    );
+
+    const { approval } = await proposeClaim(stranger, id, "  I run the place  ");
+    expect(approval.type).toBe("CLAIM_ENTITY");
+    expect(approval.payload).toEqual({ message: "I run the place" });
+    await expect(proposeClaim(stranger, id, "again")).rejects.toMatchObject({ code: "claim_pending" });
+
+    await approveApproval(admin, approval.id);
     const after = await entity(id);
-    expect(after.ownerId).toBe(stranger.id);
+    expect(after.members.map((m) => [m.userId, m.role]).sort()).toEqual(
+      [[owner.id, "OWNER"], [stranger.id, "OWNER"]].sort()
+    );
+    expect(after.version).toBe(before.version);
     expect(after.nameTranslations).toEqual({ en: "Corner Cafe", es: "Café de la Esquina" });
+
+    // Now they manage it, and can't claim it again
+    await expect(proposeClaim(stranger, id, "")).rejects.toMatchObject({ code: "already_member" });
+    const { pending } = await proposeUpdate(stranger, id, { description: "Theirs" }, { source: "owner" });
+    expect(pending).toBe(true);
+  });
+
+  it("doesn't let claims be edited or approved twice", async () => {
+    const id = await seedEntity();
+    const { approval } = await proposeClaim(stranger, id, "");
+    await expect(rebaseApproval(admin, approval.id, { name: "x" })).rejects.toBeInstanceOf(ValidationError);
+    await approveApproval(admin, approval.id);
+    await expect(approveApproval(admin, approval.id)).rejects.toBeInstanceOf(AlreadyProcessedError);
+  });
+
+  it("starts admin, AI and public listings unclaimed unless an admin names an owner", async () => {
+    const { entityId: direct } = await proposeNewEntity(admin, { name: "Park", categorySlugs: ["parks"] }, { source: "admin" });
+    expect((await entity(direct!)).members).toEqual([]);
+
+    const { approval } = await proposeNewEntity(
+      { id: null, roles: [], email: "visitor@test.local" },
+      { name: "Suggested", categorySlugs: ["food"] },
+      { source: "public", geocode: false }
+    );
+    expect(approval.submittedBy).toBeNull();
+    const { entityId } = await approveApproval(admin, approval.id);
+    expect((await entity(entityId)).members).toEqual([]);
+  });
+
+  it("lets admins (only) add and remove members; managers can propose", async () => {
+    const id = await seedEntity();
+    await expect(addMember(owner, id, "stranger@test.local")).rejects.toBeInstanceOf(ForbiddenError);
+    await expect(addMember(admin, id, "nobody@test.local")).rejects.toBeInstanceOf(EntityServiceError);
+
+    await addMember(admin, id, "STRANGER@test.local", "MANAGER");
+    expect((await listMembers(id)).map((m) => [m.user.email, m.role])).toEqual([
+      ["owner@test.local", "OWNER"],
+      ["stranger@test.local", "MANAGER"],
+    ]);
+    const { pending } = await proposeUpdate(stranger, id, { description: "Manager edit" }, { source: "owner" });
+    expect(pending).toBe(true);
+
+    await removeMember(admin, id, stranger.id!);
+    await expect(proposeUpdate(stranger, id, { description: "x" }, { source: "owner" })).rejects.toBeInstanceOf(
+      ForbiddenError
+    );
   });
 });
 

@@ -130,7 +130,6 @@ export const entityInputSchema = z.object({
   displaySettings: permissiveAny,
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
-  ownerId: z.string().optional(),
   entityType: z.any().optional(),
   categoryIds: z.array(z.string()).optional(),
   tagIds: z.array(z.string()).optional(),

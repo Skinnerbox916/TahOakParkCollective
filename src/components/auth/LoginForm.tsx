@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/routing";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { safeCallbackPath } from "@/lib/safe-redirect";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -19,6 +20,8 @@ export function LoginForm() {
   const tCommon = useTranslations("common");
   const tForms = useTranslations("forms");
   const tErrors = useTranslations("errors");
+
+  const callbackUrl = safeCallbackPath(searchParams.get("callbackUrl"));
 
   const successMessage =
     searchParams.get("registered") === "true"
@@ -41,8 +44,7 @@ export function LoginForm() {
         setError(t("invalidCredentials"));
         setLoading(false);
       } else {
-        // Redirect based on user role or default to dashboard
-        router.push("/");
+        router.push(callbackUrl ?? "/");
         router.refresh();
       }
     } catch {
@@ -89,7 +91,9 @@ export function LoginForm() {
 
       <div className="text-center text-sm text-gray-600">
         {t("dontHaveAccount")}{" "}
-        <Link href="/auth/signup" className="text-primary-600 hover:text-primary-700 font-medium">
+        <Link
+          href={callbackUrl ? `/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signup"}
+          className="text-primary-600 hover:text-primary-700 font-medium">
           {t("signUpLink")}
         </Link>
       </div>

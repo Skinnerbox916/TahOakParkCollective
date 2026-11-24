@@ -1,6 +1,7 @@
 "use client";
 
 import { EntityWithRelations } from "@/types";
+import { ownerLabel } from "@/lib/members";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import Link from "next/link";
@@ -102,8 +103,8 @@ export function SpotCheckList({ entities, onMarkChecked, loading }: SpotCheckLis
                     </a>
                   </div>
                 )}
-                {entity.owner && (
-                  <div>👤 Owner: {entity.owner.name || entity.owner.email}</div>
+                {ownerLabel(entity.members) && (
+                  <div>👤 Owner: {ownerLabel(entity.members)}</div>
                 )}
               </div>
 

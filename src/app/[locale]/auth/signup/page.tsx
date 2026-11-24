@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
@@ -15,7 +16,9 @@ export default function SignUp() {
         <p className="text-gray-600 text-center mb-6">
           {t("joinCollective")}
         </p>
-        <RegisterForm />
+        <Suspense>
+          <RegisterForm />
+        </Suspense>
       </div>
     </div>
   );

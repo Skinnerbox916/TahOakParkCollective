@@ -319,25 +319,26 @@
     "findEntity": "Find the Entity *",
     "searchPlaceholder": "Search for a business or organization...",
     "change": "Change",
-    "yourInformation": "Your Information",
     "selectEntityError": "Please select an entity to claim",
     "note": "Note:",
-    "noteText": "After you submit this form, you'll receive a verification email. Once you verify your email, an admin will review your claim request.",
+    "noteText": "An admin will confirm you run this business, usually by contacting it directly, before you can manage the listing.",
     "submitting": "Submitting...",
     "submitClaimRequest": "Submit Claim Request",
-    "checkEmail": "Check Your Email",
-    "emailSent": "We've sent a verification email to {email}.",
-    "clickLink": "Click the link in the email to verify your claim request.",
     "backToDirectory": "Back to Directory",
     "loading": "Loading...",
     "failedToSubmit": "Failed to submit claim request",
-    "verificationFailed": "Verification Failed",
-    "invalidVerificationLink": "Invalid verification link",
-    "failedToVerify": "Failed to verify claim",
-    "verifying": "Verifying your claim request...",
-    "claimRequestSubmitted": "Claim Request Submitted!",
-    "requestSubmitted": "Your request to claim {entityName} has been submitted.",
-    "adminWillReview": "An administrator will review your claim and get back to you soon."
+    "signInTitle": "Sign in to claim this listing",
+    "signInBody": "Claims are tied to your account, so you can manage the listing once it's approved.",
+    "signIn": "Sign in",
+    "createAccount": "Create an account",
+    "signedInAs": "Claiming as {email}",
+    "messageLabel": "How are you connected to this business?",
+    "messagePlaceholder": "For example: I'm the owner. The best way to confirm is to call the shop and ask for Maria.",
+    "submitted": "Claim submitted",
+    "submittedBody": "An admin will review your claim for {entityName}. Once it's approved, the listing appears in your portal.",
+    "alreadyMember": "You already manage this listing.",
+    "claimPending": "You already have a claim for this listing waiting for review.",
+    "goToPortal": "Go to my listings"
   },
   "suggest": {
     "title": "Suggest an Entity",
@@ -505,8 +506,7 @@
       },
       "roles": {
         "USER": "User",
-        "ADMIN": "Admin",
-        "ENTITY_OWNER": "Entity Owner"
+        "ADMIN": "Admin"
       },
       "refresh": "Refresh",
       "processing": "Processing...",
@@ -584,6 +584,21 @@
       },
       "newPage": {
         "title": "Add New Entity"
+      },
+      "unclaimed": "Unclaimed",
+      "members": {
+        "title": "Members",
+        "description": "People who can manage this listing. Their edits still go through approvals.",
+        "empty": "Nobody manages this listing yet (unclaimed).",
+        "emailPlaceholder": "Email of an existing account",
+        "add": "Add",
+        "remove": "Remove",
+        "removeConfirm": "Remove {name} from this listing?",
+        "error": "Couldn't update members",
+        "roles": {
+          "OWNER": "Owner",
+          "MANAGER": "Manager"
+        }
       }
     },
     "quickAdd": {
@@ -645,7 +660,8 @@
       "submittedBy": "By:",
       "types": {
         "NEW_ENTITY": "New Entity",
-        "UPDATE_ENTITY": "Update Entity"
+        "UPDATE_ENTITY": "Update Entity",
+        "CLAIM_ENTITY": "Ownership Claim"
       },
       "sources": {
         "ai": "AI Quick-Add",
@@ -713,10 +729,15 @@
         "conflictBody": "Changed since: {fields}. Edit the proposal to rebase it onto the current listing, then approve.",
         "geocodeFailed": "The address couldn't be found on the map, so the listing has no pin.",
         "outOfCoverage": "This location is outside the coverage area.",
-        "claimNote": "Ownership claim: approving transfers this listing to {email}.",
+        "claimNote": "Approving makes the claimant an owner of this listing. Confirm they run the business first, for example by calling it.",
         "staleVersion": "This listing changed since you opened it. Reload to see the latest version, then make your edits again.",
         "submittedForReview": "Your changes were submitted. An admin will review them before they appear.",
-        "noChanges": "Nothing changed."
+        "noChanges": "Nothing changed.",
+        "claimTitle": "Claim for {entity}",
+        "claimant": "Claimant",
+        "claimMessage": "Their note",
+        "currentMembers": "Currently managed by",
+        "unclaimed": "Nobody (unclaimed)"
       },
       "changedFields": "Changes: {fields}"
     },
@@ -879,7 +900,7 @@
       "loading": "Loading entities...",
       "errorLoading": "Failed to load entities",
       "emptyHeading": "No entities yet",
-      "emptyDescription": "Get started by adding your first entity to the directory.",
+      "emptyDescription": "Add a new listing, or claim an existing one from its page in the directory.",
       "addFirst": "Add Your First Entity",
       "view": "View",
       "edit": "Edit",
@@ -889,7 +910,8 @@
       "pageViews": "Page Views",
       "visitors": "Visitors",
       "last30Days": "Last 30 days",
-      "removalRequested": "Removal requested. An admin will review it."
+      "removalRequested": "Removal requested. An admin will review it.",
+      "pendingChanges": "{count, plural, one {# change} other {# changes}} waiting for review"
     },
     "entity": {
       "editTitle": "Edit Entity",

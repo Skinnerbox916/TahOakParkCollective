@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { ROLE } from "@/lib/prismaEnums";
+import { canManage } from "@/lib/entities";
 
 interface EntityStats {
   pageviews: number;
@@ -21,14 +21,14 @@ export async function GET(
 
     const entity = await prisma.entity.findUnique({
       where: { id },
-      select: { id: true, slug: true, ownerId: true },
+      select: { id: true, slug: true },
     });
 
     if (!entity) {
       return createErrorResponse("Entity not found", 404);
     }
 
-    if (!user.roles.includes(ROLE.ADMIN) && entity.ownerId !== user.id) {
+    if (!(await canManage(user, entity.id))) {
       return createErrorResponse("Forbidden", 403);
     }
 

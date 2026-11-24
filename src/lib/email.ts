@@ -46,8 +46,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 export async function sendMagicLinkEmail(
   email: string, 
   token: string, 
-  purpose: MagicLinkPurpose,
-  entityId?: string
+  purpose: MagicLinkPurpose
 ) {
   let subject = '';
   let urlPath = '';
@@ -56,12 +55,6 @@ export async function sendMagicLinkEmail(
     case MagicLinkPurpose.MANAGE_PREFERENCES:
       subject = 'Manage your TahOak Park Collective preferences';
       urlPath = `/${routing.defaultLocale}/subscribe/manage?token=${token}`;
-      break;
-    case MagicLinkPurpose.CLAIM_ENTITY:
-      subject = 'Verify your entity claim for TahOak Park Collective';
-      urlPath = entityId
-        ? `/${routing.defaultLocale}/claim/verify?token=${token}&entityId=${entityId}`
-        : `/${routing.defaultLocale}/claim/verify?token=${token}`;
       break;
     case MagicLinkPurpose.VERIFY_SUBSCRIPTION:
       subject = 'Verify your TahOak Park Collective subscription';
@@ -109,6 +102,9 @@ export async function sendNotificationEmail(email: string, subject: string, mess
   }
 }
 
+const escapeHtml = (text: string) =>
+  text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
 export async function sendClaimNotificationEmail(adminEmail: string, entityName: string, submitterEmail: string) {
   try {
     await resend.emails.send({
@@ -117,7 +113,7 @@ export async function sendClaimNotificationEmail(adminEmail: string, entityName:
       subject: `New Entity Claim Request for ${entityName}`,
       html: `
         <h1>New Entity Claim Request</h1>
-        <p>A user (${submitterEmail}) has requested to claim the entity: <strong>${entityName}</strong>.</p>
+        <p>A user (${escapeHtml(submitterEmail)}) has requested to claim the entity: <strong>${escapeHtml(entityName)}</strong>.</p>
         <p>Please review this claim in the admin dashboard.</p>
       `,
     });

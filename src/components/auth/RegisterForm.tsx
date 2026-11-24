@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/routing";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { safeCallbackPath } from "@/lib/safe-redirect";
 
 export function RegisterForm() {
   const [name, setName] = useState("");
@@ -14,6 +16,7 @@ export function RegisterForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const callbackUrl = safeCallbackPath(useSearchParams().get("callbackUrl"));
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
   const tForms = useTranslations("forms");
@@ -76,7 +79,11 @@ export function RegisterForm() {
       }
 
       // Registration successful - redirect to sign in
-      router.push("/auth/signin?registered=true");
+      router.push(
+        callbackUrl
+          ? `/auth/signin?registered=true&callbackUrl=${encodeURIComponent(callbackUrl)}`
+          : "/auth/signin?registered=true"
+      );
     } catch (err) {
       console.error("Registration error:", err);
       setError(t("errorOccurred"));
@@ -135,7 +142,10 @@ export function RegisterForm() {
 
       <div className="text-center text-sm text-gray-600">
         {t("alreadyHaveAccount")}{" "}
-        <Link href="/auth/signin" className="text-primary-600 hover:text-primary-700 font-medium">
+        <Link
+          href={callbackUrl ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signin"}
+          className="text-primary-600 hover:text-primary-700 font-medium"
+        >
           {t("signInLink")}
         </Link>
       </div>

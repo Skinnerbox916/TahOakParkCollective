@@ -13,7 +13,7 @@ interface EntityStats {
 }
 
 export default function PortalDashboard() {
-  const [entities, setEntities] = useState<EntityWithRelations[]>([]);
+  const [entities, setEntities] = useState<(EntityWithRelations & { pendingChanges?: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [entityStats, setEntityStats] = useState<Record<string, EntityStats>>({});
@@ -140,6 +140,12 @@ export default function PortalDashboard() {
                   </h3>
                   <StatusBadge status={entity.status} />
                 </div>
+
+                {!!entity.pendingChanges && (
+                  <p className="text-sm text-warning-700 mb-2">
+                    {tPortal("pendingChanges", { count: entity.pendingChanges })}
+                  </p>
+                )}
 
                 {entity.categories && entity.categories.length > 0 && (
                   <p className="text-sm text-gray-600 mb-2">

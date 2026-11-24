@@ -36,22 +36,3 @@ export async function isAdmin() {
     return false;
   }
 }
-
-export async function isEntityOwner() {
-  try {
-    const user = await requireAuth();
-    return (user.roles?.includes(ROLE.ENTITY_OWNER) ?? false) || (user.roles?.includes(ROLE.ADMIN) ?? false);
-  } catch {
-    return false;
-  }
-}
-
-export async function hasRole(role: Role) {
-  try {
-    const user = await requireAuth();
-    return (user.roles?.includes(role) ?? false) || (user.roles?.includes(ROLE.ADMIN) ?? false);
-  } catch {
-    return false;
-  }
-}
-

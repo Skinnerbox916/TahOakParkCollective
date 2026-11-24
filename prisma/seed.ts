@@ -231,7 +231,7 @@ async function main() {
       create: {
         email: "owner@tahoak.com",
         name: "Business Owner",
-        roles: [Role.USER, Role.ENTITY_OWNER],
+        roles: [Role.USER],
         password: await hashPassword("owner123"),
       },
     });

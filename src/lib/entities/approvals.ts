@@ -44,10 +44,13 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
 
     if (approval.type === ApprovalType.NEW_ENTITY) {
       const state = normalizeFields(approval.payload as Record<string, unknown>);
-      // Owners' submissions belong to them; anything else (AI drafts, public
-      // suggestions) is held by the approving admin until it's claimed.
-      const ownerId = approval.source === "owner" && approval.submittedBy ? approval.submittedBy : reviewer.id!;
-      const entityId = await createEntity(tx, state, { ownerId, createdBy: approval.submittedBy });
+      // A signed-in submitter becomes the OWNER; AI drafts and public
+      // suggestions start unclaimed.
+      const owner =
+        approval.source === "owner" && approval.submittedBy
+          ? { userId: approval.submittedBy, addedBy: reviewer.id }
+          : undefined;
+      const entityId = await createEntity(tx, state, { createdBy: approval.submittedBy, owner });
       await tx.approval.update({ where: { id: approvalId }, data: { entityId } });
       return { approvalId, entityId };
     }
@@ -57,22 +60,6 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
       if (!approval.baseValues) {
         throw new EntityServiceError("This approval has no base to check against; edit it to rebase first.", 409, "conflict");
       }
-      if (approval.source === "claim") {
-        // Interim ownership claim: transfer the listing to the claimant.
-        if (!approval.submittedBy) {
-          throw new ValidationError(
-            "The claimant has no account yet. Ask them to register and claim again, then reject this one.",
-            {}
-          );
-        }
-        await tx.entity.update({
-          where: { id: approval.targetEntityId },
-          data: { ownerId: approval.submittedBy, version: { increment: 1 } },
-        });
-        await tx.approval.update({ where: { id: approvalId }, data: { entityId: approval.targetEntityId } });
-        return { approvalId, entityId: approval.targetEntityId };
-      }
-
       const current = await loadEntityState(tx, approval.targetEntityId);
       const conflicts = findConflicts(current.state, approval.baseValues as Record<string, unknown>);
       if (conflicts.length > 0) throw new ConflictError(conflicts);
@@ -85,6 +72,25 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
           createdBy: approval.submittedBy,
         });
       }
+      await tx.approval.update({ where: { id: approvalId }, data: { entityId: approval.targetEntityId } });
+      return { approvalId, entityId: approval.targetEntityId };
+    }
+
+    if (approval.type === ApprovalType.CLAIM_ENTITY) {
+      if (!approval.targetEntityId) throw new NotFoundError("Target entity");
+      if (!approval.submittedBy) throw new ValidationError("This claim has no claimant account", {});
+      // The claimant becomes an OWNER. Existing members stay; an admin can
+      // remove them from the listing's Members panel.
+      await tx.entityMember.upsert({
+        where: { entityId_userId: { entityId: approval.targetEntityId, userId: approval.submittedBy } },
+        create: {
+          entityId: approval.targetEntityId,
+          userId: approval.submittedBy,
+          role: "OWNER",
+          addedBy: reviewer.id,
+        },
+        update: {},
+      });
       await tx.approval.update({ where: { id: approvalId }, data: { entityId: approval.targetEntityId } });
       return { approvalId, entityId: approval.targetEntityId };
     }
@@ -110,6 +116,10 @@ export async function rebaseApproval(reviewer: Actor, approvalId: string, input:
     const approval = await tx.approval.findUnique({ where: { id: approvalId } });
     if (!approval) throw new NotFoundError("Approval");
     if (approval.status !== ApprovalStatus.PENDING) throw new AlreadyProcessedError();
+
+    if (approval.type === ApprovalType.CLAIM_ENTITY) {
+      throw new ValidationError("Claims can't be edited; approve or reject them", {});
+    }
 
     let data: Prisma.ApprovalUpdateManyMutationInput;
     if (approval.type === ApprovalType.NEW_ENTITY) {
@@ -157,6 +167,10 @@ export async function getApprovalView(approval: {
   targetEntityId: string | null;
 }): Promise<ApprovalView> {
   const payload = (approval.payload ?? {}) as Record<string, unknown>;
+
+  if (approval.type === ApprovalType.CLAIM_ENTITY) {
+    return { proposedState: {}, currentState: null, currentVersion: null, changes: [], conflicts: [] };
+  }
 
   if (approval.type !== ApprovalType.UPDATE_ENTITY || !approval.targetEntityId) {
     let proposedState: EntityChanges;

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { EntityWithRelations, EntityTagWithTag } from "@/types";
+import { ownerLabel } from "@/lib/members";
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Dropdown } from "@/components/ui/Dropdown";
@@ -233,7 +234,7 @@ export function EntityTable({
               </td>
               <td className="hidden lg:table-cell px-3 lg:px-4 py-3 whitespace-nowrap">
                 <div className="text-sm text-gray-900">
-                  {entity.owner?.name || entity.owner?.email || "—"}
+                  {ownerLabel(entity.members) ?? tEntities("unclaimed")}
                 </div>
                 {entity.phone && (
                   <div className="text-xs text-gray-500">

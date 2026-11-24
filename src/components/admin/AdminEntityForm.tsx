@@ -140,12 +140,6 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
     setError(null);
     setSuccess(null);
 
-    if (!ownerId) {
-      setFieldErrors(prev => ({ ...prev, ownerId: "Please select an owner" }));
-      setError("Please select an owner");
-      return;
-    }
-
     const candidate = {
       name,
       description,
@@ -186,7 +180,7 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
         phone: normalized.phone || undefined,
         website: normalized.website || undefined,
         categoryIds: categoryId ? [categoryId] : undefined,
-        ownerId,
+        ownerId: ownerId || undefined,
         status,
         entityType,
         socialMedia: normalized.socialMedia ?? null,
@@ -436,16 +430,15 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Owner *
+              Owner
             </label>
             <select
               value={ownerId}
               onChange={(e) => setOwnerId(e.target.value)}
               disabled={loading}
-              required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
-              <option value="">Select an owner</option>
+              <option value="">Unclaimed (no owner yet)</option>
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name || user.email || user.id}
