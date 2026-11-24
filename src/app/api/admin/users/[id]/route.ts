@@ -71,7 +71,7 @@ export async function PUT(
           roles: true,
           _count: {
             select: {
-              entities: true,
+              memberships: true,
             },
           },
         },
@@ -80,7 +80,7 @@ export async function PUT(
       return createSuccessResponse(
         {
           ...updatedUser,
-          businessCount: updatedUser._count.entities,
+          businessCount: updatedUser._count.memberships,
         },
         "User roles updated successfully"
       );

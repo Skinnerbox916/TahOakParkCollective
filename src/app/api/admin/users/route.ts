@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
           roles: true,
           _count: {
             select: {
-              entities: true,
+              memberships: true,
             },
           },
         },
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         email: user.email,
         name: user.name,
         roles: user.roles,
-        businessCount: user._count.entities,
+        businessCount: user._count.memberships,
       }));
 
       // Filter by role if provided

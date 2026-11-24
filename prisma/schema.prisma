@@ -22,7 +22,6 @@ model User {
   password      String?   // Hashed password
   accounts      Account[]
   sessions      Session[]
-  entities      Entity[]
   memberships   EntityMember[]
   roles         Role[]    @default([USER])
 }
@@ -63,10 +62,9 @@ model Entity {
   hours                   Json?           // Business hours structure
   socialMedia             Json?           // Social media links
   displaySettings         Json?           // Controls which fields are displayed on the public profile
-  // Deprecated: ownership is EntityMember. Kept nullable and unused so the
-  // previous release keeps working during the rolling deploy; dropped later.
-  ownerId                 String?
-  owner                   User?           @relation(fields: [ownerId], references: [id])
+  // Deprecated: ownership is EntityMember. @ignore keeps the column out of the
+  // client so the next migration can drop it while this release is running.
+  ownerId                 String?         @ignore
   members                 EntityMember[]
   
   // MVP fields
@@ -86,7 +84,6 @@ model Entity {
 
   @@index([slug])
   @@index([status])
-  @@index([ownerId])
   @@index([featured])
   @@index([entityType])
 }
