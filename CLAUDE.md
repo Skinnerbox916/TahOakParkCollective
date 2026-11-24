@@ -62,7 +62,7 @@ src/app/api/
 - **Entity**: Core model. Has `*Translations` JSON for `{en,es}` name/description/seo. Status: `ACTIVE | INACTIVE | PENDING_REVIEW`. `version` is bumped on every write.
 - **Approval**: Every entity change is an approval (`NEW_ENTITY`, `UPDATE_ENTITY`, `CLAIM_ENTITY`). `payload` holds the full new entity, or only the changed fields for an update, with `baseValues`/`baseVersion` recording what they were based on. Admin changes are auto-approved in the same transaction; anyone else's wait for review. Approving refuses fields that changed since submission (409 `conflict`) until an admin edits (rebases) the proposal. Edit forms send the `version` they loaded; a mismatch is 409 `stale_version`.
 - **Tag**: Three `TagCategory` values — `IDENTITY` (owner-assigned, e.g. Black-owned), `FRIENDLINESS` (admin-verified), `AMENITY`.
-- **User roles**: `USER`, `ADMIN`. Who manages a listing is `EntityMember` (role `OWNER` or `MANAGER`), not a user role; a listing with no members is unclaimed. Check access with `canManage()` from `src/lib/entities`. `Entity.ownerId` is deprecated and unused (kept until a later migration drops it).
+- **User roles**: `USER`, `ADMIN`. Who manages a listing is `EntityMember` (role `OWNER` or `MANAGER`), not a user role; a listing with no members is unclaimed. Check access with `canManage()` from `src/lib/entities`.
 - **Claims**: a signed-in user claims a listing (`POST /api/entities/[id]/claim`), which creates a `CLAIM_ENTITY` approval; approving it makes them an `OWNER` member.
 
 ### API Response Shape
@@ -90,7 +90,7 @@ Generated to `src/generated/prisma` (not the default location). Import from ther
 ## CI and Deploys
 
 - Merging to `main` auto-deploys to production (Coolify). CI (`.github/workflows/ci.yml`) must pass first: migrations-vs-schema check, `tsc`, lint, `next build`, and a boot test of the production image.
-- The production image runs `prisma migrate deploy` on start. Write migrations that the currently deployed code can survive (expand first, contract in a later deploy).
+- The production image runs `prisma migrate deploy` on start. Write migrations that the currently deployed code can survive (expand first, contract in a later deploy). Prisma selects every column by name, so dropping a column takes two deploys: first mark the field `@ignore` (the client stops reading it), then drop it.
 - Lint gates on errors only. `no-explicit-any` and `react-hooks/set-state-in-effect` are temporarily warnings (see `eslint.config.mjs`); don't add new ones.
 
 ## Critical Rules
