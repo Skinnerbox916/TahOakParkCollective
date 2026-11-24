@@ -1,7 +1,6 @@
-# TahOak Park Collective – Business & Product Requirements
-**Version:** 2.3 (FROZEN FOR DEV)
-**Status:** Ready for Development
-**Last Updated:** November 25, 2025
+# TahOak Park Collective – Original Product Brief (Nov 2025)
+
+> **Background only, not binding.** This is the product brief the first version was built from. The project is still in early development and any of it can change. The code has already moved on in places: coverage grew from two neighborhoods to five, claiming a listing needs a signed-in account, and there is no analytics tool. Where this brief and the code disagree, ask rather than assume either one is right.
 
 ---
 

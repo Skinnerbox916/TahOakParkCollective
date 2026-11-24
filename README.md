@@ -23,9 +23,9 @@ A hyper-local directory platform for Tahoe Park, Oak Park, Elmhurst, Colonial Pa
 
 ## Prerequisites
 
-- Node.js 20+ and npm
-- Docker and Docker Compose (for database)
-- PostgreSQL 16+ (if running database locally without Docker)
+- Docker and Docker Compose
+
+Development runs in Docker: the app container has its own `node_modules`, so install packages and run npm scripts inside it, not on the host.
 
 ## Getting Started
 
@@ -36,94 +36,45 @@ git clone <repository-url>
 cd TahOakParkCollective
 ```
 
-### 2. Install Dependencies
-
-```bash
-npm install
-```
-
-### 3. Set Up Environment Variables
-
-Copy the example environment file and configure it:
+### 2. Set Up Environment Variables
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and set the following required variables:
-
-```env
-# Database Configuration
-DATABASE_URL=postgresql://tahoak:your_password@localhost:5432/tahoak_db
-
-# Auth (Better Auth)
-# Generate a secure secret: openssl rand -base64 32
-BETTER_AUTH_SECRET=your_secure_random_string_here
-BETTER_AUTH_URL=http://localhost:3000
-
-# Node Environment
-NODE_ENV=development
-```
-
-**Important Security Notes:**
-- Never commit `.env` files to version control
-- Use strong, unique passwords for production
-- Generate a secure `BETTER_AUTH_SECRET` using: `openssl rand -base64 32`
-- Use different credentials for development and production
-
-### 4. Start the Database
-
-Using Docker Compose (recommended):
-
-```bash
-docker compose up -d tahoak-db
-```
-
-The database will be available at `localhost:5432`.
-
-### 5. Run Database Migrations
-
-```bash
-npm run db:migrate
-```
-
-This will create all necessary database tables and apply migrations.
-
-### 6. Seed the Database (Optional)
-
-Populate the database with sample data including test users:
-
-```bash
-npm run db:seed
-```
-
-This creates:
-- 13 entity categories and the default tags
-- Admin user `admin@tahoak.com`, only if it doesn't exist yet. Its password comes from `SEED_ADMIN_PASSWORD`; if that's unset, a random password is generated and printed once. Re-running the seed never changes an existing admin's password.
-- Test user `owner@tahoak.com` / `owner123`, only when `SEED_TEST_USERS=true` (local development only). It manages nothing until you add it to a listing (admin entity page, Members) or it claims one
-
-For local development, set these in `.env` to get the usual test logins:
+Set at least `BETTER_AUTH_SECRET` (generate one with `openssl rand -base64 32`). For the usual local test logins, also set:
 
 ```bash
 SEED_ADMIN_PASSWORD=password123
 SEED_TEST_USERS=true
 ```
 
-**Warning**: Never set `SEED_TEST_USERS` or a guessable `SEED_ADMIN_PASSWORD` in production.
+Never set `SEED_TEST_USERS` or a guessable `SEED_ADMIN_PASSWORD` in production, and never commit `.env`.
 
-### 7. Generate Prisma Client
+### 3. Start the Containers
 
-```bash
-npm run db:generate
-```
-
-### 8. Start the Development Server
+The compose file expects an external Docker network named `proxy`. Create it once, then start everything:
 
 ```bash
-npm run dev
+docker network create proxy
+docker compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+`tahoak-web` runs `prisma generate` and `next dev` on [http://localhost:3000](http://localhost:3000), with `src/`, `public/` and `prisma/` mounted for hot reload. `tahoak-db` is Postgres 16 on `localhost:5432`.
+
+### 4. Migrate and Seed
+
+```bash
+docker exec tahoak-web npm run db:migrate
+docker exec tahoak-web npm run db:seed
+```
+
+The seed creates:
+- 13 entity categories and the default tags
+- Admin user `admin@tahoak.com`, only if it doesn't exist yet. Its password comes from `SEED_ADMIN_PASSWORD`; if that's unset, a random password is generated and printed once. Re-running the seed never changes an existing admin's password.
+- Test user `owner@tahoak.com` / `owner123`, only when `SEED_TEST_USERS=true`. It manages nothing until you add it to a listing (admin entity page, Members) or it claims one.
+
+In development, emails (including sign-in codes) are printed to `docker logs tahoak-web` instead of being sent.
 
 ## Environment Variables
 
@@ -147,23 +98,19 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `POSTGRES_PASSWORD` | PostgreSQL password | `tahoak_password` |
 | `POSTGRES_DB` | PostgreSQL database name | `tahoak_db` |
 | `POSTGRES_PORT` | PostgreSQL port | `5432` |
-| `DEEPL_API_KEY` | DeepL API key for auto-translation. Required in production for the translate buttons; dev falls back to a mock that prefixes `[ES] ` | - |
+| `DEEPL_API_KEY` | DeepL API key for the translate buttons. Required in production for them; dev falls back to a mock that prefixes `[ES] ` | - |
+| `OPENAI_API_KEY` | Admin AI tools (research a new listing, suggest updates). Without it those tools return an error | - |
 | `UPLOAD_DIR` | Where uploaded images are stored, served at `/uploads/...`. In production, mount a persistent volume here or uploads are lost on redeploy | `<cwd>/uploads` (`/app/uploads` in the Docker image) |
 | `SKIP_MIGRATIONS` | Set to `true` to stop the Docker image from running `prisma migrate deploy` on start | `false` |
 
 ## Database Management
 
-### Running Migrations
-
-Create a new migration:
-```bash
-npm run db:migrate
-```
-
-### Seeding the Database
+Run Prisma commands inside the container:
 
 ```bash
-npm run db:seed
+docker exec tahoak-web npx prisma migrate dev --name <name>   # create a migration after editing schema.prisma
+docker exec tahoak-web npm run db:generate                    # regenerate the client (output: src/generated/prisma)
+docker exec tahoak-web npm run db:seed
 ```
 
 ### Database Schema
@@ -235,23 +182,35 @@ The schema is defined in `prisma/schema.prisma`. Key models:
 
 ### Available Scripts
 
+Run these inside the container (`docker exec tahoak-web ...`):
+
 ```bash
-npm run dev          # Start development server
+npm run dev          # Start development server (the container runs this already)
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
+npm test             # Vitest service tests (needs TEST_DATABASE_URL, see Testing)
 npm run db:migrate   # Run database migrations
 npm run db:seed      # Seed the database
 npm run db:generate  # Generate Prisma Client
 ```
 
-### Code Style
+After `npm install <package>` in the container, copy `package.json` and `package-lock.json` back out, because the single-file mounts detach when npm rewrites them:
 
-- TypeScript for type safety
-- ESLint for code quality
-- Tailwind CSS for styling
+```bash
+docker exec tahoak-web cat /app/package.json > package.json
+docker exec tahoak-web cat /app/package-lock.json > package-lock.json
+```
 
 ## Testing
+
+The service tests run against a separate, migrated database, which they wipe:
+
+```bash
+docker exec tahoak-db createdb -U tahoak tahoak_test
+docker exec -e DATABASE_URL=postgresql://tahoak:<password>@tahoak-db:5432/tahoak_test tahoak-web npx prisma migrate deploy
+docker exec -e TEST_DATABASE_URL=postgresql://tahoak:<password>@tahoak-db:5432/tahoak_test tahoak-web npm test
+```
 
 ### Test Credentials (Development Only)
 
@@ -266,16 +225,11 @@ After seeding the database:
 
 ### Production Checklist
 
-- [ ] Set strong, unique `BETTER_AUTH_SECRET`
-- [ ] Use secure database credentials
-- [ ] Set `NODE_ENV=production`
-- [ ] Configure proper `BETTER_AUTH_URL` (HTTPS) and the SMTP variables
-- [ ] Set up database backups
-- [ ] Configure environment variables in hosting platform
-- [ ] Review and update all dependencies
-- [ ] Set up monitoring and error tracking
-- [ ] Configure CORS and security headers
-- [ ] Set up SSL/TLS certificates
+- [ ] Strong, unique `BETTER_AUTH_SECRET`, and `BETTER_AUTH_URL` set to the HTTPS origin
+- [ ] SMTP variables, `EMAIL_FROM` and `EMAIL_REPLY_TO`
+- [ ] `DEEPL_API_KEY` (and `OPENAI_API_KEY` for the admin AI tools)
+- [ ] A persistent volume at `UPLOAD_DIR`
+- [ ] Scheduled database backups
 
 ### CI and Production Deploys
 
@@ -288,21 +242,6 @@ Production runs on Coolify, and every merge to `main` deploys automatically. Git
 The production image applies pending migrations on start (`docker-entrypoint.sh`), so you don't need to run them by hand. The old container keeps serving while the new one migrates, so a migration must still work with the code that's currently deployed. For example, add a column in one deploy and drop the old one in a later deploy. The image's `HEALTHCHECK` calls `/api/health`, which queries the database. A container whose migration fails exits, never turns healthy, and Coolify keeps the previous one running.
 
 The seed script is not run automatically. Run it by hand only on a fresh database.
-
-### Docker Deployment
-
-The project includes Docker configuration:
-
-```bash
-# Build and start all services
-docker compose up -d
-
-# View logs
-docker compose logs -f
-
-# Stop services
-docker compose down
-```
 
 ## Troubleshooting
 
@@ -337,7 +276,6 @@ UPDATE "User" SET "twoFactorEnabled" = false WHERE email = 'admin@example.com';
 ### Moving to a new domain
 
 Passkeys belong to the domain they were created on. After changing `BETTER_AUTH_URL` to a new domain, existing passkeys stop working there; people sign in with their password or an emailed code and add a new passkey. (WebAuthn "related origins" can bridge the two domains if needed.)
-- Ensure user passwords are properly hashed in database
 
 ## Contributing
 
@@ -352,12 +290,10 @@ See LICENSE file for details.
 
 ## Documentation
 
-For LLM coding agents working on this project, see [docs/AGENT_CONTEXT.md](./docs/AGENT_CONTEXT.md) for:
-- Development context and conventions
-- Entity model and categories
-- Docker commands
-- API patterns and authentication
-- Translation system overview
+- [CLAUDE.md](./CLAUDE.md): architecture, data model and project rules (written for coding agents, useful for people too)
+- [docs/TRANSLATION_GUIDE.md](./docs/TRANSLATION_GUIDE.md): the bilingual system
+- [docs/UI_CONVENTIONS.md](./docs/UI_CONVENTIONS.md): UI components and color tokens
+- [docs/product-brief.md](./docs/product-brief.md): the original product brief (background, not binding)
 
 ## Support
 
