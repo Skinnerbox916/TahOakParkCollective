@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { entityIncludeWithMembers } from "@/lib/entity-helpers";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
 
@@ -26,11 +27,7 @@ export async function GET(request: NextRequest) {
           updatedAt: 'asc', // Oldest first
         },
         take: 3, // Take up to 3 stale ones
-        include: {
-          owner: {
-             select: { name: true, email: true }
-          }
-        }
+        include: { members: entityIncludeWithMembers.members }
       });
 
       // Find random entities to fill up to 5
@@ -59,11 +56,7 @@ export async function GET(request: NextRequest) {
         if (selectedIds.length > 0) {
            randomEntities = await prisma.entity.findMany({
              where: { id: { in: selectedIds } },
-             include: {
-               owner: {
-                 select: { name: true, email: true }
-               }
-             }
+             include: { members: entityIncludeWithMembers.members }
            });
         }
       }

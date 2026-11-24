@@ -37,7 +37,7 @@ The dev container bind-mounts single files (package.json, tsconfig.json, ...). n
 ```
 src/app/[locale]/
 ├── (admin)/     # Requires ADMIN role
-├── (portal)/    # Requires ENTITY_OWNER or ADMIN
+├── (portal)/    # Any signed-in user; shows the listings they're a member of
 ├── (public)/    # Unauthenticated
 └── auth/        # Sign-in, sign-up
 src/app/api/
@@ -60,9 +60,10 @@ src/app/api/
 ### Data Model Highlights
 
 - **Entity**: Core model. Has `*Translations` JSON for `{en,es}` name/description/seo. Status: `ACTIVE | INACTIVE | PENDING_REVIEW`. `version` is bumped on every write.
-- **Approval**: Every entity change is an approval (`NEW_ENTITY`, `UPDATE_ENTITY`). `payload` holds the full new entity, or only the changed fields for an update, with `baseValues`/`baseVersion` recording what they were based on. Admin changes are auto-approved in the same transaction; anyone else's wait for review. Approving refuses fields that changed since submission (409 `conflict`) until an admin edits (rebases) the proposal. Edit forms send the `version` they loaded; a mismatch is 409 `stale_version`.
+- **Approval**: Every entity change is an approval (`NEW_ENTITY`, `UPDATE_ENTITY`, `CLAIM_ENTITY`). `payload` holds the full new entity, or only the changed fields for an update, with `baseValues`/`baseVersion` recording what they were based on. Admin changes are auto-approved in the same transaction; anyone else's wait for review. Approving refuses fields that changed since submission (409 `conflict`) until an admin edits (rebases) the proposal. Edit forms send the `version` they loaded; a mismatch is 409 `stale_version`.
 - **Tag**: Three `TagCategory` values — `IDENTITY` (owner-assigned, e.g. Black-owned), `FRIENDLINESS` (admin-verified), `AMENITY`.
-- **User roles**: `USER`, `ENTITY_OWNER`, `ADMIN`.
+- **User roles**: `USER`, `ADMIN`. Who manages a listing is `EntityMember` (role `OWNER` or `MANAGER`), not a user role; a listing with no members is unclaimed. Check access with `canManage()` from `src/lib/entities`. `Entity.ownerId` is deprecated and unused (kept until a later migration drops it).
+- **Claims**: a signed-in user claims a listing (`POST /api/entities/[id]/claim`), which creates a `CLAIM_ENTITY` approval; approving it makes them an `OWNER` member.
 
 ### API Response Shape
 

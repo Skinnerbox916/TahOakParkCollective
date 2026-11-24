@@ -4,7 +4,7 @@ import { createSuccessResponse, createErrorResponse, entityErrorResponse, withAu
 import { ENTITY_STATUS, ROLE } from "@/lib/prismaEnums";
 import type { EntityType } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
-import { entityIncludePublic, entityIncludeWithOwner, transformEntity, buildEntityWhereClause } from "@/lib/entity-helpers";
+import { entityIncludePublic, entityIncludeWithMembers, transformEntity, buildEntityWhereClause } from "@/lib/entity-helpers";
 import { proposeNewEntity } from "@/lib/entities";
 
 export async function GET(request: NextRequest) {
@@ -88,14 +88,16 @@ export async function POST(request: NextRequest) {
         ...(tags && { tagSlugs: tags.map((t) => t.slug) }),
       };
 
-      let ownerId: string | undefined;
+      // Admins may name an initial owner; otherwise an admin-created listing
+      // starts unclaimed. Owners' own submissions make them the owner on approval.
+      let initialOwnerId: string | undefined;
       if (isAdmin && typeof body.ownerId === "string" && body.ownerId) {
         const owner = await prisma.user.findUnique({ where: { id: body.ownerId }, select: { id: true } });
         if (!owner) return createErrorResponse("Specified owner not found", 400);
-        ownerId = owner.id;
+        initialOwnerId = owner.id;
       }
 
-      const result = await proposeNewEntity(user, input, { source: isAdmin ? "admin" : "owner", ownerId });
+      const result = await proposeNewEntity(user, input, { source: isAdmin ? "admin" : "owner", initialOwnerId });
 
       if (result.pending) {
         return createSuccessResponse(
@@ -106,7 +108,7 @@ export async function POST(request: NextRequest) {
 
       const entity = await prisma.entity.findUnique({
         where: { id: result.entityId },
-        include: entityIncludeWithOwner,
+        include: entityIncludeWithMembers,
       });
       return createSuccessResponse(entity, "Entity created successfully");
     } catch (error) {

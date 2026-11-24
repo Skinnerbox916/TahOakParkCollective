@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
         prisma.entity.count(),
       ]);
 
-      // Count users by role (users can have multiple roles)
+      // Count users by role (users can have multiple roles). "Entity owners"
+      // are users who manage at least one listing.
       const [userCount, entityOwnerCount, adminCount, totalUsers] = await Promise.all([
         prisma.user.count({ where: { roles: { has: ROLE.USER } } }),
-        prisma.user.count({ where: { roles: { has: ROLE.ENTITY_OWNER } } }),
+        prisma.user.count({ where: { memberships: { some: {} } } }),
         prisma.user.count({ where: { roles: { has: ROLE.ADMIN } } }),
         prisma.user.count(),
       ]);

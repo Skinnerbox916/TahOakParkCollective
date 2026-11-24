@@ -48,7 +48,7 @@ type EntityLocalizedFields = {
 export type EntityWithRelations = Prisma.EntityGetPayload<{
   include: {
     categories: true;
-    owner: true;
+    members: { select: { role: true; user: { select: { id: true; name: true; email: true } } } };
     tags: {
       include: {
         tag: true;

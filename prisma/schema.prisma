@@ -23,6 +23,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   entities      Entity[]
+  memberships   EntityMember[]
   roles         Role[]    @default([USER])
 }
 
@@ -62,8 +63,11 @@ model Entity {
   hours                   Json?           // Business hours structure
   socialMedia             Json?           // Social media links
   displaySettings         Json?           // Controls which fields are displayed on the public profile
-  ownerId                 String
-  owner                   User            @relation(fields: [ownerId], references: [id])
+  // Deprecated: ownership is EntityMember. Kept nullable and unused so the
+  // previous release keeps working during the rolling deploy; dropped later.
+  ownerId                 String?
+  owner                   User?           @relation(fields: [ownerId], references: [id])
+  members                 EntityMember[]
   
   // MVP fields
   tags                EntityTag[]
@@ -85,6 +89,21 @@ model Entity {
   @@index([ownerId])
   @@index([featured])
   @@index([entityType])
+}
+
+// People who manage a listing. A listing with no members is unclaimed.
+model EntityMember {
+  id        String     @id @default(cuid())
+  entityId  String
+  userId    String
+  role      MemberRole @default(OWNER)
+  addedBy   String?    // User ID of the admin (or approval) that added them
+  createdAt DateTime   @default(now())
+  entity    Entity     @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([entityId, userId])
+  @@index([userId])
 }
 
 // New Models for MVP
@@ -217,7 +236,11 @@ model MagicLink {
 enum Role {
   USER
   ADMIN
-  ENTITY_OWNER
+}
+
+enum MemberRole {
+  OWNER
+  MANAGER
 }
 
 enum EntityType {
@@ -244,6 +267,7 @@ enum TagCategory {
 enum ApprovalType {
   NEW_ENTITY
   UPDATE_ENTITY
+  CLAIM_ENTITY
 }
 
 enum ApprovalStatus {
@@ -268,7 +292,6 @@ enum ReportStatus {
 enum MagicLinkPurpose {
   VERIFY_SUBSCRIPTION
   MANAGE_PREFERENCES
-  CLAIM_ENTITY
 }
 
 // NextAuth Models

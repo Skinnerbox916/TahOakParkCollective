@@ -18,17 +18,17 @@ export const entityIncludePublic = {
 } as const;
 
 /**
- * Includes for admin and owner views: adds the owner's name and email.
- * Never use this in a response an anonymous visitor can receive.
+ * Includes for admin and member views: adds who manages the listing (names
+ * and emails). Never use this in a response an anonymous visitor can receive.
  */
-export const entityIncludeWithOwner = {
+export const entityIncludeWithMembers = {
   ...entityIncludePublic,
-  owner: {
+  members: {
     select: {
-      id: true,
-      name: true,
-      email: true,
+      role: true,
+      user: { select: { id: true, name: true, email: true } },
     },
+    orderBy: { createdAt: "asc" },
   },
 } as const;
 
@@ -109,7 +109,6 @@ interface EntityWhereOptions {
   category?: string | null; // slug
   entityType?: EntityType | null;
   featured?: boolean;
-  ownerId?: string;
   searchQuery?: string | null;
 }
 
@@ -159,7 +158,6 @@ export async function buildEntityWhereClause(
     category,
     entityType,
     featured,
-    ownerId,
     searchQuery,
   } = options;
 
@@ -185,9 +183,6 @@ export async function buildEntityWhereClause(
   }
 
   // Owner filter
-  if (ownerId) {
-    where.ownerId = ownerId;
-  }
 
   // Category filter (many-to-many)
   let finalCategoryId = categoryId || null;

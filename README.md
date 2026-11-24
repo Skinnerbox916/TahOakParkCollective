@@ -5,7 +5,7 @@ A hyper-local directory platform for Tahoe Park, Oak Park, Elmhurst, Colonial Pa
 ## Features
 
 - **Public Directory**: Search and browse local entities with map and list views
-- **Entity Owner Portal**: Owners can manage their entity profiles
+- **Owner Portal**: People who manage a listing (claimed or added by them) propose changes for admin review
 - **Admin Dashboard**: Administrators manage entities, users, and approve listings
 - **Bilingual**: Full English/Spanish support with auto-translation
 - **Authentication**: Secure role-based authentication with NextAuth
@@ -100,7 +100,7 @@ npm run db:seed
 This creates:
 - 13 entity categories and the default tags
 - Admin user `admin@tahoak.com`, only if it doesn't exist yet. Its password comes from `SEED_ADMIN_PASSWORD`; if that's unset, a random password is generated and printed once. Re-running the seed never changes an existing admin's password.
-- Entity owner `owner@tahoak.com` / `owner123`, only when `SEED_TEST_USERS=true` (local development only)
+- Test user `owner@tahoak.com` / `owner123`, only when `SEED_TEST_USERS=true` (local development only). It manages nothing until you add it to a listing (admin entity page, Members) or it claims one
 
 For local development, set these in `.env` to get the usual test logins:
 
@@ -167,7 +167,8 @@ npm run db:seed
 
 The schema is defined in `prisma/schema.prisma`. Key models:
 
-- **User**: Application users with roles (USER, ENTITY_OWNER, ADMIN)
+- **User**: Application users with roles (USER, ADMIN)
+- **EntityMember**: Who manages a listing (OWNER or MANAGER); none means unclaimed
 - **Entity**: Directory listings with location, categories, and status
 - **Category**: Entity categories
 - **Tag**: Identity, friendliness, and amenity tags
@@ -183,7 +184,7 @@ The schema is defined in `prisma/schema.prisma`. Key models:
 ├── src/
 │   ├── app/
 │   │   ├── [locale]/(admin)/   # Admin routes (ADMIN role)
-│   │   ├── [locale]/(portal)/  # Entity owner portal
+│   │   ├── [locale]/(portal)/  # Portal for people who manage listings
 │   │   ├── [locale]/(public)/  # Public pages
 │   │   └── api/                # API routes
 │   ├── components/         # React components
@@ -208,14 +209,14 @@ The schema is defined in `prisma/schema.prisma`. Key models:
 ### Authorization
 
 - **Public Routes**: Entity search and listings
-- **Entity Owner Routes**: `/portal/*` - Requires ENTITY_OWNER or ADMIN role
+- **Portal Routes**: `/portal/*` - Any signed-in user; they see the listings they're a member of
 - **Admin Routes**: `/admin/*` - Requires ADMIN role
 
 ### API Security
 
 - Entity update/delete endpoints require authentication
-- Entity owners can only modify their own entities
-- Only admins can change entity status
+- Members can only propose changes to their own listings; every change except an admin's waits for approval
+- Only admins can change entity status directly (members can request removal)
 - All API endpoints validate user permissions
 
 ### Best Practices
@@ -253,7 +254,7 @@ npm run db:generate  # Generate Prisma Client
 After seeding the database:
 
 - **Admin**: `admin@tahoak.com` / `password123`
-- **Entity Owner**: `owner@tahoak.com` / `owner123`
+- **Test user**: `owner@tahoak.com` / `owner123` (manages nothing until added to a listing)
 
 **Warning**: These are test credentials. Never use them in production!
 

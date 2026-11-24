@@ -49,10 +49,10 @@ export function toState(entity: EntityWithState): EntityState {
 export async function loadEntityState(
   db: Tx,
   entityId: string
-): Promise<{ state: EntityState; version: number; ownerId: string }> {
+): Promise<{ state: EntityState; version: number }> {
   const entity = await db.entity.findUnique({ where: { id: entityId }, include: stateInclude });
   if (!entity) throw new NotFoundError();
-  return { state: toState(entity), version: entity.version, ownerId: entity.ownerId };
+  return { state: toState(entity), version: entity.version };
 }
 
 const jsonOrNull = (value: unknown) =>
@@ -123,12 +123,13 @@ async function resolveTags(db: Tx, slugs: string[]) {
 
 /**
  * Create an entity from a full proposed state. Tags added through an approved
- * (or admin) change are verified; createdBy records who proposed them.
+ * (or admin) change are verified; createdBy records who proposed them. With
+ * `owner`, that user becomes the listing's OWNER; otherwise it's unclaimed.
  */
 export async function createEntity(
   db: Tx,
   state: EntityChanges,
-  opts: { ownerId: string; createdBy: string | null; status?: string }
+  opts: { createdBy: string | null; status?: string; owner?: { userId: string; addedBy: string | null } }
 ) {
   if (!state.name) {
     throw new ValidationError("Entity name is required", { name: "validation.nameRequired" });
@@ -144,7 +145,6 @@ export async function createEntity(
       slug,
       entityType: (state.entityType as Prisma.EntityUncheckedCreateInput["entityType"]) ?? ENTITY_TYPE.COMMERCE,
       status: (opts.status ?? state.status ?? ENTITY_STATUS.ACTIVE) as Prisma.EntityUncheckedCreateInput["status"],
-      ownerId: opts.ownerId,
       categories: { connect: categoryIds.map((id) => ({ id })) },
     },
     select: { id: true },
@@ -153,6 +153,11 @@ export async function createEntity(
   if (tags.length > 0) {
     await db.entityTag.createMany({
       data: tags.map((tag) => ({ entityId: created.id, tagId: tag.id, verified: true, createdBy: opts.createdBy })),
+    });
+  }
+  if (opts.owner) {
+    await db.entityMember.create({
+      data: { entityId: created.id, userId: opts.owner.userId, role: "OWNER", addedBy: opts.owner.addedBy },
     });
   }
   return created.id;

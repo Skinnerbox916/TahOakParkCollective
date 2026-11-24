@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/Card";
@@ -16,7 +17,7 @@ function ClaimEntityContent() {
   const entityId = searchParams.get("entityId");
   const t = useTranslations("claim");
   const tCommon = useTranslations("common");
-  const tForms = useTranslations("forms");
+  const { data: session, status: sessionStatus } = useSession();
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,9 +29,7 @@ function ClaimEntityContent() {
   
   const [formData, setFormData] = useState({
     entityId: entityId || "",
-    email: "",
-    name: "",
-    reason: "",
+    message: "",
   });
 
   // Load entity if entityId is in URL
@@ -89,17 +88,16 @@ function ClaimEntityContent() {
     }
 
     try {
-      const response = await fetch("/api/public/claim-entity", {
+      const response = await fetch(`/api/entities/${formData.entityId}/claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          entityId: formData.entityId,
-        }),
+        body: JSON.stringify({ message: formData.message }),
       });
 
       const data: ApiResponse = await response.json();
 
+      if (data.code === "already_member") throw new Error(t("alreadyMember"));
+      if (data.code === "claim_pending") throw new Error(t("claimPending"));
       if (!response.ok || !data.success) {
         throw new Error(data.error || t("failedToSubmit"));
       }
@@ -122,18 +120,38 @@ function ClaimEntityContent() {
   if (success) {
     return (
       <Card className="p-8 text-center">
-        <div className="text-6xl mb-4">📧</div>
+        <div className="text-6xl mb-4">✅</div>
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          {t("checkEmail")}
+          {t("submitted")}
         </h1>
         <p className="text-lg text-gray-600 mb-6">
-          {t("emailSent", { email: formData.email })}
-          <br />
-          {t("clickLink")}
+          {t("submittedBody", { entityName: entity?.name ?? "" })}
         </p>
         <div className="flex gap-4 justify-center">
           <Button onClick={() => router.push("/")}>
             {t("backToDirectory")}
+          </Button>
+          <Button variant="outline" onClick={() => router.push("/portal/dashboard")}>
+            {t("goToPortal")}
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  // Claims are tied to an account: send visitors to sign in (or register)
+  // and bring them straight back here afterwards.
+  if (sessionStatus === "unauthenticated") {
+    const callbackUrl = encodeURIComponent(entityId ? `/claim?entityId=${entityId}` : "/claim");
+    return (
+      <Card className="p-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("signInTitle")}</h1>
+        {entity && <p className="text-lg font-medium text-gray-800 mb-2">{entity.name}</p>}
+        <p className="text-gray-600 mb-6">{t("signInBody")}</p>
+        <div className="flex gap-4 justify-center">
+          <Button href={`/auth/signin?callbackUrl=${callbackUrl}`}>{t("signIn")}</Button>
+          <Button variant="outline" href={`/auth/signup?callbackUrl=${callbackUrl}`}>
+            {t("createAccount")}
           </Button>
         </div>
       </Card>
@@ -216,38 +234,25 @@ function ClaimEntityContent() {
             </div>
           ) : null}
 
-          {/* Contact Information */}
-          <div className="pt-4 border-t border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              {t("yourInformation")}
-            </h3>
-
-            <div className="space-y-4">
-              <div>
-                <Input
-                  type="email"
-                  name="email"
-                  label={`${tForms("email")} *`}
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                  placeholder={tForms("email")}
-                />
-              </div>
-
-              <div>
-                <Input
-                  type="text"
-                  name="name"
-                  label={tForms("nameOptional")}
-                  value={formData.name}
-                  onChange={handleChange}
-                  disabled={loading}
-                  placeholder={tForms("name")}
-                />
-              </div>
-            </div>
+          {/* Why they should get the listing */}
+          <div className="pt-4 border-t border-gray-200 space-y-2">
+            {session?.user?.email && (
+              <p className="text-sm text-gray-500">{t("signedInAs", { email: session.user.email })}</p>
+            )}
+            <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+              {t("messageLabel")}
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              rows={4}
+              maxLength={2000}
+              value={formData.message}
+              onChange={handleChange}
+              disabled={loading}
+              placeholder={t("messagePlaceholder")}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
           </div>
 
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
@@ -257,7 +262,7 @@ function ClaimEntityContent() {
           <div className="flex gap-4 pt-4">
             <Button
               type="submit"
-              disabled={loading || !formData.entityId || !formData.email}
+              disabled={loading || !formData.entityId || sessionStatus !== "authenticated"}
               className="flex-1"
             >
               {loading ? t("submitting") : t("submitClaimRequest")}

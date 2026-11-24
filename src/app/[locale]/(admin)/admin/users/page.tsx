@@ -111,7 +111,6 @@ export default function AdminUsers() {
         >
           <option value="">{tCommon("allRoles")}</option>
           <option value={ROLE.USER}>{tRole(ROLE.USER)}</option>
-          <option value={ROLE.ENTITY_OWNER}>{tRole(ROLE.ENTITY_OWNER)}</option>
           <option value={ROLE.ADMIN}>{tRole(ROLE.ADMIN)}</option>
         </Select>
       </FilterBar>

@@ -4,12 +4,12 @@ import { createSuccessResponse, createErrorResponse, entityErrorResponse, withAu
 import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
 import { getCurrentUser } from "@/lib/auth";
-import { entityIncludePublic, entityIncludeWithOwner, transformEntity } from "@/lib/entity-helpers";
+import { entityIncludePublic, entityIncludeWithMembers, transformEntity } from "@/lib/entity-helpers";
 import { deleteEntity, proposeUpdate } from "@/lib/entities";
 import { deleteUpload, keyFromPublicUrl } from "@/lib/storage";
 
 /**
- * Admins and the entity's owner get the full record (any status, with owner).
+ * Admins and the listing's members get the full record (any status, with members).
  * Everyone else, including anonymous visitors on the claim and report pages,
  * gets the public view of ACTIVE entities only.
  */
@@ -24,7 +24,7 @@ export async function GET(
 
     const entity = await prisma.entity.findUnique({
       where: { id },
-      include: entityIncludeWithOwner,
+      include: entityIncludeWithMembers,
     });
 
     if (!entity) {
@@ -32,9 +32,9 @@ export async function GET(
     }
 
     const isAdmin = user?.roles?.includes(ROLE.ADMIN) ?? false;
-    const isOwner = !!user?.id && entity.ownerId === user.id;
+    const isMember = !!user?.id && entity.members.some((m) => m.user.id === user.id);
 
-    if (isAdmin || isOwner) {
+    if (isAdmin || isMember) {
       return createSuccessResponse(transformEntity(entity, locale, isAdmin));
     }
 
@@ -83,7 +83,7 @@ export async function PUT(
         );
       }
 
-      const entity = await prisma.entity.findUnique({ where: { id }, include: entityIncludeWithOwner });
+      const entity = await prisma.entity.findUnique({ where: { id }, include: entityIncludeWithMembers });
       return createSuccessResponse(
         transformEntity(entity, getLocaleFromRequest(request), true),
         "Entity updated successfully"
