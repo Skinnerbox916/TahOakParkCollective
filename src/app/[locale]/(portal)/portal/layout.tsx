@@ -1,5 +1,5 @@
 import { redirect } from "@/i18n/routing";
-import { requireAuth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { portalNavItems } from "@/lib/navigation";
 
@@ -11,11 +11,9 @@ export default async function PortalLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  try {
-    // Any authenticated user can access the portal to manage their entities
-    await requireAuth();
-  } catch {
-    redirect({ href: "/auth/signin", locale });
+  // Any signed-in user can use the portal (their listings, their account)
+  if (!(await getCurrentUser())) {
+    redirect({ href: "/auth/signin?callbackUrl=%2Fportal%2Fdashboard", locale });
   }
 
   return (
@@ -24,8 +22,3 @@ export default async function PortalLayout({
     </DashboardShell>
   );
 }
-
-
-
-
-

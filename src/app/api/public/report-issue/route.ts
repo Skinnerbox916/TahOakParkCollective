@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
 import { ReportStatus, IssueType } from "@/lib/prismaEnums";
+import { isBot, limitRequest } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    if (isBot(body)) return createSuccessResponse(null, "Report submitted successfully");
+    const limited = limitRequest(request, "report-issue");
+    if (limited) return limited;
     const { entityId, issueType, description, submitterEmail, submitterName } = body;
 
     if (!entityId || !issueType || !description || !submitterEmail) {

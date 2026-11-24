@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "@/components/auth/SessionProvider";
 
 // Site-wide body typeface. To change it, swap the loader here; everything
 // else reads the semantic --font-body variable.
@@ -30,9 +29,7 @@ export default function RootLayout({
     // so variables scoped to <body> are undefined there and fall back to system fonts.
     <html suppressHydrationWarning className={`${bodyFont.variable} ${geistMono.variable}`}>
       <body className="antialiased flex flex-col min-h-screen">
-        <SessionProvider>
-          {children}
-        </SessionProvider>
+        {children}
       </body>
     </html>
   );

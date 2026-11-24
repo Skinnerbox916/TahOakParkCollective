@@ -1,11 +1,15 @@
 import { NextRequest } from "next/server";
 import { createSuccessResponse, createErrorResponse, entityErrorResponse } from "@/lib/api-helpers";
 import { proposeNewEntity } from "@/lib/entities";
+import { isBot, limitRequest } from "@/lib/rate-limit";
 
 /** Anyone can suggest a listing; it waits for an admin, who adds categories before approving. */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    if (isBot(body)) return createSuccessResponse({ approval: { id: "" } }, "Suggestion submitted successfully");
+    const limited = limitRequest(request, "suggest-entity");
+    if (limited) return limited;
     const { name, description, address, website, submitterEmail } = body;
 
     if (!name || !submitterEmail) {

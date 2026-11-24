@@ -1,96 +1,69 @@
 import { NextRequest } from "next/server";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE } from "@/lib/prismaEnums";
-import type { Role } from "@/lib/prismaEnums";
+import { auth } from "@/lib/better-auth";
+import { hasAdminRole } from "@/lib/auth";
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  return withRole([ROLE.ADMIN], async (user) => {
+type Params = { params: Promise<{ id: string }> };
+
+/** PUT { roles } - make someone an admin or not. Never removes the last admin. */
+export async function PUT(request: NextRequest, { params }: Params) {
+  return withRole([ROLE.ADMIN], async () => {
     try {
       const { id } = await params;
-      const body = await request.json();
-      const { roles } = body;
+      const { roles } = await request.json();
+      if (!Array.isArray(roles)) return createErrorResponse("roles must be an array", 400);
+      const makeAdmin = roles.includes(ROLE.ADMIN);
 
-      if (!roles || !Array.isArray(roles) || roles.length === 0) {
-        return createErrorResponse("Roles array is required and must not be empty", 400);
-      }
+      const target = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+      if (!target) return createErrorResponse("User not found", 404);
 
-      // Validate all role values
-      const validRoles = Object.values(ROLE);
-      for (const role of roles) {
-        if (!validRoles.includes(role)) {
-          return createErrorResponse(`Invalid role: ${role}`, 400);
+      if (hasAdminRole(target.role) && !makeAdmin) {
+        const admins = await prisma.user.count({ where: { role: { contains: "admin" } } });
+        if (admins <= 1) {
+          return createErrorResponse("Cannot remove the last admin. Promote another user first.", 400);
         }
       }
 
-      // Ensure USER role is always included
-      const rolesToSet = roles.includes(ROLE.USER) ? roles : [ROLE.USER, ...roles];
-
-      // Get current user to check admin status
-      const currentUser = await prisma.user.findUnique({
-        where: { id },
-        select: { roles: true },
-      });
-
-      if (!currentUser) {
-        return createErrorResponse("User not found", 404);
-      }
-
-      // Check if removing ADMIN role would leave 0 admins
-      const hadAdmin = currentUser.roles.includes(ROLE.ADMIN);
-      const willHaveAdmin = rolesToSet.includes(ROLE.ADMIN);
-
-      if (hadAdmin && !willHaveAdmin) {
-        // Count how many users have ADMIN role
-        const adminCount = await prisma.user.count({
-          where: {
-            roles: {
-              has: ROLE.ADMIN,
-            },
-          },
-        });
-
-        if (adminCount <= 1) {
-          return createErrorResponse(
-            "Cannot remove the last admin. Please promote another user to admin first.",
-            400
-          );
-        }
-      }
-
-      const updatedUser = await prisma.user.update({
-        where: { id },
-        data: { roles: rolesToSet },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          roles: true,
-          _count: {
-            select: {
-              memberships: true,
-            },
-          },
-        },
-      });
-
+      await auth.api.setRole({ body: { userId: id, role: makeAdmin ? "admin" : "user" }, headers: await headers() });
       return createSuccessResponse(
-        {
-          ...updatedUser,
-          businessCount: updatedUser._count.memberships,
-        },
+        { id, roles: makeAdmin ? [ROLE.USER, ROLE.ADMIN] : [ROLE.USER] },
         "User roles updated successfully"
       );
     } catch (error) {
       console.error("Error updating user roles:", error);
-      if (error instanceof Error && error.message.includes("Record to update not found")) {
-        return createErrorResponse("User not found", 404);
-      }
       return createErrorResponse("Failed to update user roles", 500);
     }
   });
 }
 
+/** POST { action: "ban" | "unban" | "revokeSessions" } */
+export async function POST(request: NextRequest, { params }: Params) {
+  return withRole([ROLE.ADMIN], async (admin) => {
+    try {
+      const { id } = await params;
+      const { action, reason } = await request.json();
+      if (id === admin.id && action !== "revokeSessions") {
+        return createErrorResponse("You can't ban yourself", 400);
+      }
+      const h = await headers();
+
+      if (action === "ban") {
+        // Banning also signs them out everywhere
+        await auth.api.banUser({ body: { userId: id, banReason: typeof reason === "string" ? reason : undefined }, headers: h });
+      } else if (action === "unban") {
+        await auth.api.unbanUser({ body: { userId: id }, headers: h });
+      } else if (action === "revokeSessions") {
+        await auth.api.revokeUserSessions({ body: { userId: id }, headers: h });
+      } else {
+        return createErrorResponse("Unknown action", 400);
+      }
+      return createSuccessResponse({ id, action }, "Done");
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return createErrorResponse("Failed to update user", 500);
+    }
+  });
+}

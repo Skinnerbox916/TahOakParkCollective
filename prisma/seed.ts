@@ -1,7 +1,27 @@
-import { Role, EntityType, TagCategory } from "../src/generated/prisma/client";
+import { EntityType, TagCategory } from "../src/generated/prisma/client";
 import { prisma } from "../src/lib/prisma";
 import { randomBytes } from "crypto";
-import { hashPassword } from "../src/lib/password";
+import { hashPassword } from "better-auth/crypto";
+
+/**
+ * A confirmed user with a password, written the way Better Auth stores it
+ * (the hash lives on a "credential" account, not the user).
+ */
+async function createUserWithPassword(data: { email: string; name: string; role: string; password: string }) {
+  const user = await prisma.user.create({
+    data: { email: data.email, name: data.name, role: data.role, emailVerified: true },
+  });
+  await prisma.authAccount.create({
+    data: {
+      id: randomBytes(16).toString("hex"),
+      userId: user.id,
+      accountId: user.id,
+      providerId: "credential",
+      password: await hashPassword(data.password),
+    },
+  });
+  return user;
+}
 
 const ADMIN_EMAIL = "admin@tahoak.com";
 
@@ -205,14 +225,7 @@ async function main() {
   } else {
     const envPassword = process.env.SEED_ADMIN_PASSWORD;
     const adminPassword = envPassword || randomBytes(18).toString("base64url");
-    await prisma.user.create({
-      data: {
-        email: ADMIN_EMAIL,
-        name: "Admin User",
-        roles: [Role.USER, Role.ADMIN],
-        password: await hashPassword(adminPassword),
-      },
-    });
+    await createUserWithPassword({ email: ADMIN_EMAIL, name: "Admin User", role: "admin", password: adminPassword });
     console.log(`  ✓ ${ADMIN_EMAIL}`);
     if (!envPassword) {
       console.log(`    Generated password (shown once): ${adminPassword}`);
@@ -225,16 +238,9 @@ async function main() {
   // -------------------------------------------------------------------------
   if (process.env.SEED_TEST_USERS === "true") {
     console.log("Creating test business owner user...");
-    await prisma.user.upsert({
-      where: { email: "owner@tahoak.com" },
-      update: {},
-      create: {
-        email: "owner@tahoak.com",
-        name: "Business Owner",
-        roles: [Role.USER],
-        password: await hashPassword("owner123"),
-      },
-    });
+    if (!(await prisma.user.findUnique({ where: { email: "owner@tahoak.com" }, select: { id: true } }))) {
+      await createUserWithPassword({ email: "owner@tahoak.com", name: "Business Owner", role: "user", password: "owner123" });
+    }
     console.log("  ✓ owner@tahoak.com\n");
   }
 

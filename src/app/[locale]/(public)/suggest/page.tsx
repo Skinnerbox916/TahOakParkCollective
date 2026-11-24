@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ApiResponse } from "@/types";
+import { Honeypot, honeypotValue } from "@/components/ui/Honeypot";
 
 export default function SuggestEntityPage() {
   const router = useRouter();
@@ -26,8 +27,9 @@ export default function SuggestEntityPage() {
     submitterName: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const homepage = honeypotValue(e.currentTarget);
     setError(null);
     setLoading(true);
 
@@ -35,7 +37,7 @@ export default function SuggestEntityPage() {
       const response = await fetch("/api/public/suggest-entity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, homepage }),
       });
 
       const data: ApiResponse = await response.json();
@@ -121,6 +123,7 @@ export default function SuggestEntityPage() {
 
         <Card className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+          <Honeypot />
             {error && (
               <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
                 {error}

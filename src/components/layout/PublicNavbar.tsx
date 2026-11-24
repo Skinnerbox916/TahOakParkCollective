@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/use-auth";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { UserMenu } from "./UserMenu";
@@ -15,7 +15,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
  * Dashboard pages (admin/portal) use DashboardHeader instead.
  */
 export function PublicNavbar() {
-  const { data: session, status } = useSession();
+  const { session, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const t = useTranslations("common");
 
@@ -33,7 +33,7 @@ export function PublicNavbar() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
               <LanguageSwitcher />
-              {status === "loading" ? (
+              {loading ? (
                 <span className="text-gray-500 text-sm">{t("loading")}</span>
               ) : session ? (
                 <UserMenu />
@@ -52,7 +52,7 @@ export function PublicNavbar() {
             {/* Mobile Navigation */}
             <div className="flex md:hidden items-center space-x-2">
               <LanguageSwitcher />
-              {status === "loading" ? (
+              {loading ? (
                 <span className="text-gray-500 text-sm">{t("loading")}</span>
               ) : session ? (
                 <UserMenu />

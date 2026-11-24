@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { ApiResponse, EntityWithRelations } from "@/types";
 import { IssueType } from "@/lib/prismaEnums";
 import { Link } from "@/i18n/routing";
+import { Honeypot, honeypotValue } from "@/components/ui/Honeypot";
 
 function ReportIssueContent() {
   const router = useRouter();
@@ -86,8 +87,9 @@ function ReportIssueContent() {
     setSearchResults([]);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const homepage = honeypotValue(e.currentTarget);
     setError(null);
     setLoading(true);
 
@@ -101,7 +103,7 @@ function ReportIssueContent() {
       const response = await fetch("/api/public/report-issue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, homepage }),
       });
 
       const data: ApiResponse = await response.json();
@@ -175,6 +177,7 @@ function ReportIssueContent() {
 
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
+          <Honeypot />
           {error && (
             <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
               {error}

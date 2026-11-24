@@ -13,8 +13,10 @@ services:
       # Database connection - uses DATABASE_URL from .env file
       # For Docker network, use tahoak-db as hostname
       - DATABASE_URL=postgresql://tahoak:${POSTGRES_PASSWORD:-tahoak_password}@tahoak-db:5432/${POSTGRES_DB:-tahoak_db}
-      - NEXTAUTH_URL=${NEXTAUTH_URL:-https://tahoak.skibri.us}
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-development_secret_change_me_in_prod}
+      # Passkeys are tied to this host: open the dev site at exactly this URL
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:3000}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-development_secret_change_me_in_production_please}
+      # No SMTP_HOST in dev: emails (and sign-in codes) print to the container log
       - NODE_ENV=development
       # OpenAI API
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UserTable } from "@/components/admin/UserTable";
+import { UserTable, type UserAction } from "@/components/admin/UserTable";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -20,8 +20,11 @@ interface User {
   email: string | null;
   name: string | null;
   roles: Role[];
-  createdAt?: Date; // Optional since User model doesn't have this field
   businessCount: number;
+  emailVerified?: boolean;
+  banned?: boolean;
+  passkeys?: number;
+  twoFactorEnabled?: boolean;
 }
 
 export default function AdminUsers() {
@@ -72,19 +75,32 @@ export default function AdminUsers() {
         body: JSON.stringify({ roles }),
       });
 
-      const data: ApiResponse<User> = await response.json();
+      const data: ApiResponse<Pick<User, "id" | "roles">> = await response.json();
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Failed to update roles");
       }
 
-      // Update local state
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? data.data! : u))
-      );
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, roles: data.data!.roles } : u)));
     } catch (err) {
       console.error("Error updating roles:", err);
       throw err;
+    }
+  };
+
+  const handleAction = async (userId: string, action: UserAction) => {
+    const response = await fetch(`/api/admin/users/${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+    const data: ApiResponse = await response.json();
+    if (!response.ok || !data.success) {
+      alert(data.error || "Failed to update user");
+      return;
+    }
+    if (action !== "revokeSessions") {
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, banned: action === "ban" } : u)));
     }
   };
 
@@ -127,7 +143,7 @@ export default function AdminUsers() {
         <LoadingState message={t("loading")} />
       ) : (
         <Card padding="none">
-          <UserTable users={users} onRoleChange={handleRoleChange} />
+          <UserTable users={users} onRoleChange={handleRoleChange} onAction={handleAction} />
         </Card>
       )}
     </div>

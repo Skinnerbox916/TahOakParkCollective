@@ -14,16 +14,34 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?   // Hashed password
-  accounts      Account[]
-  sessions      Session[]
-  memberships   EntityMember[]
-  roles         Role[]    @default([USER])
+  id               String         @id @default(cuid())
+  name             String
+  email            String         @unique
+  emailVerified    Boolean        @default(false) @map("email_verified")
+  image            String?
+  // Admin plugin: "user" or "admin". Admin powers also need a strong
+  // session (passkey or authenticator code); see src/lib/auth.ts.
+  role             String         @default("user")
+  banned           Boolean?       @default(false)
+  banReason        String?
+  banExpires       DateTime?
+  twoFactorEnabled Boolean?       @default(false)
+  locale           String         @default("en") // language for emails
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @default(now()) @updatedAt
+
+  // next-auth leftovers, unused since Better Auth; dropped by a later migration.
+  legacyEmailVerifiedAt DateTime? @map("emailVerified") @ignore
+  legacyPassword        String?   @map("password") @ignore
+  legacyRoles           Role[]    @default([USER]) @map("roles") @ignore
+  accounts              Account[]
+  sessions              Session[]
+
+  memberships      EntityMember[]
+  authSessions     AuthSession[]
+  authAccounts     AuthAccount[]
+  passkeys         Passkey[]
+  twoFactors       TwoFactor[]
 }
 
 model Category {
@@ -323,4 +341,85 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Better Auth (src/lib/better-auth.ts). Shapes match better-auth 1.7.
+
+model AuthSession {
+  id             String   @id
+  token          String   @unique
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt      DateTime
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+  // Signed in with a passkey or an authenticator code (admin powers need this)
+  strongAuth     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model AuthAccount {
+  id                    String    @id
+  accountId             String
+  providerId            String    // "credential" holds the password hash
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model AuthVerification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model Passkey {
+  id           String    @id
+  name         String?
+  publicKey    String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  aaguid       String?
+  createdAt    DateTime? @default(now())
+
+  @@index([userId])
+  @@index([credentialID])
+}
+
+model TwoFactor {
+  id                      String    @id
+  secret                  String
+  backupCodes             String
+  userId                  String
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified                Boolean?  @default(true)
+  failedVerificationCount Int?      @default(0)
+  lockedUntil             DateTime?
+
+  @@index([secret])
+  @@index([userId])
 }

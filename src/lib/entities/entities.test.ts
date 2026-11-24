@@ -34,7 +34,7 @@ let stranger: Actor;
 
 async function resetDatabase() {
   await prisma.$executeRawUnsafe(
-    `TRUNCATE "Approval", "EntityMember", "EntityTag", "IssueReport", "Entity", "Tag", "Category", "User" RESTART IDENTITY CASCADE`
+    `TRUNCATE "Approval", "EntityMember", "EntityTag", "IssueReport", "Entity", "Tag", "Category", "AuthSession", "AuthAccount", "AuthVerification", "Passkey", "TwoFactor", "User" RESTART IDENTITY CASCADE`
   );
   await prisma.category.createMany({
     data: [
@@ -50,9 +50,9 @@ async function resetDatabase() {
     ],
   });
   const [a, o, s] = await Promise.all([
-    prisma.user.create({ data: { email: "admin@test.local", roles: ["USER", "ADMIN"] } }),
-    prisma.user.create({ data: { email: "owner@test.local", roles: ["USER"] } }),
-    prisma.user.create({ data: { email: "stranger@test.local", roles: ["USER"] } }),
+    prisma.user.create({ data: { email: "admin@test.local", name: "Admin", role: "admin" } }),
+    prisma.user.create({ data: { email: "owner@test.local", name: "Owner" } }),
+    prisma.user.create({ data: { email: "stranger@test.local", name: "Stranger" } }),
   ]);
   admin = { id: a.id, roles: ["USER", "ADMIN"], email: a.email };
   owner = { id: o.id, roles: ["USER"], email: o.email };

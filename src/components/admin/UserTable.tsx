@@ -14,16 +14,22 @@ interface User {
   email: string | null;
   name: string | null;
   roles: Role[];
-  createdAt?: Date; // Optional since User model doesn't have this field
   businessCount: number;
+  emailVerified?: boolean;
+  banned?: boolean;
+  passkeys?: number;
+  twoFactorEnabled?: boolean;
 }
+
+export type UserAction = "ban" | "unban" | "revokeSessions";
 
 interface UserTableProps {
   users: User[];
   onRoleChange?: (userId: string, roles: Role[]) => Promise<void>;
+  onAction?: (userId: string, action: UserAction) => Promise<void>;
 }
 
-export function UserTable({ users, onRoleChange }: UserTableProps) {
+export function UserTable({ users, onRoleChange, onAction }: UserTableProps) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingRoles, setEditingRoles] = useState<Role[]>([]);
@@ -112,7 +118,7 @@ export function UserTable({ users, onRoleChange }: UserTableProps) {
               {t("columns.businesses")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {t("columns.created")}
+              {t("columns.security")}
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               {t("columns.actions")}
@@ -177,8 +183,13 @@ export function UserTable({ users, onRoleChange }: UserTableProps) {
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className="text-sm text-gray-900">{user.businessCount}</span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
+              <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600 space-x-2">
+                {user.banned && <span className="font-semibold text-error-700">{t("status.banned")}</span>}
+                <span className={user.emailVerified ? "text-success-700" : "text-warning-700"}>
+                  {user.emailVerified ? t("status.verified") : t("status.unverified")}
+                </span>
+                {!!user.passkeys && <span>🔑 {user.passkeys}</span>}
+                {user.twoFactorEnabled && <span>{t("status.twoFactor")}</span>}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 {onRoleChange && editingUser !== user.id && (
@@ -188,6 +199,29 @@ export function UserTable({ users, onRoleChange }: UserTableProps) {
                   >
                     {t("actions.editRoles")}
                   </Button>
+                )}
+                {onAction && editingUser !== user.id && (
+                  <span className="ml-2 inline-flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={updating === user.id}
+                      onClick={() => confirm(t("confirm.revokeSessions")) && onAction(user.id, "revokeSessions")}
+                    >
+                      {t("actions.revokeSessions")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={user.banned ? "outline" : "danger"}
+                      disabled={updating === user.id}
+                      onClick={() =>
+                        confirm(user.banned ? t("confirm.unban") : t("confirm.ban")) &&
+                        onAction(user.id, user.banned ? "unban" : "ban")
+                      }
+                    >
+                      {user.banned ? t("actions.unban") : t("actions.ban")}
+                    </Button>
+                  </span>
                 )}
                 {updating === user.id && (
                   <span className="ml-2 text-xs text-gray-500">{t("actions.updating")}</span>

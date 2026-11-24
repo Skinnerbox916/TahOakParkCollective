@@ -58,8 +58,8 @@ DATABASE_URL=postgresql://tahoak:your_password@localhost:5432/tahoak_db
 
 # NextAuth Configuration
 # Generate a secure secret: openssl rand -base64 32
-NEXTAUTH_SECRET=your_secure_random_string_here
-NEXTAUTH_URL=http://localhost:3000
+BETTER_AUTH_SECRET=your_secure_random_string_here
+BETTER_AUTH_URL=http://localhost:3000
 
 # Node Environment
 NODE_ENV=development
@@ -68,7 +68,7 @@ NODE_ENV=development
 **Important Security Notes:**
 - Never commit `.env` files to version control
 - Use strong, unique passwords for production
-- Generate a secure `NEXTAUTH_SECRET` using: `openssl rand -base64 32`
+- Generate a secure `BETTER_AUTH_SECRET` using: `openssl rand -base64 32`
 - Use different credentials for development and production
 
 ### 4. Start the Database
@@ -132,14 +132,17 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:5432/db` |
-| `NEXTAUTH_SECRET` | Secret for JWT encryption | Generate with `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | Base URL of your application | `http://localhost:3000` |
+| `BETTER_AUTH_SECRET` | Signs session cookies (32+ characters) | Generate with `openssl rand -base64 32` |
+| `BETTER_AUTH_URL` | Public origin of the site. Passkeys are bound to this host | `http://localhost:3000` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | Outgoing mail (required in production; unset in dev prints emails to the log) | `smtp.migadu.com`, `465` |
+| `EMAIL_FROM`, `EMAIL_REPLY_TO` | Sender and reply-to for every email | `"TahOak Park Collective <tahoak@canopyds.com>"` |
 
 ### Optional Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `NODE_ENV` | Node environment | `development` |
+| `APP_NAME` | Brand in emails, passkey prompts and authenticator apps | `TahOak Park Collective` |
 | `POSTGRES_USER` | PostgreSQL username | `tahoak` |
 | `POSTGRES_PASSWORD` | PostgreSQL password | `tahoak_password` |
 | `POSTGRES_DB` | PostgreSQL database name | `tahoak_db` |
@@ -223,7 +226,7 @@ The schema is defined in `prisma/schema.prisma`. Key models:
 
 1. **Never commit secrets**: Use `.env` files (already in `.gitignore`)
 2. **Use strong passwords**: Generate secure random strings for production
-3. **Rotate secrets regularly**: Especially `NEXTAUTH_SECRET`
+3. **Rotating `BETTER_AUTH_SECRET` needs care**: it signs session cookies *and* encrypts authenticator-app secrets. Replacing it outright signs everyone out and breaks every enrolled authenticator app. To rotate, use Better Auth's `BETTER_AUTH_SECRETS` (old and new secrets together) as described in its docs.
 4. **Use HTTPS in production**: Always use secure connections
 5. **Review dependencies**: Regularly update packages for security patches
 
@@ -262,10 +265,10 @@ After seeding the database:
 
 ### Production Checklist
 
-- [ ] Set strong, unique `NEXTAUTH_SECRET`
+- [ ] Set strong, unique `BETTER_AUTH_SECRET`
 - [ ] Use secure database credentials
 - [ ] Set `NODE_ENV=production`
-- [ ] Configure proper `NEXTAUTH_URL` (HTTPS)
+- [ ] Configure proper `BETTER_AUTH_URL` (HTTPS) and the SMTP variables
 - [ ] Set up database backups
 - [ ] Configure environment variables in hosting platform
 - [ ] Review and update all dependencies
@@ -316,8 +319,23 @@ docker compose down
 
 ### Authentication Issues
 
-- Verify `NEXTAUTH_SECRET` is set
-- Check `NEXTAUTH_URL` matches your application URL
+- Verify `BETTER_AUTH_SECRET` is set
+- Check `BETTER_AUTH_URL` matches the URL in the browser exactly (passkeys fail on any other host)
+- In development, sign-in and verification codes are printed by `docker logs tahoak-web`
+
+### Admin locked out (lost every passkey and authenticator)
+
+Admin tools need a session that signed in with a passkey or a password plus authenticator code. If an admin has lost all of them, remove them in the production database (Coolify's Postgres container), then sign in with the password or an emailed code and set up a new one in Account:
+
+```sql
+DELETE FROM "Passkey" WHERE "userId" = (SELECT id FROM "User" WHERE email = 'admin@example.com');
+DELETE FROM "TwoFactor" WHERE "userId" = (SELECT id FROM "User" WHERE email = 'admin@example.com');
+UPDATE "User" SET "twoFactorEnabled" = false WHERE email = 'admin@example.com';
+```
+
+### Moving to a new domain
+
+Passkeys belong to the domain they were created on. After changing `BETTER_AUTH_URL` to a new domain, existing passkeys stop working there; people sign in with their password or an emailed code and add a new passkey. (WebAuthn "related origins" can bridge the two domains if needed.)
 - Ensure user passwords are properly hashed in database
 
 ## Contributing

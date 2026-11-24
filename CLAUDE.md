@@ -50,7 +50,11 @@ src/app/api/
 
 | Path | Role |
 |------|------|
-| `src/lib/auth.ts` | `getSession()`, `requireAuth()`, `requireRole()`, `isAdmin()`, `isEntityOwner()` |
+| `src/lib/better-auth.ts` | Better Auth config: email + password, emailed codes, passkeys, authenticator 2FA, admin plugin, rate limits |
+| `src/lib/auth.ts` | Server helpers: `getSession()`, `getCurrentUser()`, `requireAuth()`, `requireRole()`, `isAdmin()` |
+| `src/lib/auth-client.ts`, `src/lib/use-auth.ts` | Browser client and the `useAuth()` hook for client components |
+| `src/lib/email/` | Bilingual emails over SMTP (console in dev) |
+| `src/lib/rate-limit.ts` | Per-IP limits and honeypot for public forms |
 | `src/lib/api-helpers.ts` | `withAuth()`, `withRole()` middleware; `createSuccessResponse()` / `createErrorResponse()` |
 | `src/lib/prisma.ts` | Singleton Prisma client with connection pooling |
 | `src/lib/entity-helpers.ts` | Entity validation, slug generation |
@@ -62,6 +66,7 @@ src/app/api/
 - **Entity**: Core model. Has `*Translations` JSON for `{en,es}` name/description/seo. Status: `ACTIVE | INACTIVE | PENDING_REVIEW`. `version` is bumped on every write.
 - **Approval**: Every entity change is an approval (`NEW_ENTITY`, `UPDATE_ENTITY`, `CLAIM_ENTITY`). `payload` holds the full new entity, or only the changed fields for an update, with `baseValues`/`baseVersion` recording what they were based on. Admin changes are auto-approved in the same transaction; anyone else's wait for review. Approving refuses fields that changed since submission (409 `conflict`) until an admin edits (rebases) the proposal. Edit forms send the `version` they loaded; a mismatch is 409 `stale_version`.
 - **Tag**: Three `TagCategory` values — `IDENTITY` (owner-assigned, e.g. Black-owned), `FRIENDLINESS` (admin-verified), `AMENITY`.
+- **Auth**: Better Auth with database sessions (`AuthSession`, `AuthAccount`, `AuthVerification`, `Passkey`, `TwoFactor`). `User.role` is "user" or "admin", but **admin powers need a strong session** (passkey, or password + authenticator code; `AuthSession.strongAuth`). `toSessionUser()` in `src/lib/auth.ts` only adds `ADMIN` to `roles` for strong sessions, so code that checks `roles` never needs to know. Weaker admin sessions get `adminNeedsStepUp` and the `/auth/step-up` page. Never call `auth.api.*` sign-in/sign-up from routes without your own rate limit; server calls skip Better Auth's.
 - **User roles**: `USER`, `ADMIN`. Who manages a listing is `EntityMember` (role `OWNER` or `MANAGER`), not a user role; a listing with no members is unclaimed. Check access with `canManage()` from `src/lib/entities`.
 - **Claims**: a signed-in user claims a listing (`POST /api/entities/[id]/claim`), which creates a `CLAIM_ENTITY` approval; approving it makes them an `OWNER` member.
 
