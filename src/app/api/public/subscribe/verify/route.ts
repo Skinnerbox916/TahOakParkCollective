@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     // Wait, this is an API route. The Frontend page `/subscribe/verify?token=...` will call this?
     // Or is this the route the user clicks?
     // Usually the link points to a frontend page which then calls the API.
-    // My email logic pointed to `${process.env.NEXTAUTH_URL}/subscribe/verify?token=${token}`.
+    // The email links to `${siteUrl()}/<locale>/subscribe/verify?token=...` (src/lib/email).
     // If `/subscribe/verify` is a page, it should call this API.
     
     return createSuccessResponse(null, "Subscription verified successfully");
