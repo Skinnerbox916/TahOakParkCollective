@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 /**
  * Geocoding Utilities
  * 
@@ -31,7 +32,7 @@ export async function geocodeAddress(
 
     let response = await fetch(url, {
       headers: {
-        "User-Agent": `TahOakParkCollective/1.0 (${process.env.NEXTAUTH_URL || 'http://localhost:3000'})`, // Required by Nominatim ToS
+        "User-Agent": `TahOakParkCollective/1.0 (${siteUrl()})`, // Required by Nominatim ToS
       },
     });
 
@@ -62,7 +63,7 @@ export async function geocodeAddress(
 
         response = await fetch(url, {
           headers: {
-            "User-Agent": `TahOakParkCollective/1.0 (${process.env.NEXTAUTH_URL || 'http://localhost:3000'})`,
+            "User-Agent": `TahOakParkCollective/1.0 (${siteUrl()})`,
           },
         });
 
@@ -104,7 +105,7 @@ export async function reverseGeocode(
 
     const response = await fetch(url, {
       headers: {
-        "User-Agent": `TahOakParkCollective/1.0 (${process.env.NEXTAUTH_URL || 'http://localhost:3000'})`,
+        "User-Agent": `TahOakParkCollective/1.0 (${siteUrl()})`,
       },
     });
 

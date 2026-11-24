@@ -4,7 +4,7 @@
  * labelling is an environment change, not a code change.
  */
 export function siteUrl(): string {
-  const url = process.env.BETTER_AUTH_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const url = process.env.BETTER_AUTH_URL || "http://localhost:3000";
   return url.replace(/\/+$/, "");
 }
 
