@@ -8,14 +8,14 @@ A hyper-local directory platform for Tahoe Park, Oak Park, Elmhurst, Colonial Pa
 - **Owner Portal**: People who manage a listing (claimed or added by them) propose changes for admin review
 - **Admin Dashboard**: Administrators manage entities, users, and approve listings
 - **Bilingual**: Full English/Spanish support with auto-translation
-- **Authentication**: Secure role-based authentication with NextAuth
+- **Authentication**: Passkeys, passwords (breached ones rejected), emailed codes and authenticator-app 2FA via Better Auth
 - **Map Integration**: Interactive maps showing entity locations using Leaflet
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js
+- **Authentication**: Better Auth
 - **Maps**: React Leaflet
 - **Styling**: Tailwind CSS
 - **i18n**: next-intl (English/Spanish)
@@ -56,7 +56,7 @@ Edit `.env` and set the following required variables:
 # Database Configuration
 DATABASE_URL=postgresql://tahoak:your_password@localhost:5432/tahoak_db
 
-# NextAuth Configuration
+# Auth (Better Auth)
 # Generate a secure secret: openssl rand -base64 32
 BETTER_AUTH_SECRET=your_secure_random_string_here
 BETTER_AUTH_URL=http://localhost:3000
@@ -175,7 +175,7 @@ The schema is defined in `prisma/schema.prisma`. Key models:
 - **Entity**: Directory listings with location, categories, and status
 - **Category**: Entity categories
 - **Tag**: Identity, friendliness, and amenity tags
-- **Account/Session**: NextAuth authentication models
+- **AuthSession/AuthAccount/AuthVerification/Passkey/TwoFactor**: Better Auth tables (sessions, password hashes, codes, passkeys, authenticator secrets)
 
 ## Project Structure
 
@@ -205,8 +205,9 @@ The schema is defined in `prisma/schema.prisma`. Key models:
 
 ### Authentication
 
-- Passwords are hashed using bcrypt (10 salt rounds)
-- JWT-based sessions via NextAuth
+- Passwords are hashed with scrypt (accounts from before Better Auth keep bcrypt until their next sign-in) and checked against known breaches (Have I Been Pwned)
+- Database sessions (30 days); role changes, bans and sign-outs apply on the next request
+- Admin tools need a session that signed in with a passkey or password + authenticator code
 - Role-based access control (RBAC)
 
 ### Authorization

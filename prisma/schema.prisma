@@ -30,13 +30,6 @@ model User {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @default(now()) @updatedAt
 
-  // next-auth leftovers, unused since Better Auth; dropped by a later migration.
-  legacyEmailVerifiedAt DateTime? @map("emailVerified") @ignore
-  legacyPassword        String?   @map("password") @ignore
-  legacyRoles           Role[]    @default([USER]) @map("roles") @ignore
-  accounts              Account[]
-  sessions              Session[]
-
   memberships      EntityMember[]
   authSessions     AuthSession[]
   authAccounts     AuthAccount[]
@@ -245,11 +238,6 @@ model MagicLink {
 
 // Enums
 
-enum Role {
-  USER
-  ADMIN
-}
-
 enum MemberRole {
   OWNER
   MANAGER
@@ -304,43 +292,6 @@ enum ReportStatus {
 enum MagicLinkPurpose {
   VERIFY_SUBSCRIPTION
   MANAGE_PREFERENCES
-}
-
-// NextAuth Models
-
-model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
 }
 
 // Better Auth (src/lib/better-auth.ts). Shapes match better-auth 1.7.
