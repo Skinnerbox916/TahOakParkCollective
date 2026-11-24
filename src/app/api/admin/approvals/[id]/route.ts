@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, entityErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE } from "@/lib/prismaEnums";
-import { approveApproval, getApprovalView, listMembers, rebaseApproval, rejectApproval } from "@/lib/entities";
+import { approveApproval, getApprovalView, rebaseApproval, rejectApproval } from "@/lib/entities";
 import { sendListingReady } from "@/lib/email";
 import { toLocale } from "@/lib/site";
 
@@ -33,23 +33,7 @@ async function loadApprovalWithView(id: string) {
       : [],
   ]);
 
-  // Claims: who is asking, what they said, and who manages the listing now
-  let claim = null;
-  if (approval.type === "CLAIM_ENTITY") {
-    const [claimant, members] = await Promise.all([
-      approval.submittedBy
-        ? prisma.user.findUnique({ where: { id: approval.submittedBy }, select: { id: true, name: true, email: true } })
-        : null,
-      approval.targetEntityId ? listMembers(approval.targetEntityId) : [],
-    ]);
-    claim = {
-      claimant,
-      message: (approval.payload as { message?: string | null } | null)?.message ?? null,
-      members: members.map((m) => ({ role: m.role, user: m.user })),
-    };
-  }
-
-  return { ...approval, ...view, claim, resolvedCategories, resolvedTags };
+  return { ...approval, ...view, resolvedCategories, resolvedTags };
 }
 
 // GET - the approval, what it would change, and any conflicts with the live entity

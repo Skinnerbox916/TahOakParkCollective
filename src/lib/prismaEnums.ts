@@ -8,7 +8,6 @@ export type Role = (typeof ROLE)[keyof typeof ROLE];
 export const ENTITY_STATUS = {
   ACTIVE: "ACTIVE",
   INACTIVE: "INACTIVE",
-  PENDING_REVIEW: "PENDING_REVIEW",
 } as const;
 
 export type EntityStatus =
@@ -38,7 +37,6 @@ export type TagCategory =
 export const ApprovalType = {
   NEW_ENTITY: "NEW_ENTITY",
   UPDATE_ENTITY: "UPDATE_ENTITY",
-  CLAIM_ENTITY: "CLAIM_ENTITY",
 } as const;
 
 export type ApprovalType =

@@ -731,16 +731,14 @@
       "submittedBy": "Por:",
       "types": {
         "NEW_ENTITY": "Nueva Entidad",
-        "UPDATE_ENTITY": "Actualizar Entidad",
-        "CLAIM_ENTITY": "Reclamo de Propiedad"
+        "UPDATE_ENTITY": "Actualizar Entidad"
       },
       "sources": {
         "ai": "Agregar Rápido IA",
         "ai_suggest": "Actualizaciones Sugeridas IA",
         "public": "Sugerencia Pública",
         "owner": "Propietario de Entidad",
-        "admin": "Administrador",
-        "claim": "Reclamo de propiedad"
+        "admin": "Administrador"
       },
       "detail": {
         "title": "Detalles de Aprobación",
@@ -800,15 +798,9 @@
         "conflictBody": "Cambió desde entonces: {fields}. Edita la propuesta para basarla en el listado actual y luego apruébala.",
         "geocodeFailed": "No se encontró la dirección en el mapa, así que el listado no tiene marcador.",
         "outOfCoverage": "Esta ubicación está fuera del área de cobertura.",
-        "claimNote": "Al aprobarlo, la persona que reclama se vuelve dueña de este listado. Primero confirma que dirige el negocio, por ejemplo llamándolo.",
         "staleVersion": "Este listado cambió desde que lo abriste. Recarga para ver la versión más reciente y vuelve a hacer tus cambios.",
         "submittedForReview": "Tus cambios fueron enviados. Un administrador los revisará antes de que aparezcan.",
         "noChanges": "No hubo cambios.",
-        "claimTitle": "Reclamo de {entity}",
-        "claimant": "Quien reclama",
-        "claimMessage": "Su nota",
-        "currentMembers": "Administrado actualmente por",
-        "unclaimed": "Nadie (sin reclamar)",
         "identityTagsOwnerOnly": "solo el dueño puede agregarlas"
       },
       "changedFields": "Cambios: {fields}"

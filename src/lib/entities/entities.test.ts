@@ -177,9 +177,6 @@ describe("proposals", () => {
     await expect(proposeUpdate(owner, id, { featured: true }, { source: "owner" })).rejects.toBeInstanceOf(
       ValidationError
     );
-    await expect(proposeUpdate(owner, id, { status: "PENDING_REVIEW" }, { source: "owner" })).rejects.toBeInstanceOf(
-      ValidationError
-    );
     // Owners publish and unpublish instead of proposing a status.
     await expect(proposeUpdate(owner, id, { status: "ACTIVE" }, { source: "owner" })).rejects.toBeInstanceOf(
       ValidationError

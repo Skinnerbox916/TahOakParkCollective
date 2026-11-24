@@ -731,16 +731,14 @@
       "submittedBy": "By:",
       "types": {
         "NEW_ENTITY": "New Entity",
-        "UPDATE_ENTITY": "Update Entity",
-        "CLAIM_ENTITY": "Ownership Claim"
+        "UPDATE_ENTITY": "Update Entity"
       },
       "sources": {
         "ai": "AI Quick-Add",
         "ai_suggest": "AI Suggested Updates",
         "public": "Public Suggestion",
         "owner": "Entity Owner",
-        "admin": "Admin",
-        "claim": "Ownership claim"
+        "admin": "Admin"
       },
       "detail": {
         "title": "Approval Details",
@@ -800,15 +798,9 @@
         "conflictBody": "Changed since: {fields}. Edit the proposal to rebase it onto the current listing, then approve.",
         "geocodeFailed": "The address couldn't be found on the map, so the listing has no pin.",
         "outOfCoverage": "This location is outside the coverage area.",
-        "claimNote": "Approving makes the claimant an owner of this listing. Confirm they run the business first, for example by calling it.",
         "staleVersion": "This listing changed since you opened it. Reload to see the latest version, then make your edits again.",
         "submittedForReview": "Your changes were submitted. An admin will review them before they appear.",
         "noChanges": "Nothing changed.",
-        "claimTitle": "Claim for {entity}",
-        "claimant": "Claimant",
-        "claimMessage": "Their note",
-        "currentMembers": "Currently managed by",
-        "unclaimed": "Nobody (unclaimed)",
         "identityTagsOwnerOnly": "only the owner can add these"
       },
       "changedFields": "Changes: {fields}"
