@@ -2,8 +2,6 @@
 
 > **TahOak is fully bilingual (English/Spanish). All new features must support translations.**
 
-For a quick overview, see the Translation System section in [AGENT_CONTEXT.md](./AGENT_CONTEXT.md).
-
 ---
 
 ## Two Translation Systems
@@ -149,7 +147,7 @@ const seoTitle = getTranslatedField(
 
 ### Usage in API
 
-**Creating/Updating entities with SEO translations:**
+**Creating/Updating entities with SEO translations:** these are ordinary entity fields, so they go through the entity write service (`src/lib/entities`) like any other change. An admin's change applies at once; anyone else's waits for approval.
 
 ```json
 // POST /api/entities or PUT /api/entities/:id
@@ -179,7 +177,9 @@ const seoTitle = getTranslatedField(
 
 ## Auto-Translation System
 
-TahOak includes automatic translation powered by DeepL API.
+TahOak can machine-translate with the DeepL API, but only on request: the translate buttons in the entity forms call it. Nothing fills in missing Spanish automatically, so content saved without clicking translate stays English-only and Spanish pages fall back to the English text.
+
+In production, `DEEPL_API_KEY` must be set or the endpoint returns 503. In development without a key, a mock prefixes the text with `[ES] `.
 
 ### TranslationService
 
@@ -195,7 +195,7 @@ const pair = await service.generatePair("Coffee Shop", "en");
 
 ### API Endpoint
 
-**POST** `/api/translate` (requires `ADMIN` or `ENTITY_OWNER` role)
+**POST** `/api/translate` (admins, and signed-in users who manage at least one listing)
 
 ```json
 // Request
@@ -284,7 +284,7 @@ When building new features:
 ### Auto-translation failing
 
 1. Check API key: `DEEPL_API_KEY` environment variable set?
-2. Check auth: API requires `ADMIN` or `ENTITY_OWNER` role
+2. Check auth: the caller must be an admin or manage at least one listing
 
 ### Common Errors
 

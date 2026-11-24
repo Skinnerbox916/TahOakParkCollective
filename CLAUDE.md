@@ -42,7 +42,7 @@ src/app/[locale]/
 └── auth/        # Sign-in, sign-up
 src/app/api/
 ├── admin/       # Admin-only endpoints
-├── public/      # Unauthenticated endpoints (suggest, report, subscribe, claim)
+├── public/      # Unauthenticated endpoints (suggest, report, subscribe)
 └── entities/    # Auth-protected entity management
 ```
 
@@ -57,13 +57,16 @@ src/app/api/
 | `src/lib/rate-limit.ts` | Per-IP limits and honeypot for public forms |
 | `src/lib/api-helpers.ts` | `withAuth()`, `withRole()` middleware; `createSuccessResponse()` / `createErrorResponse()` |
 | `src/lib/prisma.ts` | Singleton Prisma client with connection pooling |
-| `src/lib/entity-helpers.ts` | Entity validation, slug generation |
+| `src/lib/entity-helpers.ts` | Entity reads: `entityIncludePublic` / `entityIncludeWithMembers`, `transformEntity()` (applies translations), `buildEntityWhereClause()` (public search) |
+| `src/lib/category-helpers.ts` | Category reads; public counts include only ACTIVE entities |
+| `src/lib/entityDisplayConfig.ts` | Which profile sections show per entity type, and `displaySettings` (per-field hide/show) |
 | `src/lib/entities/` | **Entity write service.** The only code that writes Entity/EntityTag rows: `proposeNewEntity`, `proposeUpdate`, `approveApproval`, `rejectApproval`, `rebaseApproval`, `deleteEntity` |
 | `src/lib/ai/` | AI-powered entity research and update suggestions (OpenAI) |
 
 ### Data Model Highlights
 
-- **Entity**: Core model. Has `*Translations` JSON for `{en,es}` name/description/seo. Status: `ACTIVE | INACTIVE | PENDING_REVIEW`. `version` is bumped on every write.
+- **Entity**: Core model. Has `*Translations` JSON for `{en,es}` name/description/seo. Status: `ACTIVE | INACTIVE | PENDING_REVIEW`. `version` is bumped on every write. One `entityType` (what it is: COMMERCE, CIVIC, ...) and many categories (what it's about). Shapes of the JSON fields (`hours`, `socialMedia`, `images`, `displaySettings`) are in `src/types/index.ts` and `src/lib/schemas/entitySchema.ts`.
+- **Public reads** show ACTIVE entities only and use `entityIncludePublic`, which never includes members or their emails. Use the helpers above rather than hand-written queries, so counts and translations stay consistent.
 - **Approval**: Every entity change is an approval (`NEW_ENTITY`, `UPDATE_ENTITY`, `CLAIM_ENTITY`). `payload` holds the full new entity, or only the changed fields for an update, with `baseValues`/`baseVersion` recording what they were based on. Admin changes are auto-approved in the same transaction; anyone else's wait for review. Approving refuses fields that changed since submission (409 `conflict`) until an admin edits (rebases) the proposal. Edit forms send the `version` they loaded; a mismatch is 409 `stale_version`.
 - **Tag**: Three `TagCategory` values — `IDENTITY` (owner-assigned, e.g. Black-owned), `FRIENDLINESS` (admin-verified), `AMENITY`.
 - **Auth**: Better Auth with database sessions (`AuthSession`, `AuthAccount`, `AuthVerification`, `Passkey`, `TwoFactor`). `User.role` is "user" or "admin", but **admin powers need a strong session** (passkey, or password + authenticator code; `AuthSession.strongAuth`). `toSessionUser()` in `src/lib/auth.ts` only adds `ADMIN` to `roles` for strong sessions, so code that checks `roles` never needs to know. Weaker admin sessions get `adminNeedsStepUp` and the `/auth/step-up` page. Never call `auth.api.*` sign-in/sign-up from routes without your own rate limit; server calls skip Better Auth's.
@@ -87,10 +90,11 @@ Generated to `src/generated/prisma` (not the default location). Import from ther
 
 ## Key Docs
 
-- `docs/AGENT_CONTEXT.md` — development context, anti-patterns, Docker commands
-- `docs/DATABASE_GUIDE.md` — full schema reference, query patterns, JSON field shapes
-- `docs/API_GUIDE.md` — API architecture details
-- `docs/TRANSLATION_GUIDE.md` — bilingual system details
+This file and the code are the reference; `prisma/schema.prisma` is the data model. The rest of `docs/`:
+
+- `docs/TRANSLATION_GUIDE.md` — UI strings, translated database content, machine translation
+- `docs/UI_CONVENTIONS.md` — UI components, color tokens, accessibility
+- `docs/product-brief.md` — the original Nov 2025 product brief; background only, not binding
 
 ## CI and Deploys
 
