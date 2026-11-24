@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ApiResponse } from "@/types";
+import { Honeypot, honeypotValue } from "@/components/ui/Honeypot";
 
 interface SubscribeFormProps {
   onSuccess?: () => void;
@@ -16,8 +17,9 @@ export function SubscribeForm({ onSuccess }: SubscribeFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const homepage = honeypotValue(e.currentTarget);
     setError(null);
     setLoading(true);
 
@@ -25,7 +27,7 @@ export function SubscribeForm({ onSuccess }: SubscribeFormProps) {
       const response = await fetch("/api/public/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, homepage }),
       });
 
       const data: ApiResponse = await response.json();
@@ -72,6 +74,7 @@ export function SubscribeForm({ onSuccess }: SubscribeFormProps) {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+          <Honeypot />
         {error && (
           <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
             {error}

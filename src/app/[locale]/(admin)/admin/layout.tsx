@@ -1,5 +1,6 @@
 import { redirect } from "@/i18n/routing";
-import { requireRole } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
+import { ROLE } from "@/lib/prismaEnums";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { adminNavItems } from "@/lib/navigation";
 
@@ -11,9 +12,14 @@ export default async function AdminLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  try {
-    await requireRole(["ADMIN" as const]);
-  } catch {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect({ href: "/auth/signin?callbackUrl=%2Fadmin%2Fdashboard", locale });
+  } else if (user.adminNeedsStepUp) {
+    // Admin role, but this session didn't use a passkey or authenticator code
+    redirect({ href: "/auth/step-up?callbackUrl=%2Fadmin%2Fdashboard", locale });
+  } else if (!user.roles.includes(ROLE.ADMIN)) {
     redirect({ href: "/auth/unauthorized", locale });
   }
 
@@ -23,4 +29,3 @@ export default async function AdminLayout({
     </DashboardShell>
   );
 }
-

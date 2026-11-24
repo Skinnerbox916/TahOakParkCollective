@@ -463,8 +463,8 @@ Local only, with `SEED_ADMIN_PASSWORD=password123` and `SEED_TEST_USERS=true` in
 | Variable | Purpose |
 |----------|---------|
 | `DATABASE_URL` | PostgreSQL connection |
-| `NEXTAUTH_SECRET` | JWT encryption |
-| `NEXTAUTH_URL` | Base URL (`https://tahoak.skibri.us`) |
+| `BETTER_AUTH_SECRET` | Signs session cookies |
+| `BETTER_AUTH_URL` | Public origin (`https://tahoak.canopyds.com`) |
 | `DEEPL_API_KEY` | Auto-translation (optional) |
 
 ---

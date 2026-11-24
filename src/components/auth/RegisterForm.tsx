@@ -1,155 +1,156 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/routing";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { safeCallbackPath } from "@/lib/safe-redirect";
+import { authClient } from "@/lib/auth-client";
+import { AddPasskeyPrompt } from "./AddPasskeyPrompt";
+import { CodeField, Notice, authErrorKey, passkeysSupported, useCallbackUrl } from "./shared";
 
+type Step = "details" | "verify" | "passkey";
+
+/** Create an account: details, then the emailed code, then an optional passkey. */
 export function RegisterForm() {
+  const t = useTranslations("auth");
+  const locale = useLocale();
+  const router = useRouter();
+  const callbackUrl = useCallbackUrl("/portal/dashboard");
+
+  const [step, setStep] = useState<Step>("details");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const callbackUrl = safeCallbackPath(useSearchParams().get("callbackUrl"));
-  const t = useTranslations("auth");
-  const tCommon = useTranslations("common");
-  const tForms = useTranslations("forms");
-  const tErrors = useTranslations("errors");
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const validateForm = () => {
-    if (!email || !password) {
-      setError(tForms("validation.emailRequired"));
-      return false;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError(tForms("validation.invalidEmail"));
-      return false;
-    }
-
-    if (password.length < 8) {
-      setError(tForms("validation.passwordMinLength"));
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      setError(tForms("validation.passwordsDoNotMatch"));
-      return false;
-    }
-
-    return true;
+  const finish = () => {
+    router.push(callbackUrl);
+    router.refresh();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-
+  const run = async (work: () => Promise<void>) => {
+    setBusy(true);
+    setError(null);
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          name: name || undefined,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || tErrors("generic"));
-        setLoading(false);
-        return;
-      }
-
-      // Registration successful - redirect to sign in
-      router.push(
-        callbackUrl
-          ? `/auth/signin?registered=true&callbackUrl=${encodeURIComponent(callbackUrl)}`
-          : "/auth/signin?registered=true"
-      );
-    } catch (err) {
-      console.error("Registration error:", err);
+      await work();
+    } catch {
       setError(t("errorOccurred"));
-      setLoading(false);
+    } finally {
+      setBusy(false);
     }
   };
+
+  const createAccount = (e: React.FormEvent) => {
+    e.preventDefault();
+    run(async () => {
+      const result = await authClient.signUp.email({ name: name.trim(), email, password, locale });
+      if (result.error) return setError(t(authErrorKey(result.error)));
+      // A confirmation code is on its way (emails are confirmed before first sign-in)
+      setNotice(t("codeSentTo", { email }));
+      setStep("verify");
+    });
+  };
+
+  const confirmEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    run(async () => {
+      const result = await authClient.emailOtp.verifyEmail({ email, otp: code });
+      if (result.error) return setError(t(authErrorKey(result.error)));
+      // Confirming signs them in; make sure the session exists before continuing
+      let session = await authClient.getSession();
+      if (!session.data) {
+        await authClient.signIn.email({ email, password });
+        session = await authClient.getSession();
+      }
+      if (passkeysSupported()) setStep("passkey");
+      else finish();
+    });
+  };
+
+  const resend = () =>
+    run(async () => {
+      const result = await authClient.emailOtp.sendVerificationOtp({ email, type: "email-verification" });
+      if (result.error) return setError(t(authErrorKey(result.error)));
+      setNotice(t("codeResent"));
+    });
+
+  if (step === "passkey") {
+    return <AddPasskeyPrompt onDone={finish} />;
+  }
+
+  if (step === "verify") {
+    return (
+      <form onSubmit={confirmEmail} className="space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">{t("verifyEmailTitle")}</h2>
+        {notice && <Notice kind="success">{notice}</Notice>}
+        {error && <Notice kind="error">{error}</Notice>}
+        <CodeField label={t("code")} value={code} onChange={setCode} disabled={busy} />
+        <Button type="submit" className="w-full" disabled={busy || code.length !== 6}>
+          {busy ? t("verifying") : t("verify")}
+        </Button>
+        <button type="button" className="w-full text-sm text-primary-600 hover:text-primary-700" onClick={resend} disabled={busy}>
+          {t("resendCode")}
+        </button>
+        <p className="text-xs text-gray-500">{t("existingAccountHint")}</p>
+      </form>
+    );
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-
+    <form onSubmit={createAccount} className="space-y-4">
+      {error && <Notice kind="error">{error}</Notice>}
       <Input
         type="text"
-        label={tForms("nameOptional")}
+        name="name"
+        label={t("name")}
         value={name}
         onChange={(e) => setName(e.target.value)}
-        disabled={loading}
+        autoComplete="name"
+        required
+        disabled={busy}
       />
-
       <Input
         type="email"
-        label={tCommon("email")}
+        name="email"
+        label={t("email")}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        autoComplete="email"
         required
-        disabled={loading}
+        disabled={busy}
       />
-
-      <Input
-        type="password"
-        label={tCommon("password")}
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        disabled={loading}
-        minLength={8}
-      />
-
-      <Input
-        type="password"
-        label={tForms("confirmPassword")}
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        required
-        disabled={loading}
-        minLength={8}
-      />
-
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? t("creatingAccount") : t("createAccount")}
+      <div>
+        <Input
+          type="password"
+          name="password"
+          label={t("password")}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          // Lets password managers offer a strong generated password
+          autoComplete="new-password"
+          minLength={8}
+          maxLength={128}
+          required
+          disabled={busy}
+        />
+        <p className="mt-1 text-xs text-gray-500">{t("passwordHint")}</p>
+      </div>
+      <Button type="submit" className="w-full" disabled={busy}>
+        {busy ? t("creatingAccount") : t("createAccount")}
       </Button>
-
-      <div className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-gray-600">
         {t("alreadyHaveAccount")}{" "}
         <Link
-          href={callbackUrl ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signin"}
+          href={`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
           className="text-primary-600 hover:text-primary-700 font-medium"
         >
           {t("signInLink")}
         </Link>
-      </div>
+      </p>
     </form>
   );
 }
-

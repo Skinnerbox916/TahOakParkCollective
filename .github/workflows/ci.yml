@@ -82,8 +82,8 @@ jobs:
         run: |
           docker run -d --name app --network host \
             -e DATABASE_URL="$DATABASE_URL" \
-            -e NEXTAUTH_SECRET=ci-only-secret \
-            -e NEXTAUTH_URL=http://localhost:3000 \
+            -e BETTER_AUTH_SECRET=ci-only-secret-at-least-32-characters \
+            -e BETTER_AUTH_URL=http://localhost:3000 \
             tahoak:ci
           for i in $(seq 1 45); do
             if curl -fsS http://localhost:3000/api/health; then

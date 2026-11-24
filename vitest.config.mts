@@ -16,6 +16,11 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.ts"],
     fileParallelism: false,
-    env: { DATABASE_URL: testDatabaseUrl, NODE_ENV: "test" },
+    env: {
+      DATABASE_URL: testDatabaseUrl,
+      NODE_ENV: "test",
+      BETTER_AUTH_SECRET: "test-secret-that-is-at-least-32-characters-long",
+      BETTER_AUTH_URL: "http://localhost:3000",
+    },
   },
 });

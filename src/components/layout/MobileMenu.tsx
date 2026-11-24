@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Link } from "@/i18n/routing";
-import { useSession, signOut } from "next-auth/react";
+import { useAuth } from "@/lib/use-auth";
 import { useTranslations } from "next-intl";
 import { ROLE } from "@/lib/prismaEnums";
 import { publicNavItems } from "@/lib/navigation";
@@ -17,7 +17,7 @@ interface MobileMenuProps {
  * Dashboard pages (admin/portal) use DashboardSidebar instead.
  */
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
-  const { data: session } = useSession();
+  const { session, isAdmin, needsStepUp, signOut } = useAuth();
   const t = useTranslations("common");
   const tNav = useTranslations("nav");
   const tSuggest = useTranslations("suggest");
@@ -25,7 +25,6 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const tClaim = useTranslations("claim");
   const tSubscribe = useTranslations("subscribe");
 
-  const isAdmin = session?.user?.roles?.includes(ROLE.ADMIN) ?? false;
 
   // Translation lookup for public nav items
   const getNavLabel = (labelKey: string) => {
@@ -133,12 +132,28 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       {tNav("admin")} {tNav("dashboard")}
                     </Link>
                   )}
+                  {needsStepUp && (
+                    <Link
+                      href="/auth/step-up?callbackUrl=%2Fadmin%2Fdashboard"
+                      onClick={onClose}
+                      className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      {t("verifyForAdmin")}
+                    </Link>
+                  )}
                   <Link
                     href="/portal/dashboard"
                     onClick={onClose}
                     className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
                   >
                     {t("businessPortal")}
+                  </Link>
+                  <Link
+                    href="/portal/account"
+                    onClick={onClose}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    {t("account")}
                   </Link>
                 </div>
               )}
@@ -179,7 +194,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <button
                 onClick={() => {
                   onClose();
-                  signOut({ callbackUrl: "/" });
+                  signOut();
                 }}
                 className="w-full px-4 py-2 text-sm text-error-600 hover:bg-error-50 rounded-lg transition-colors"
               >

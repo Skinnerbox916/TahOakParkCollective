@@ -2,19 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Link } from "@/i18n/routing";
-import { useSession, signOut } from "next-auth/react";
+import { useAuth } from "@/lib/use-auth";
 import { useTranslations } from "next-intl";
 import { ROLE } from "@/lib/prismaEnums";
 import { RoleBadges } from "@/components/admin/RoleBadge";
 
 export function UserMenu() {
-  const { data: session } = useSession();
+  const { session, isAdmin, needsStepUp, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("common");
   const tNav = useTranslations("nav");
 
-  const isAdmin = session?.user?.roles?.includes(ROLE.ADMIN) ?? false;
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -89,9 +88,9 @@ export function UserMenu() {
             <p className="text-xs text-gray-500 truncate">
               {session.user.email}
             </p>
-            {session.user.roles && session.user.roles.length > 0 && (
+            {(isAdmin || needsStepUp) && (
               <div className="mt-2">
-                <RoleBadges roles={session.user.roles} />
+                <RoleBadges roles={[ROLE.USER, ROLE.ADMIN]} />
               </div>
             )}
           </div>
@@ -108,6 +107,16 @@ export function UserMenu() {
                 {tNav("admin")} {tNav("dashboard")}
               </Link>
             )}
+            {needsStepUp && (
+              <Link
+                href="/auth/step-up?callbackUrl=%2Fadmin%2Fdashboard"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <span className="mr-3">🔐</span>
+                {t("verifyForAdmin")}
+              </Link>
+            )}
             <Link
               href="/portal/dashboard"
               onClick={() => setIsOpen(false)}
@@ -116,6 +125,14 @@ export function UserMenu() {
               <span className="mr-3">🏢</span>
               {t("businessPortal")}
             </Link>
+            <Link
+              href="/portal/account"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <span className="mr-3">👤</span>
+              {t("account")}
+            </Link>
           </div>
 
           {/* Sign Out */}
@@ -123,7 +140,7 @@ export function UserMenu() {
             <button
               onClick={() => {
                 setIsOpen(false);
-                signOut({ callbackUrl: "/" });
+                signOut();
               }}
               className="flex items-center w-full px-4 py-2 text-sm text-error-600 hover:bg-error-50 transition-colors"
             >

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/use-auth";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/Card";
@@ -17,7 +17,8 @@ function ClaimEntityContent() {
   const entityId = searchParams.get("entityId");
   const t = useTranslations("claim");
   const tCommon = useTranslations("common");
-  const { data: session, status: sessionStatus } = useSession();
+  const { session, loading: sessionLoading } = useAuth();
+  const sessionStatus = sessionLoading ? "loading" : session ? "authenticated" : "unauthenticated";
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

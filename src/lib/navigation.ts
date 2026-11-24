@@ -43,6 +43,7 @@ export const adminNavItems: NavItem[] = [
  */
 export const portalNavItems: NavItem[] = [
   { href: "/portal/dashboard", labelKey: "dashboard" },
+  { href: "/portal/account", labelKey: "account" },
 ];
 
 /**
