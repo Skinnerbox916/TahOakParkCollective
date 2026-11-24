@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
+import { createSuccessResponse, createErrorResponse, entityErrorResponse, withRole } from "@/lib/api-helpers";
+import { proposeUpdate } from "@/lib/entities";
 import { ROLE } from "@/lib/prismaEnums";
 import { deleteUpload, keyFromPublicUrl } from "@/lib/storage";
 
@@ -10,7 +11,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; type: string }> }
 ) {
-  return withRole([ROLE.ADMIN], async () => {
+  return withRole([ROLE.ADMIN], async (user) => {
     try {
       const { id, type } = await params;
 
@@ -36,12 +37,7 @@ export async function DELETE(
       const updatedImages = { ...currentImages };
       delete updatedImages[type];
 
-      await prisma.entity.update({
-        where: { id },
-        data: {
-          images: updatedImages,
-        },
-      });
+      await proposeUpdate(user, id, { images: updatedImages }, { source: "admin" });
 
       // Files from before UPLOAD_DIR existed live in public/ and are left alone;
       // keyFromPublicUrl still maps them, but deleteUpload only touches
@@ -55,8 +51,7 @@ export async function DELETE(
 
       return createSuccessResponse(null, "Image removed successfully");
     } catch (error) {
-      console.error("Error removing image:", error);
-      return createErrorResponse("Failed to remove image", 500);
+      return entityErrorResponse(error, "Failed to remove image");
     }
   });
 }

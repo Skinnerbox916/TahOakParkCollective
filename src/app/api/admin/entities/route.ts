@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
+import { createSuccessResponse, createErrorResponse, entityErrorResponse, withRole } from "@/lib/api-helpers";
+import { proposeUpdate } from "@/lib/entities";
 import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import { entityIncludeWithOwner, buildAdminEntitySearchWhere } from "@/lib/entity-helpers";
@@ -86,51 +87,21 @@ export async function PUT(request: NextRequest) {
         return createErrorResponse("Entity ID is required", 400);
       }
 
-      const updateData: any = {};
+      const fields: Record<string, unknown> = {};
+      if (status !== undefined) fields.status = status;
+      if (featured !== undefined) fields.featured = Boolean(featured);
+      if (entityType !== undefined) fields.entityType = entityType;
 
-      if (status !== undefined) {
-        if (!Object.values(ENTITY_STATUS).includes(status)) {
-          return createErrorResponse("Valid status is required", 400);
-        }
-        updateData.status = status;
-      }
-
-      if (featured !== undefined) {
-        updateData.featured = Boolean(featured);
-      }
-
-      if (entityType !== undefined) {
-        updateData.entityType = entityType;
-      }
-
-      if (Object.keys(updateData).length === 0) {
+      if (Object.keys(fields).length === 0) {
         return createErrorResponse("At least one field (status, featured, or entityType) must be provided", 400);
       }
 
-      const entity = await prisma.entity.update({
-        where: { id },
-        data: updateData,
-        include: {
-          categories: true,
-          tags: {
-            include: {
-              tag: true,
-            },
-          },
-          owner: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-      });
+      await proposeUpdate(user, id, fields, { source: "admin" });
+      const entity = await prisma.entity.findUnique({ where: { id }, include: entityIncludeWithOwner });
 
       return createSuccessResponse(entity, "Entity updated successfully");
     } catch (error) {
-      console.error("Error updating entity:", error);
-      return createErrorResponse("Failed to update entity", 500);
+      return entityErrorResponse(error, "Failed to update entity");
     }
   });
 }

@@ -1,13 +1,11 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/generated/prisma/client";
-import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
-import { ENTITY_STATUS, ROLE, ENTITY_TYPE, ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
+import { createSuccessResponse, createErrorResponse, entityErrorResponse, withAuth } from "@/lib/api-helpers";
+import { ENTITY_STATUS, ROLE } from "@/lib/prismaEnums";
 import type { EntityType } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
-import { entityIncludePublic, transformEntity, buildEntityWhereClause } from "@/lib/entity-helpers";
-import { validateEntityInput } from "@/lib/schemas/entitySchema";
-import { normalizeSnapshot } from "@/lib/entitySnapshot";
+import { entityIncludePublic, entityIncludeWithOwner, transformEntity, buildEntityWhereClause } from "@/lib/entity-helpers";
+import { proposeNewEntity } from "@/lib/entities";
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,201 +63,54 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * Create a listing. Admins create it directly; anyone else submits it for
+ * review (it's created, owned by them, when an admin approves). Forms send
+ * category and tag ids, which are resolved to slugs here.
+ */
 export async function POST(request: NextRequest) {
   return withAuth(async (user) => {
     try {
       const body = await request.json();
-      const { name, description, address, phone, website, categoryIds, ownerId, entityType, socialMedia, hours, tagIds, seoTitleTranslations, seoDescriptionTranslations } = body;
+      const isAdmin = user.roles.includes(ROLE.ADMIN);
 
-      const validation = validateEntityInput({
-        name,
-        description,
-        address,
-        phone,
-        website,
-        socialMedia,
-        hours,
-      });
+      const [categories, tags] = await Promise.all([
+        Array.isArray(body.categoryIds) && body.categoryIds.length > 0
+          ? prisma.category.findMany({ where: { id: { in: body.categoryIds } }, select: { slug: true } })
+          : null,
+        Array.isArray(body.tagIds) && body.tagIds.length > 0
+          ? prisma.tag.findMany({ where: { id: { in: body.tagIds } }, select: { slug: true } })
+          : null,
+      ]);
+      const input = {
+        ...body,
+        ...(categories && { categorySlugs: categories.map((c) => c.slug) }),
+        ...(tags && { tagSlugs: tags.map((t) => t.slug) }),
+      };
 
-      if (!validation.success) {
-        const firstError = Object.values(validation.fieldErrors)[0];
-        return createErrorResponse(firstError || validation.error, 400, validation.fieldErrors);
+      let ownerId: string | undefined;
+      if (isAdmin && typeof body.ownerId === "string" && body.ownerId) {
+        const owner = await prisma.user.findUnique({ where: { id: body.ownerId }, select: { id: true } });
+        if (!owner) return createErrorResponse("Specified owner not found", 400);
+        ownerId = owner.id;
       }
 
-      const normalized = validation.data;
+      const result = await proposeNewEntity(user, input, { source: isAdmin ? "admin" : "owner", ownerId });
 
-      // Non-admins never write entities directly. Their submission becomes a
-      // pending NEW_ENTITY approval; the entity is created, owned by them, only
-      // when an admin approves it (see /api/admin/approvals/[id]).
-      if (!user.roles.includes(ROLE.ADMIN)) {
-        const [categories, tags] = await Promise.all([
-          Array.isArray(categoryIds) && categoryIds.length > 0
-            ? prisma.category.findMany({ where: { id: { in: categoryIds } }, select: { slug: true } })
-            : Promise.resolve([] as { slug: string }[]),
-          Array.isArray(tagIds) && tagIds.length > 0
-            ? prisma.tag.findMany({ where: { id: { in: tagIds } }, select: { slug: true } })
-            : Promise.resolve([] as { slug: string }[]),
-        ]);
-
-        const validEntityTypes: readonly string[] = Object.values(ENTITY_TYPE);
-        const snapshot = normalizeSnapshot({
-          name: normalized.name,
-          description: normalized.description ?? null,
-          address: normalized.address ?? null,
-          phone: normalized.phone ?? null,
-          website: normalized.website ?? null,
-          hours: normalized.hours ?? null,
-          socialMedia: normalized.socialMedia ?? null,
-          entityType: validEntityTypes.includes(entityType) ? entityType : ENTITY_TYPE.COMMERCE,
-          categorySlugs: categories.map((c) => c.slug),
-          tagSlugs: tags.map((t) => t.slug),
-          ownerId: user.id,
-        });
-
-        const approval = await prisma.approval.create({
-          data: {
-            type: ApprovalType.NEW_ENTITY,
-            status: ApprovalStatus.PENDING,
-            proposedEntityData: snapshot as unknown as Prisma.InputJsonValue,
-            submittedBy: user.id,
-            submitterEmail: user.email ?? null,
-            source: "owner",
-          },
-          select: { id: true, status: true },
-        });
-
+      if (result.pending) {
         return createSuccessResponse(
-          { approval, pendingReview: true },
+          { approval: { id: result.approval.id, status: result.approval.status }, pendingReview: true },
           "Submitted for review"
         );
       }
 
-      // Admin path: create the entity directly.
-      // Determine the owner ID
-      let finalOwnerId = user.id;
-      if (ownerId && user.roles.includes(ROLE.ADMIN)) {
-        const owner = await prisma.user.findUnique({
-          where: { id: ownerId },
-        });
-        if (!owner) {
-          return createErrorResponse("Specified owner not found", 400);
-        }
-        finalOwnerId = ownerId;
-      }
-
-      // Generate slug from name
-      const slug = normalized.name
-        .toLowerCase()
-        .trim()
-        .replace(/[^\w\s-]/g, "")
-        .replace(/[\s_-]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-
-      // Ensure unique slug
-      let check = await prisma.entity.findUnique({
-        where: { slug },
+      const entity = await prisma.entity.findUnique({
+        where: { id: result.entityId },
+        include: entityIncludeWithOwner,
       });
-
-      let uniqueSlug = slug;
-      let counter = 1;
-      while (check) {
-        uniqueSlug = `${slug}-${counter}`;
-        check = await prisma.entity.findUnique({
-          where: { slug: uniqueSlug },
-        });
-        counter++;
-      }
-
-      // Admin-created entities default to ACTIVE unless a status is given
-      const status = body.status || ENTITY_STATUS.ACTIVE;
-
-      const finalEntityType = entityType || ENTITY_TYPE.COMMERCE;
-
-      const cleanedSocialMedia = normalized.socialMedia ?? null;
-      const cleanedHours = normalized.hours ?? null;
-
-      // Clean SEO translation fields - validate JSON structure
-      let cleanedSeoTitleTranslations = null;
-      if (seoTitleTranslations && typeof seoTitleTranslations === 'object') {
-        const cleaned: any = {};
-        for (const [locale, value] of Object.entries(seoTitleTranslations)) {
-          if (value && typeof value === 'string' && value.trim()) {
-            cleaned[locale] = value.trim();
-          }
-        }
-        cleanedSeoTitleTranslations = Object.keys(cleaned).length > 0 ? cleaned : null;
-      }
-
-      let cleanedSeoDescriptionTranslations = null;
-      if (seoDescriptionTranslations && typeof seoDescriptionTranslations === 'object') {
-        const cleaned: any = {};
-        for (const [locale, value] of Object.entries(seoDescriptionTranslations)) {
-          if (value && typeof value === 'string' && value.trim()) {
-            cleaned[locale] = value.trim();
-          }
-        }
-        cleanedSeoDescriptionTranslations = Object.keys(cleaned).length > 0 ? cleaned : null;
-      }
-
-      // Use transaction to create entity and tags atomically
-      const entity = await prisma.$transaction(async (tx) => {
-        // Create the entity
-        const newEntity = await tx.entity.create({
-          data: {
-            name: normalized.name,
-            slug: uniqueSlug,
-            description: normalized.description,
-            address: normalized.address,
-            phone: normalized.phone,
-            website: normalized.website,
-            categories: categoryIds?.length ? { connect: categoryIds.map((id: string) => ({ id })) } : undefined,
-            entityType: finalEntityType,
-            status,
-            ownerId: finalOwnerId,
-            socialMedia: cleanedSocialMedia ?? Prisma.DbNull,
-            hours: cleanedHours ?? Prisma.DbNull,
-            seoTitleTranslations: cleanedSeoTitleTranslations,
-            seoDescriptionTranslations: cleanedSeoDescriptionTranslations,
-          },
-        });
-
-        // Create tags if provided
-        if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
-          await tx.entityTag.createMany({
-            data: tagIds.map((tagId: string) => ({
-              entityId: newEntity.id,
-              tagId,
-              verified: true,
-              createdBy: finalOwnerId,
-            })),
-          });
-        }
-
-        // Return entity with all relations
-        return tx.entity.findUnique({
-          where: { id: newEntity.id },
-          include: {
-            categories: true,
-            owner: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-            tags: {
-              include: {
-                tag: true,
-              },
-            },
-          },
-        });
-      });
-
       return createSuccessResponse(entity, "Entity created successfully");
     } catch (error) {
-      console.error("Error creating entity:", error);
-      return createErrorResponse("Failed to create entity", 500);
+      return entityErrorResponse(error, "Failed to create entity");
     }
   });
 }

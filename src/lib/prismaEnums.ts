@@ -39,9 +39,6 @@ export type TagCategory =
 export const ApprovalType = {
   NEW_ENTITY: "NEW_ENTITY",
   UPDATE_ENTITY: "UPDATE_ENTITY",
-  ADD_TAG: "ADD_TAG",
-  REMOVE_TAG: "REMOVE_TAG",
-  UPDATE_IMAGE: "UPDATE_IMAGE",
 } as const;
 
 export type ApprovalType =

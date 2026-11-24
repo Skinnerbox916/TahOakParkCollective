@@ -71,7 +71,12 @@ model Entity {
   approvalTargets     Approval[]       @relation("ApprovalTargetEntity")
   spotCheckDate       DateTime?
   verificationContact String?
-  
+  issueReports        IssueReport[]
+
+  // Bumped on every write by src/lib/entities. Approvals record the version
+  // they were based on, so stale proposals are detected instead of applied.
+  version       Int             @default(1)
+
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
@@ -117,16 +122,26 @@ model Approval {
   type               ApprovalType
   status             ApprovalStatus @default(PENDING)
   
-  // Unified snapshot model
-  proposedEntityData Json
-  
-  // Target entity for updates (null for NEW_ENTITY)
+  // NEW_ENTITY: the full proposed entity. UPDATE_ENTITY: only the changed
+  // fields. Column keeps its old name so deploys don't break the running app.
+  payload            Json           @map("proposedEntityData")
+
+  // UPDATE_ENTITY only: entity version and values of the changed fields at
+  // submission time. Approval refuses fields that changed since (conflicts).
+  baseVersion        Int?
+  baseValues         Json?
+
+  // Automated checks run at submission (geocoding, coverage area)
+  checks             Json?
+
+  // Target entity for updates (null for NEW_ENTITY). SetNull keeps the
+  // approval history when an entity is deleted.
   targetEntityId     String?
-  targetEntity       Entity?        @relation("ApprovalTargetEntity", fields: [targetEntityId], references: [id], onDelete: Cascade)
+  targetEntity       Entity?        @relation("ApprovalTargetEntity", fields: [targetEntityId], references: [id], onDelete: SetNull)
 
   // Backward link to created entity (for NEW_ENTITY approvals once approved)
   entityId           String?
-  entity             Entity?        @relation("ApprovalCreatedEntity", fields: [entityId], references: [id], onDelete: Cascade)
+  entity             Entity?        @relation("ApprovalCreatedEntity", fields: [entityId], references: [id], onDelete: SetNull)
   
   // Submitter info
   submittedBy        String?        // User ID (nullable for public/AI submissions)
@@ -151,6 +166,7 @@ model Approval {
 model IssueReport {
   id            String   @id @default(cuid())
   entityId      String
+  entity        Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
   issueType     IssueType
   description   String   @db.Text
   submitterEmail String
@@ -228,9 +244,6 @@ enum TagCategory {
 enum ApprovalType {
   NEW_ENTITY
   UPDATE_ENTITY
-  ADD_TAG
-  REMOVE_TAG
-  UPDATE_IMAGE
 }
 
 enum ApprovalStatus {

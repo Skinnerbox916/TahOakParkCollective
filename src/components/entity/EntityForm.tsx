@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { EntityWithRelations, ApiResponse, Category, EntityTagWithTag, SocialMediaLinks, BusinessHours } from "@/types";
+import { EntityWithRelations, ApiResponse, Category, SocialMediaLinks, BusinessHours } from "@/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -12,16 +12,17 @@ import { ENTITY_TYPES, ENTITY_TYPE_LABELS } from "@/lib/constants";
 import type { EntityType, EntityStatus } from "@/lib/prismaEnums";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { TagSelector } from "@/components/tags/TagSelector";
-import { ImageManager } from "@/components/images/ImageManager";
 import { BusinessHoursInput } from "@/components/form/BusinessHoursInput";
 import { getFormConfig, type SocialPlatform } from "@/lib/entityFormConfig";
 import { formatPhoneNumber, normalizeUrl, isValidUrl } from "@/lib/utils";
 import { validateEntityInput } from "@/lib/schemas/entitySchema";
 
+/**
+ * Create-a-listing form. Edits go through EntityPreview, which submits the
+ * whole listing to PUT /api/entities/[id] (an approval for owners).
+ */
 interface EntityFormProps {
-  entity?: EntityWithRelations;
   onSuccess?: () => void;
-  onEntityUpdate?: (entity: EntityWithRelations) => void;
   adminMode?: boolean;
 }
 
@@ -43,7 +44,7 @@ interface User {
   name: string | null;
 }
 
-export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = false }: EntityFormProps) {
+export function EntityForm({ onSuccess, adminMode = false }: EntityFormProps) {
   const router = useRouter();
   const t = useTranslations(adminMode ? "admin.entityForm" : "portal.form");
   const [loading, setLoading] = useState(false);
@@ -62,7 +63,6 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
   const [categoryId, setCategoryId] = useState("");
   const [entityType, setEntityType] = useState<EntityType>("COMMERCE");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
-  const [tagLoading, setTagLoading] = useState(false);
   const [hours, setHours] = useState<BusinessHours>({});
   const [status, setStatus] = useState<EntityStatus>(ENTITY_STATUS.ACTIVE);
   const [ownerId, setOwnerId] = useState("");
@@ -93,7 +93,7 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
   // Get form configuration based on entity type
   const formConfig = useMemo(() => getFormConfig(entityType), [entityType]);
 
-  // Load categories and populate form if editing
+  // Load categories (and users, for admins)
   useEffect(() => {
     async function loadData() {
       try {
@@ -118,54 +118,8 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
 
     loadData();
 
-    // Populate form if editing
-    if (entity) {
-      setName(entity.name || "");
-      setDescription(entity.description || "");
-      setAddress(entity.address || "");
-      setPhone(entity.phone || "");
-      setWebsite(entity.website || "");
-      // Extract first category from categories array (many-to-many relationship)
-      const firstCategory = entity.categories && Array.isArray(entity.categories) && entity.categories.length > 0
-        ? entity.categories[0].id
-        : "";
-      setCategoryId(firstCategory);
-      setEntityType(entity.entityType || "COMMERCE");
-      if (adminMode) {
-        setStatus(entity.status || ENTITY_STATUS.ACTIVE);
-        setOwnerId(entity.ownerId || "");
-      }
-      // Load hours
-      if (entity.hours && typeof entity.hours === 'object') {
-        setHours(entity.hours as BusinessHours);
-      }
-      // Load social media
-      if (entity.socialMedia && typeof entity.socialMedia === 'object') {
-        const social = entity.socialMedia as SocialMediaLinks;
-        setSocialMedia({
-          facebook: social.facebook || "",
-          instagram: social.instagram || "",
-          twitter: social.twitter || "",
-          linkedin: social.linkedin || "",
-          yelp: social.yelp || "",
-          tiktok: social.tiktok || "",
-          youtube: social.youtube || "",
-          threads: social.threads || "",
-        });
-      }
-      // Load tags
-      if (entity.tags) {
-        const tagIds = (entity.tags as EntityTagWithTag[]).map(et => et.tag.id);
-        setSelectedTagIds(tagIds);
-      }
-      // Initialize section expansion for entities with data
-      const hasLocationData = !!(entity.address || entity.phone || entity.website);
-      setLocationContactExpanded(hasLocationData);
-      const socialData = entity.socialMedia as SocialMediaLinks | undefined;
-      const hasOnlineData = socialData && Object.values(socialData).some(v => v && v.trim());
-      setOnlinePresenceExpanded(!!hasOnlineData);
-    }
-  }, [entity]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Filter categories by entity type
   useEffect(() => {
@@ -188,7 +142,6 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
   const hasLocationContactData = !!(address.trim() || phone.trim() || website.trim());
   const hasHoursData = Object.keys(hours).length > 0;
   const hasOnlinePresenceData = Object.values(socialMedia).some(v => v && v.trim());
-  const hasMediaData = entity?.images && Object.keys(entity.images as object).length > 0;
   const hasTagsData = selectedTagIds.length > 0;
 
   const getSectionForField = (field: string | undefined): string | undefined => {
@@ -253,53 +206,8 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
     }
   };
 
-  const handleTagChange = async (newTagIds: string[]) => {
-    // For new entities, just update local state (tags will be saved with entity creation)
-    if (!entity?.id) {
-      setSelectedTagIds(newTagIds);
-      return;
-    }
-
-    // For existing entities, make API calls to add/remove tags
-    setTagLoading(true);
-    const oldTagIds = selectedTagIds;
-    
-    // Find added and removed tags
-    const added = newTagIds.filter(id => !oldTagIds.includes(id));
-    const removed = oldTagIds.filter(id => !newTagIds.includes(id));
-
-    try {
-      // Add new tags
-      for (const tagId of added) {
-        const res = await fetch(`/api/entities/${entity.id}/tags`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tagId }),
-        });
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || "Failed to add tag");
-        }
-      }
-
-      // Remove tags
-      for (const tagId of removed) {
-        const res = await fetch(`/api/entities/${entity.id}/tags?tagId=${tagId}`, {
-          method: "DELETE",
-        });
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || "Failed to remove tag");
-        }
-      }
-
-      setSelectedTagIds(newTagIds);
-    } catch (err) {
-      console.error("Error updating tags:", err);
-      setError(err instanceof Error ? err.message : "Failed to update tags");
-    } finally {
-      setTagLoading(false);
-    }
+  const handleTagChange = (newTagIds: string[]) => {
+    setSelectedTagIds(newTagIds);
   };
 
   // Helper function to clean social media links - remove empty values
@@ -395,25 +303,14 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
         }
       }
 
-      let response: Response;
-      if (entity) {
-        // Update existing entity
-        response = await fetch(`/api/entities/${entity.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      } else {
-        // Create new entity - include tags in payload
-        if (selectedTagIds.length > 0) {
-          payload.tagIds = selectedTagIds;
-        }
-        response = await fetch("/api/entities", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+      if (selectedTagIds.length > 0) {
+        payload.tagIds = selectedTagIds;
       }
+      const response = await fetch("/api/entities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       const data: ApiResponse<EntityWithRelations | { pendingReview: true }> = await response.json();
 
@@ -431,10 +328,9 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
       }
 
       const savedEntity = data.data;
-      setSuccess(entity ? t("success.updated") : t("success.created"));
-      
-      // If creating, redirect to edit page so user can add images
-      if (!entity && savedEntity) {
+      setSuccess(t("success.created"));
+
+      if (savedEntity) {
         setTimeout(() => {
           router.push(`/portal/entity/${savedEntity.id}`);
         }, 1500);
@@ -580,7 +476,6 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
         <FormSection
           title={t("sections.about")}
           hasData={hasAboutData}
-          defaultExpanded={!!entity && hasAboutData}
         >
           <textarea
             value={description}
@@ -649,7 +544,6 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
             title={t(`sections.${formConfig.sections.hours.titleKey}`)}
             description={formConfig.sections.hours.descriptionKey ? t(`sections.${formConfig.sections.hours.descriptionKey}`) : undefined}
             hasData={hasHoursData}
-            defaultExpanded={!!entity && hasHoursData}
           >
             <BusinessHoursInput
               value={hours}
@@ -685,32 +579,6 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
           </FormSection>
         </div>
 
-        {/* Media Section - only show for existing entities */}
-        {entity && (
-          <FormSection
-            title={t("sections.media")}
-            hasData={!!hasMediaData}
-            defaultExpanded={!!hasMediaData}
-          >
-            <ImageManager
-              entityId={entity.id}
-              currentImages={entity.images as Record<string, string> | null}
-              onImageUpdate={async () => {
-                // Refresh entity data after image update
-                try {
-                  const response = await fetch(`/api/entities/${entity.id}`);
-                  const data: ApiResponse<EntityWithRelations> = await response.json();
-                  if (data.success && data.data && onEntityUpdate) {
-                    onEntityUpdate(data.data);
-                  }
-                } catch (err) {
-                  console.error("Failed to refresh entity:", err);
-                }
-              }}
-            />
-          </FormSection>
-        )}
-
         {/* Tags Section */}
         <FormSection
           title={t("sections.tags")}
@@ -719,9 +587,6 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
           defaultExpanded={hasTagsData}
         >
           <div>
-            {tagLoading && (
-              <span className="text-xs text-gray-500 mb-2 block">{t("loading")}</span>
-            )}
             <TagSelector
               selectedTagIds={selectedTagIds}
               onChange={handleTagChange}
@@ -729,25 +594,13 @@ export function EntityForm({ entity, onSuccess, onEntityUpdate, adminMode = fals
           </div>
         </FormSection>
 
-        {!entity && (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
-            {t("hints.addMediaLater")}
-          </div>
-        )}
-
         <div className="flex gap-4 pt-4">
           <Button
             type="submit"
             disabled={loading}
             className="flex-1"
           >
-            {loading
-              ? entity
-                ? t("buttons.updating")
-                : t("buttons.creating")
-              : entity
-              ? t("buttons.update")
-              : t("buttons.create")}
+            {loading ? t("buttons.creating") : t("buttons.create")}
           </Button>
           <Button
             type="button"

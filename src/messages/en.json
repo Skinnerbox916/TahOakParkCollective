@@ -645,17 +645,15 @@
       "submittedBy": "By:",
       "types": {
         "NEW_ENTITY": "New Entity",
-        "UPDATE_ENTITY": "Update Entity",
-        "ADD_TAG": "Add Tag",
-        "REMOVE_TAG": "Remove Tag",
-        "UPDATE_IMAGE": "Update Image"
+        "UPDATE_ENTITY": "Update Entity"
       },
       "sources": {
         "ai": "AI Quick-Add",
         "ai_suggest": "AI Suggested Updates",
         "public": "Public Suggestion",
         "owner": "Entity Owner",
-        "admin": "Admin"
+        "admin": "Admin",
+        "claim": "Ownership claim"
       },
       "detail": {
         "title": "Approval Details",
@@ -704,10 +702,23 @@
         "licenseStatus": "License Status",
         "owners": "Owners/Principals",
         "agentForService": "Agent for Service",
-        "source": "Source",
         "verifiedDate": "Verified Date",
-        "notes": "Notes"
-      }
+        "notes": "Notes",
+        "changesTitle": "Proposed changes",
+        "atSubmission": "At submission",
+        "now": "Now",
+        "proposed": "Proposed",
+        "emptyValue": "(empty)",
+        "conflictTitle": "This listing changed after the proposal was submitted",
+        "conflictBody": "Changed since: {fields}. Edit the proposal to rebase it onto the current listing, then approve.",
+        "geocodeFailed": "The address couldn't be found on the map, so the listing has no pin.",
+        "outOfCoverage": "This location is outside the coverage area.",
+        "claimNote": "Ownership claim: approving transfers this listing to {email}.",
+        "staleVersion": "This listing changed since you opened it. Reload to see the latest version, then make your edits again.",
+        "submittedForReview": "Your changes were submitted. An admin will review them before they appear.",
+        "noChanges": "Nothing changed."
+      },
+      "changedFields": "Changes: {fields}"
     },
     "issueReports": {
       "title": "Issue Reports",
@@ -872,12 +883,13 @@
       "addFirst": "Add Your First Entity",
       "view": "View",
       "edit": "Edit",
-      "delete": "Delete",
+      "delete": "Request removal",
       "categoryLabel": "Category:",
-      "deleteConfirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+      "deleteConfirm": "Ask an admin to remove \"{name}\" from the directory? It stays listed until the request is approved.",
       "pageViews": "Page Views",
       "visitors": "Visitors",
-      "last30Days": "Last 30 days"
+      "last30Days": "Last 30 days",
+      "removalRequested": "Removal requested. An admin will review it."
     },
     "entity": {
       "editTitle": "Edit Entity",
@@ -963,4 +975,3 @@
     }
   }
 }
-

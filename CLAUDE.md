@@ -13,6 +13,7 @@ TahOak Park Collective — a hyper-local business directory for Sacramento neigh
 npm run dev           # Start Next.js dev server
 npm run build         # Build for production
 npm run lint          # ESLint
+npm test              # Vitest service tests; needs TEST_DATABASE_URL (a migrated DB the tests wipe)
 
 # Database
 npm run db:migrate    # Run Prisma migrations
@@ -22,7 +23,10 @@ npm run db:generate   # Regenerate Prisma client after schema changes
 # Docker (preferred for local dev)
 docker compose up -d
 docker exec tahoak-web npm install   # Install packages (never from host)
+docker exec -e TEST_DATABASE_URL=postgresql://tahoak:<pw>@tahoak-db:5432/tahoak_test tahoak-web npm test
 ```
+
+The dev container bind-mounts single files (package.json, tsconfig.json, ...). npm and git replace those files rather than editing them, which detaches the mount: after `npm install` in the container, copy `/app/package.json` and `/app/package-lock.json` back out with `docker exec tahoak-web cat ...`, and recreate the container (`docker compose up -d --no-deps tahoak-web`) if it reports a missing mount.
 
 **Test credentials** (after seeding): see `README.md`.
 
@@ -50,13 +54,13 @@ src/app/api/
 | `src/lib/api-helpers.ts` | `withAuth()`, `withRole()` middleware; `createSuccessResponse()` / `createErrorResponse()` |
 | `src/lib/prisma.ts` | Singleton Prisma client with connection pooling |
 | `src/lib/entity-helpers.ts` | Entity validation, slug generation |
-| `src/lib/entitySnapshot.ts` / `applyEntitySnapshot.ts` | Approval workflow: snapshot before/after edits |
+| `src/lib/entities/` | **Entity write service.** The only code that writes Entity/EntityTag rows: `proposeNewEntity`, `proposeUpdate`, `approveApproval`, `rejectApproval`, `rebaseApproval`, `deleteEntity` |
 | `src/lib/ai/` | AI-powered entity research and update suggestions (OpenAI) |
 
 ### Data Model Highlights
 
-- **Entity**: Core model. Has `translations` JSON for `{en,es}` name/description/seo. Status: `ACTIVE | PENDING | REJECTED | INACTIVE`.
-- **Approval**: Every public mutation creates an approval record (`NEW_ENTITY`, `UPDATE_ENTITY`, `ADD_TAG`, `REMOVE_TAG`, `UPDATE_IMAGE`). Admins approve/reject.
+- **Entity**: Core model. Has `*Translations` JSON for `{en,es}` name/description/seo. Status: `ACTIVE | INACTIVE | PENDING_REVIEW`. `version` is bumped on every write.
+- **Approval**: Every entity change is an approval (`NEW_ENTITY`, `UPDATE_ENTITY`). `payload` holds the full new entity, or only the changed fields for an update, with `baseValues`/`baseVersion` recording what they were based on. Admin changes are auto-approved in the same transaction; anyone else's wait for review. Approving refuses fields that changed since submission (409 `conflict`) until an admin edits (rebases) the proposal. Edit forms send the `version` they loaded; a mismatch is 409 `stale_version`.
 - **Tag**: Three `TagCategory` values — `IDENTITY` (owner-assigned, e.g. Black-owned), `FRIENDLINESS` (admin-verified), `AMENITY`.
 - **User roles**: `USER`, `ENTITY_OWNER`, `ADMIN`.
 
@@ -93,4 +97,4 @@ Generated to `src/generated/prisma` (not the default location). Import from ther
 - **Never hardcode categories, tags, or entities** — the database is the source of truth.
 - **Never run `npm install` from the host** — always use `docker exec tahoak-web npm install`.
 - **Schema changes require updating all consuming code** — API routes, components, types, seed file.
-- **Approval workflow is mandatory** for public mutations — direct DB writes bypass it.
+- **All entity writes go through `src/lib/entities`.** No `prisma.entity`/`prisma.entityTag` create/update/delete anywhere else; add a service function instead. Routes map its errors with `entityErrorResponse`.
