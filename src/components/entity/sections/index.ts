@@ -17,7 +17,6 @@ export { PhotosSection } from "./PhotosSection";
 export { ContactSection } from "./ContactSection";
 export { HoursSection } from "./HoursSection";
 export { SocialMediaSection } from "./SocialMediaSection";
-export { ClaimSection } from "./ClaimSection";
 export { ReportSection } from "./ReportSection";
 
 // Import for registry
@@ -28,7 +27,6 @@ import { PhotosSection } from "./PhotosSection";
 import { ContactSection } from "./ContactSection";
 import { HoursSection } from "./HoursSection";
 import { SocialMediaSection } from "./SocialMediaSection";
-import { ClaimSection } from "./ClaimSection";
 import { ReportSection } from "./ReportSection";
 
 /**
@@ -51,7 +49,6 @@ export const SECTION_COMPONENTS: Record<SectionId, ComponentType<SectionProps>> 
   contact: ContactSection,
   hours: HoursSection,
   socialMedia: SocialMediaSection,
-  claim: ClaimSection,
   report: ReportSection,
 };
 

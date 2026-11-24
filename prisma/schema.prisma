@@ -31,6 +31,7 @@ model User {
   updatedAt        DateTime       @default(now()) @updatedAt
 
   memberships      EntityMember[]
+  consents         Entity[]       @relation("EntityConsent")
   authSessions     AuthSession[]
   authAccounts     AuthAccount[]
   passkeys         Passkey[]
@@ -87,6 +88,15 @@ model Entity {
   // they were based on, so stale proposals are detected instead of applied.
   version       Int             @default(1)
 
+  // Owner opt-in (src/lib/entities/consent.ts). Only publish/unpublish write
+  // these. A CHECK constraint (migration 20261125000000_owner_opt_in) keeps
+  // listings that need consent from being ACTIVE without it.
+  consentedAt         DateTime?
+  consentedById       String?
+  consentedBy         User?             @relation("EntityConsent", fields: [consentedById], references: [id], onDelete: SetNull)
+  consentTermsVersion String?
+  shareLinks          EntityShareLink[]
+
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
@@ -112,6 +122,26 @@ model EntityMember {
 }
 
 // New Models for MVP
+
+/// A private link to a draft listing that an admin shares with its owner by
+/// text or email. Opening it shows the listing; the owner can then take it
+/// over and publish it. Single use. Only the SHA-256 of the token is stored.
+model EntityShareLink {
+  id          String    @id @default(cuid())
+  entityId    String
+  entity      Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  tokenHash   String    @unique
+  sentTo      String?   // email address, when it was emailed
+  locale      String    @default("en")
+  createdById String?   // admin who shared it
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  usedAt      DateTime?
+  usedById    String?
+  revokedAt   DateTime?
+
+  @@index([entityId])
+}
 
 model Tag {
   id              String      @id @default(cuid())

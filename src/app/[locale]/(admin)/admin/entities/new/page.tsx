@@ -8,8 +8,9 @@ export default function AdminNewEntity() {
   const router = useRouter();
   const { t } = useAdminTranslations("entities.newPage");
 
-  const handleSuccess = () => {
-    router.push("/admin/entities");
+  // Open the new listing, where a draft can be shared with its owner.
+  const handleSuccess = (entityId: string) => {
+    router.push(`/admin/entities/${entityId}/edit`);
   };
 
   return (

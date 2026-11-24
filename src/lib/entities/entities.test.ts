@@ -10,21 +10,29 @@ import { prisma } from "@/lib/prisma";
 import {
   AlreadyProcessedError,
   ConflictError,
+  ConsentRequiredError,
   EntityServiceError,
   ForbiddenError,
+  LISTING_TERMS_VERSION,
   NoChangesError,
   StaleVersionError,
   ValidationError,
+  acceptShareLink,
   addMember,
   approveApproval,
+  createShareLink,
   listMembers,
-  proposeClaim,
+  listShareLinks,
+  lookupShareLink,
   removeMember,
   deleteEntity,
   proposeNewEntity,
   proposeUpdate,
+  publishListing,
   rebaseApproval,
   rejectApproval,
+  revokeShareLink,
+  unpublishListing,
   type Actor,
 } from "@/lib/entities";
 
@@ -34,7 +42,7 @@ let stranger: Actor;
 
 async function resetDatabase() {
   await prisma.$executeRawUnsafe(
-    `TRUNCATE "Approval", "EntityMember", "EntityTag", "IssueReport", "Entity", "Tag", "Category", "AuthSession", "AuthAccount", "AuthVerification", "Passkey", "TwoFactor", "User" RESTART IDENTITY CASCADE`
+    `TRUNCATE "Approval", "EntityShareLink", "EntityMember", "EntityTag", "IssueReport", "Entity", "Tag", "Category", "AuthSession", "AuthAccount", "AuthVerification", "Passkey", "TwoFactor", "User" RESTART IDENTITY CASCADE`
   );
   await prisma.category.createMany({
     data: [
@@ -59,7 +67,7 @@ async function resetDatabase() {
   stranger = { id: s.id, roles: ["USER"], email: s.email };
 }
 
-/** An ACTIVE entity owned by `owner`, created the way an admin would. */
+/** A business owned by `owner`, created the way an admin would: a private draft until published. */
 async function seedEntity(overrides: Record<string, unknown> = {}) {
   const { entityId } = await proposeNewEntity(
     admin,
@@ -172,6 +180,10 @@ describe("proposals", () => {
     await expect(proposeUpdate(owner, id, { status: "PENDING_REVIEW" }, { source: "owner" })).rejects.toBeInstanceOf(
       ValidationError
     );
+    // Owners publish and unpublish instead of proposing a status.
+    await expect(proposeUpdate(owner, id, { status: "ACTIVE" }, { source: "owner" })).rejects.toBeInstanceOf(
+      ValidationError
+    );
     // ownerId isn't a field: it's ignored rather than applied.
     await expect(proposeUpdate(owner, id, { ownerId: stranger.id }, { source: "owner" })).rejects.toBeInstanceOf(
       NoChangesError
@@ -272,16 +284,6 @@ describe("approvals", () => {
     expect(after.nameTranslations).toEqual({ en: "Corner Cafe", es: "Café de la Esquina" });
   });
 
-  it("turns an owner's delete into a removal request", async () => {
-    const id = await seedEntity();
-    const { approval, pending } = await proposeUpdate(owner, id, { status: "INACTIVE" }, { source: "owner" });
-    expect(pending).toBe(true);
-    expect((await entity(id)).status).toBe("ACTIVE");
-
-    await approveApproval(admin, approval.id);
-    expect((await entity(id)).status).toBe("INACTIVE");
-  });
-
   it("rejects without touching the entity", async () => {
     const id = await seedEntity();
     const { approval } = await proposeUpdate(owner, id, { description: "Nope" }, { source: "owner" });
@@ -291,45 +293,211 @@ describe("approvals", () => {
   });
 });
 
-describe("members and claims", () => {
-  it("makes an approved claimant an owner, without touching the listing", async () => {
+const publish = (actor: Actor, id: string) => publishListing(actor, id, { agreedTermsVersion: LISTING_TERMS_VERSION });
+const tokenOf = (url: string) => url.split("/").pop()!;
+
+describe("owner opt-in", () => {
+  it("keeps businesses private until their owner publishes; parks and civic listings don't wait", async () => {
     const id = await seedEntity();
-    const before = await entity(id);
+    expect(await entity(id)).toMatchObject({ status: "INACTIVE", consentedAt: null });
 
-    await expect(proposeClaim({ id: null, roles: [] }, id, "hi")).rejects.toBeInstanceOf(ForbiddenError);
-    await expect(proposeUpdate(stranger, id, { description: "x" }, { source: "owner" })).rejects.toBeInstanceOf(
-      ForbiddenError
+    await expect(proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" })).rejects.toBeInstanceOf(
+      ConsentRequiredError
     );
+    await expect(
+      proposeNewEntity(admin, { name: "Bakery", categorySlugs: ["food"], status: "ACTIVE" }, { source: "admin" })
+    ).rejects.toBeInstanceOf(ConsentRequiredError);
+    // The database refuses it too, whatever the application does.
+    await expect(
+      prisma.$executeRawUnsafe(`UPDATE "Entity" SET "status" = 'ACTIVE' WHERE "id" = $1`, id)
+    ).rejects.toThrow(/Entity_active_needs_consent/);
 
-    const { approval } = await proposeClaim(stranger, id, "  I run the place  ");
-    expect(approval.type).toBe("CLAIM_ENTITY");
-    expect(approval.payload).toEqual({ message: "I run the place" });
-    await expect(proposeClaim(stranger, id, "again")).rejects.toMatchObject({ code: "claim_pending" });
+    const { entityId: park } = await proposeNewEntity(admin, { name: "Park", categorySlugs: ["parks"], entityType: "PUBLIC_SPACE" }, { source: "admin" });
+    const { entityId: office } = await proposeNewEntity(admin, { name: "Library", categorySlugs: ["parks"], entityType: "CIVIC" }, { source: "admin" });
+    expect((await entity(park!)).status).toBe("ACTIVE");
+    expect((await entity(office!)).status).toBe("ACTIVE");
+    // A public park can't quietly become a business.
+    await expect(proposeUpdate(admin, park!, { entityType: "COMMERCE" }, { source: "admin" })).rejects.toBeInstanceOf(
+      ConsentRequiredError
+    );
+  });
 
+  it("turns approved suggestions and AI drafts into private, unclaimed drafts", async () => {
+    const { approval: suggested } = await proposeNewEntity(
+      { id: null, roles: [], email: "visitor@test.local" },
+      { name: "Suggested", categorySlugs: ["food"] },
+      { source: "public", geocode: false }
+    );
+    const { approval: drafted } = await proposeNewEntity(
+      admin,
+      { name: "Drafted", categorySlugs: ["food"] },
+      { source: "ai", autoApprove: false }
+    );
+    for (const approval of [suggested, drafted]) {
+      const { entityId, newOwnerId } = await approveApproval(admin, approval.id);
+      expect(await entity(entityId)).toMatchObject({ status: "INACTIVE", members: [] });
+      expect(newOwnerId).toBeNull();
+    }
+  });
+
+  it("lets the owner publish, recording the agreement; the owner's unpublish withdraws it", async () => {
+    const id = await seedEntity();
+    await addMember(admin, id, "stranger@test.local", "MANAGER");
+
+    await expect(publishListing(owner, id, { agreedTermsVersion: "1999-01-01" })).rejects.toMatchObject({
+      code: "terms_changed",
+    });
+    await expect(publish(stranger, id)).rejects.toBeInstanceOf(ForbiddenError); // managers can't
+    await expect(publish(admin, id)).rejects.toBeInstanceOf(ForbiddenError); // nor admins
+
+    await publish(owner, id);
+    const published = await entity(id);
+    expect(published).toMatchObject({
+      status: "ACTIVE",
+      consentedById: owner.id,
+      consentTermsVersion: LISTING_TERMS_VERSION,
+    });
+    expect(published.consentedAt).toBeInstanceOf(Date);
+    const history = await prisma.approval.findFirstOrThrow({ where: { targetEntityId: id, source: "owner" } });
+    expect(history).toMatchObject({ status: "APPROVED", payload: { status: "ACTIVE" } });
+
+    // An admin can hide it (say it closed) and bring it back: consent stays.
+    await unpublishListing(admin, id);
+    expect(await entity(id)).toMatchObject({ status: "INACTIVE", consentedById: owner.id });
+    await proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" });
+    expect((await entity(id)).status).toBe("ACTIVE");
+
+    // The owner's unpublish is immediate and withdraws consent.
+    await expect(unpublishListing(stranger, id)).rejects.toBeInstanceOf(ForbiddenError);
+    await unpublishListing(owner, id);
+    expect(await entity(id)).toMatchObject({ status: "INACTIVE", consentedAt: null, consentedById: null });
+    await expect(proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" })).rejects.toBeInstanceOf(
+      ConsentRequiredError
+    );
+  });
+
+  it("makes an owner's own submission theirs to publish once approved", async () => {
+    const { approval } = await proposeNewEntity(
+      owner,
+      { name: "Taqueria", categorySlugs: ["food"], tagSlugs: ["black-owned"] },
+      { source: "owner" }
+    );
+    const { entityId, newOwnerId } = await approveApproval(admin, approval.id);
+    expect(newOwnerId).toBe(owner.id);
+    const draft = await entity(entityId);
+    expect(draft.status).toBe("INACTIVE");
+    expect(draft.tags.map((t) => t.tag.slug)).toEqual(["black-owned"]);
+
+    await publish(owner, entityId);
+    expect((await entity(entityId)).status).toBe("ACTIVE");
+  });
+});
+
+describe("identity tags", () => {
+  it("can't be added by admins, AI or the public", async () => {
+    const id = await seedEntity();
+    await expect(
+      proposeUpdate(admin, id, { tagSlugs: ["wifi", "black-owned"] }, { source: "admin" })
+    ).rejects.toBeInstanceOf(ValidationError);
+    await expect(
+      proposeNewEntity(admin, { name: "A", categorySlugs: ["food"], tagSlugs: ["black-owned"] }, { source: "admin" })
+    ).rejects.toBeInstanceOf(ValidationError);
+    await expect(
+      proposeNewEntity(admin, { name: "B", categorySlugs: ["food"], tagSlugs: ["black-owned"] }, { source: "ai", autoApprove: false })
+    ).rejects.toBeInstanceOf(ValidationError);
+    await expect(
+      proposeNewEntity(
+        { id: null, roles: [], email: "visitor@test.local" },
+        { name: "C", categorySlugs: ["food"], tagSlugs: ["black-owned"] },
+        { source: "public", geocode: false }
+      )
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it("come from the owner; an admin can remove them but not slip new ones into a proposal", async () => {
+    const id = await seedEntity();
+    const { approval } = await proposeUpdate(owner, id, { tagSlugs: ["wifi", "black-owned"] }, { source: "owner" });
+    // Editing the owner's proposal keeps their tag but can't add another.
+    await rebaseApproval(admin, approval.id, { tagSlugs: ["wifi", "black-owned", "kid-friendly"] });
+    await prisma.tag.create({ data: { name: "Veteran owned", slug: "veteran-owned", category: "IDENTITY" } });
+    await expect(
+      rebaseApproval(admin, approval.id, { tagSlugs: ["wifi", "black-owned", "veteran-owned"] })
+    ).rejects.toBeInstanceOf(ValidationError);
     await approveApproval(admin, approval.id);
+    expect((await entity(id)).tags.map((t) => t.tag.slug).sort()).toEqual(["black-owned", "kid-friendly", "wifi"]);
+
+    await proposeUpdate(admin, id, { tagSlugs: ["wifi"] }, { source: "admin" });
+    expect((await entity(id)).tags.map((t) => t.tag.slug)).toEqual(["wifi"]);
+  });
+
+  it("aren't applied if the proposer is no longer a member when it's approved", async () => {
+    const id = await seedEntity();
+    await addMember(admin, id, "stranger@test.local", "MANAGER");
+    const { approval } = await proposeUpdate(stranger, id, { tagSlugs: ["wifi", "black-owned"] }, { source: "owner" });
+    await removeMember(admin, id, stranger.id!);
+    await expect(approveApproval(admin, approval.id)).rejects.toBeInstanceOf(ValidationError);
+  });
+});
+
+describe("share links", () => {
+  async function draft() {
+    const { entityId } = await proposeNewEntity(admin, { name: "Barber", categorySlugs: ["food"] }, { source: "admin" });
+    return entityId!;
+  }
+
+  it("hands a draft to its owner, who takes it over and publishes it in one step", async () => {
+    const id = await draft();
+    await expect(createShareLink(owner, id)).rejects.toBeInstanceOf(ForbiddenError);
+
+    const { url } = await createShareLink(admin, id, { email: "barber@test.local", locale: "es" });
+    expect(url).toMatch(/\/es\/preview\/[\w-]{40,}$/);
+    const token = tokenOf(url);
+    expect(await lookupShareLink(token)).toMatchObject({ entityId: id, state: "open" });
+    expect(await lookupShareLink("not-a-token")).toBeNull();
+
+    await expect(acceptShareLink({ id: null, roles: [] }, token, { publish: false })).rejects.toBeInstanceOf(ForbiddenError);
+    await acceptShareLink(stranger, token, { publish: true, agreedTermsVersion: LISTING_TERMS_VERSION });
+
     const after = await entity(id);
-    expect(after.members.map((m) => [m.userId, m.role]).sort()).toEqual(
-      [[owner.id, "OWNER"], [stranger.id, "OWNER"]].sort()
-    );
-    expect(after.version).toBe(before.version);
-    expect(after.nameTranslations).toEqual({ en: "Corner Cafe", es: "Café de la Esquina" });
-
-    // Now they manage it, and can't claim it again
-    await expect(proposeClaim(stranger, id, "")).rejects.toMatchObject({ code: "already_member" });
-    const { pending } = await proposeUpdate(stranger, id, { description: "Theirs" }, { source: "owner" });
-    expect(pending).toBe(true);
+    expect(after).toMatchObject({ status: "ACTIVE", consentedById: stranger.id });
+    expect(after.members).toMatchObject([{ userId: stranger.id, role: "OWNER", addedBy: admin.id }]);
+    expect(await lookupShareLink(token)).toMatchObject({ state: "used", usedById: stranger.id });
+    await expect(acceptShareLink(owner, token, { publish: false })).rejects.toMatchObject({ code: "link_used" });
   });
 
-  it("doesn't let claims be edited or approved twice", async () => {
-    const id = await seedEntity();
-    const { approval } = await proposeClaim(stranger, id, "");
-    await expect(rebaseApproval(admin, approval.id, { name: "x" })).rejects.toBeInstanceOf(ValidationError);
-    await approveApproval(admin, approval.id);
-    await expect(approveApproval(admin, approval.id)).rejects.toBeInstanceOf(AlreadyProcessedError);
-  });
+  it("can be taken over without publishing; links can be revoked and expire", async () => {
+    const id = await draft();
+    const first = await createShareLink(admin, id);
+    const second = await createShareLink(admin, id);
 
+    await acceptShareLink(owner, tokenOf(first.url), { publish: false });
+    expect(await entity(id)).toMatchObject({ status: "INACTIVE", members: [{ userId: owner.id, role: "OWNER" }] });
+    // Once someone takes it over, the other links stop working.
+    expect(await lookupShareLink(tokenOf(second.url))).toMatchObject({ state: "revoked" });
+
+    const third = await createShareLink(admin, id);
+    await revokeShareLink(admin, id, third.link.id);
+    await expect(acceptShareLink(stranger, tokenOf(third.url), { publish: false })).rejects.toMatchObject({
+      code: "link_revoked",
+    });
+
+    const fourth = await createShareLink(admin, id);
+    await prisma.entityShareLink.update({ where: { id: fourth.link.id }, data: { expiresAt: new Date(Date.now() - 1000) } });
+    await expect(acceptShareLink(stranger, tokenOf(fourth.url), { publish: false })).rejects.toMatchObject({
+      code: "link_expired",
+    });
+    await expect(
+      acceptShareLink(stranger, tokenOf(fourth.url), { publish: true, agreedTermsVersion: "old" })
+    ).rejects.toMatchObject({ code: "terms_changed" });
+
+    expect((await listShareLinks(admin, id)).map((l) => l.state)).toEqual(["expired", "revoked", "revoked", "used"]);
+    expect((await entity(id)).members).toHaveLength(1);
+  });
+});
+
+describe("members", () => {
   it("starts admin, AI and public listings unclaimed unless an admin names an owner", async () => {
-    const { entityId: direct } = await proposeNewEntity(admin, { name: "Park", categorySlugs: ["parks"] }, { source: "admin" });
+    const { entityId: direct } = await proposeNewEntity(admin, { name: "Park", categorySlugs: ["parks"], entityType: "PUBLIC_SPACE" }, { source: "admin" });
     expect((await entity(direct!)).members).toEqual([]);
 
     const { approval } = await proposeNewEntity(

@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { createErrorResponse, createSuccessResponse, entityErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE } from "@/lib/prismaEnums";
 import { proposeUpdate } from "@/lib/entities";
@@ -40,6 +41,21 @@ export async function POST(
         if (!suggestion || typeof suggestion.field !== "string") continue;
         if (!ALLOWED_FIELDS.has(suggestion.field)) continue;
         fields[suggestion.field] = suggestion.suggestedValue;
+      }
+
+      // The AI never sees identity tags, so its tag list must neither add nor
+      // drop them: keep exactly the ones the owner set.
+      if (Array.isArray(fields.tagSlugs)) {
+        const tags = await prisma.tag.findMany({
+          where: {
+            OR: [
+              { slug: { in: fields.tagSlugs as string[] }, category: { not: "IDENTITY" } },
+              { category: "IDENTITY", entities: { some: { entityId: id } } },
+            ],
+          },
+          select: { slug: true },
+        });
+        fields.tagSlugs = tags.map((t) => t.slug);
       }
 
       const { approval } = await proposeUpdate(user, id, fields, { source: "ai_suggest", autoApprove: false });

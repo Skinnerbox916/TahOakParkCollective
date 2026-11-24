@@ -33,7 +33,7 @@ export const entityIncludeWithMembers = {
 } as const;
 
 /** Entity fields only admins should see. */
-const ADMIN_ONLY_ENTITY_FIELDS = ["verificationContact"] as const;
+const ADMIN_ONLY_ENTITY_FIELDS = ["verificationContact", "consentedById"] as const;
 
 /**
  * Transforms an entity with translations for entity, categories, and tags.

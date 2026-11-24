@@ -16,7 +16,7 @@ export const publicNavItems: NavItem[] = [
   { href: "/", labelKey: "directory" },
   { href: "/suggest", labelKey: "suggest" },
   { href: "/report", labelKey: "report" },
-  { href: "/claim", labelKey: "claim" },
+  { href: "/portal/entity", labelKey: "listBusiness" },
   { href: "/subscribe", labelKey: "subscribe" },
 ];
 

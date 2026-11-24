@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, entityErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE } from "@/lib/prismaEnums";
 import { approveApproval, getApprovalView, listMembers, rebaseApproval, rejectApproval } from "@/lib/entities";
+import { sendListingReady } from "@/lib/email";
+import { toLocale } from "@/lib/site";
 
 async function loadApprovalWithView(id: string) {
   const approval = await prisma.approval.findUnique({
@@ -83,6 +85,14 @@ export async function PUT(
       }
       if (action === "APPROVE") {
         const result = await approveApproval(user, id, notes);
+        if (result.newOwnerId) {
+          // An owner's own listing was approved: it's theirs to publish.
+          const [owner, entity] = await Promise.all([
+            prisma.user.findUnique({ where: { id: result.newOwnerId }, select: { email: true, locale: true } }),
+            prisma.entity.findUnique({ where: { id: result.entityId }, select: { name: true } }),
+          ]);
+          if (owner && entity) await sendListingReady(owner.email, entity.name, toLocale(owner.locale));
+        }
         return createSuccessResponse(result, "Approved");
       }
       return createErrorResponse("Valid action (APPROVE or REJECT) is required", 400);

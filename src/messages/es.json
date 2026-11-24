@@ -53,7 +53,8 @@
     "businesses": "Entidades",
     "dashboard": "Panel",
     "admin": "Administrador",
-    "portal": "Portal"
+    "portal": "Portal",
+    "listBusiness": "Agrega tu negocio"
   },
   "footer": {
     "title": "TahOak Park Collective",
@@ -138,7 +139,9 @@
     "modificationsText": "TahOak Park Collective puede revisar estos términos de servicio en cualquier momento sin previo aviso. Al usar esta Plataforma, aceptas estar sujeto a la versión actual de estos términos de servicio.",
     "contact": "9. Información de Contacto",
     "contactText": "Si tienes preguntas sobre estos Términos de Uso, por favor",
-    "contactLink": "contáctanos"
+    "contactLink": "contáctanos",
+    "listing": "Publicar tu negocio",
+    "listingText": "Si publicas una ficha de un negocio u organización, confirmas lo siguiente:"
   },
   "privacy": {
     "title": "Política de Privacidad",
@@ -366,36 +369,9 @@
     "noEntitiesFound": "No se encontraron entidades",
     "tryAdjustingSearch": "Intenta ajustar tu búsqueda o filtros para encontrar lo que buscas."
   },
-  "claim": {
-    "title": "Reclamar una Entidad",
-    "subtitle": "¿Eres el propietario de este negocio u organización? Reclámalo para gestionar tu listado.",
-    "findEntity": "Encontrar la Entidad *",
-    "searchPlaceholder": "Buscar un negocio u organización...",
-    "change": "Cambiar",
-    "selectEntityError": "Por favor selecciona una entidad para reclamar",
-    "note": "Nota:",
-    "noteText": "Un administrador confirmará que diriges este negocio, normalmente contactándolo directamente, antes de que puedas administrar el listado.",
-    "submitting": "Enviando...",
-    "submitClaimRequest": "Enviar Solicitud de Reclamación",
-    "backToDirectory": "Volver al Directorio",
-    "loading": "Cargando...",
-    "failedToSubmit": "Error al enviar la solicitud de reclamación",
-    "signInTitle": "Inicia sesión para reclamar este listado",
-    "signInBody": "Los reclamos están vinculados a tu cuenta, así podrás administrar el listado cuando se apruebe.",
-    "signIn": "Iniciar sesión",
-    "createAccount": "Crear una cuenta",
-    "signedInAs": "Reclamando como {email}",
-    "messageLabel": "¿Cuál es tu relación con este negocio?",
-    "messagePlaceholder": "Por ejemplo: soy la dueña. La mejor forma de confirmarlo es llamar a la tienda y preguntar por María.",
-    "submitted": "Reclamo enviado",
-    "submittedBody": "Un administrador revisará tu reclamo de {entityName}. Cuando se apruebe, el listado aparecerá en tu portal.",
-    "alreadyMember": "Ya administras este listado.",
-    "claimPending": "Ya tienes un reclamo de este listado esperando revisión.",
-    "goToPortal": "Ir a mis listados"
-  },
   "suggest": {
     "title": "Sugerir una Entidad",
-    "subtitle": "¿Conoces un negocio u organización que debería estar en nuestro directorio? ¡Háznoslo saber!",
+    "subtitle": "¿Conoces un negocio u organización local que debería estar en el directorio? Cuéntanos. Nos comunicaremos con el dueño, y solo aparece si está de acuerdo.",
     "thankYou": "¡Gracias!",
     "suggestionSubmitted": "Tu sugerencia ha sido enviada exitosamente. Nuestro equipo la revisará y te responderá pronto.",
     "suggestAnother": "Sugerir Otra",
@@ -475,9 +451,6 @@
     "photos": "Fotos",
     "coverImage": "Imagen de Portada",
     "logo": "Logo",
-    "ownThisBusiness": "¿Eres el Propietario?",
-    "claimDescription": "Reclama este listado para gestionar la información de tu entidad.",
-    "claimThisEntity": "Reclamar esta Entidad",
     "foundAnIssue": "¿Encontraste un Problema?",
     "reportDescription": "¿Ves información incorrecta? Háznoslo saber.",
     "reportAnIssue": "Reportar un Problema",
@@ -652,6 +625,36 @@
           "OWNER": "Dueño",
           "MANAGER": "Administrador"
         }
+      },
+      "waitingForOwner": "Esperando al dueño",
+      "share": {
+        "title": "Compartir con el dueño",
+        "exempt": "Los parques y las fichas cívicas no necesitan la aprobación de un dueño. Publícalas con el interruptor de estado.",
+        "draft": "Borrador privado. Solo es pública cuando su dueño la publica.",
+        "published": "Publicada por su dueño el {date} (términos {version}).",
+        "hiddenByAdmin": "Ocultada por un administrador. El dueño aceptó el {date}, así que se puede volver a activar.",
+        "description": "Envía al dueño un enlace privado a esta ficha por mensaje de texto o correo. Desde ahí puede publicarla. Los enlaces sirven una vez y vencen a los 30 días.",
+        "language": "Idioma",
+        "createLink": "Crear un enlace",
+        "linkReady": "Copia este enlace ahora; no se volverá a mostrar:",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "emailPlaceholder": "Correo del dueño",
+        "emailIt": "Enviarlo por correo",
+        "emailed": "Enviado a {email}.",
+        "emailFailed": "Se creó el enlace, pero no se pudo enviar el correo. Cópialo:",
+        "links": "Enlaces",
+        "noLinks": "Todavía no hay enlaces.",
+        "sentTo": "a {email}",
+        "createdOn": "creado el {date}",
+        "states": {
+          "open": "Abierto",
+          "used": "Usado",
+          "revoked": "Revocado",
+          "expired": "Vencido"
+        },
+        "revoke": "Revocar",
+        "error": "No se pudieron actualizar los enlaces"
       }
     },
     "quickAdd": {
@@ -805,7 +808,8 @@
         "claimant": "Quien reclama",
         "claimMessage": "Su nota",
         "currentMembers": "Administrado actualmente por",
-        "unclaimed": "Nadie (sin reclamar)"
+        "unclaimed": "Nadie (sin reclamar)",
+        "identityTagsOwnerOnly": "solo el dueño puede agregarlas"
       },
       "changedFields": "Cambios: {fields}"
     },
@@ -969,18 +973,25 @@
       "loading": "Cargando entidades...",
       "errorLoading": "Error al cargar las entidades",
       "emptyHeading": "Aún no hay entidades",
-      "emptyDescription": "Agrega un nuevo listado o reclama uno existente desde su página en el directorio.",
+      "emptyDescription": "Agrega tu negocio u organización. Después de una revisión rápida, la publicas cuando quieras.",
       "addFirst": "Agrega tu primera entidad",
       "view": "Ver",
       "edit": "Editar",
-      "delete": "Solicitar eliminación",
       "categoryLabel": "Categoría:",
-      "deleteConfirm": "¿Pedir a un administrador que quite \"{name}\" del directorio? Seguirá publicado hasta que se apruebe la solicitud.",
       "pageViews": "Visitas",
       "visitors": "Visitantes",
       "last30Days": "Últimos 30 días",
-      "removalRequested": "Solicitud enviada. Un administrador la revisará.",
-      "pendingChanges": "{count, plural, one {# cambio} other {# cambios}} esperando revisión"
+      "pendingChanges": "{count, plural, one {# cambio} other {# cambios}} esperando revisión",
+      "published": "Publicada",
+      "notPublished": "Sin publicar",
+      "notPublishedHint": "Solo tú puedes verla. Publícala cuando quieras.",
+      "publish": "Publicar",
+      "unpublish": "Despublicar",
+      "publishTitle": "Publicar «{name}»",
+      "unpublishConfirm": "¿Quitar «{name}» del directorio ahora? Puedes volver a publicarla más adelante.",
+      "ownerOnly": "Solo el dueño de la ficha puede publicarla o despublicarla.",
+      "cancel": "Cancelar",
+      "actionError": "Algo salió mal. Inténtalo de nuevo."
     },
     "entity": {
       "editTitle": "Editar Entidad",
@@ -1053,7 +1064,7 @@
       "success": {
         "created": "¡Entidad creada exitosamente!",
         "updated": "¡Entidad actualizada exitosamente!",
-        "submittedForReview": "¡Gracias! Tu listado fue enviado. Un administrador lo revisará antes de que aparezca en el directorio."
+        "submittedForReview": "¡Gracias! Enviaste tu ficha. Cuando nuestro equipo la revise, podrás publicarla desde tu panel."
       },
       "buttons": {
         "create": "Crear Entidad",
@@ -1062,7 +1073,8 @@
         "updating": "Actualizando...",
         "cancel": "Cancelar"
       },
-      "loading": "Actualizando..."
+      "loading": "Actualizando...",
+      "afterReview": "Después de que nuestro equipo la revise, la publicarás desde tu panel. No es pública hasta que lo hagas."
     }
   },
   "account": {
@@ -1112,5 +1124,39 @@
     "lastActive": "Sesión iniciada el {date}",
     "adminSetupRequired": "Como administrador, necesitas una llave de acceso o una app de autenticación para usar las herramientas de administración. Agrega una abajo.",
     "adminVerifyNow": "Ya tienes una configurada. Verifica para usar las herramientas de administración."
+  },
+  "listingAgreement": {
+    "title": "Acuerdo de publicación",
+    "intro": "Antes de que tu ficha sea pública, confirma lo siguiente:",
+    "represent": "Soy dueño(a) de este negocio u organización, o estoy autorizado(a) para representarlo.",
+    "display": "TahOak Park Collective puede mostrar al público los datos de esta ficha, en inglés y en español (el español puede ser traducción automática), y los buscadores pueden indexar la página.",
+    "identity": "Las etiquetas de identidad, como «de propietarios afroamericanos» o «de propiedad de mujeres», solo aparecen si yo las agrego.",
+    "unpublish": "Puedo despublicar la ficha en cualquier momento desde mi panel, y desaparece del sitio de inmediato. Para que se borre por completo, puedo contactar al sitio.",
+    "agree": "Acepto todo lo anterior y los <terms>Términos de uso</terms>."
+  },
+  "preview": {
+    "metaTitle": "Vista previa de tu ficha",
+    "bannerTitle": "Esta ficha todavía no es pública",
+    "bannerText": "¿Es tu negocio? Échale un vistazo. Solo aparece en el directorio si la publicas.",
+    "publishTitle": "Publica tu ficha",
+    "signedOutText": "Para publicarla, inicia sesión o crea una cuenta gratis. Toma un minuto y te permite actualizar o despublicar la ficha más adelante.",
+    "createAccount": "Crear una cuenta",
+    "signIn": "Iniciar sesión",
+    "publish": "Publicar mi ficha",
+    "publishing": "Publicando...",
+    "changesFirst": "Prefiero hacer cambios primero",
+    "changesFirstHint": "Serás el dueño de la ficha y podrás editarla antes de publicarla. Nuestro equipo revisa los cambios.",
+    "publishedTitle": "Tu ficha ya está publicada",
+    "publishedText": "Gracias por unirte al directorio. Puedes actualizarla o despublicarla cuando quieras desde tu panel.",
+    "viewListing": "Ver tu ficha",
+    "goToDashboard": "Ir a tu panel",
+    "usedByYou": "Ya te hiciste cargo de esta ficha. Puedes administrarla desde tu panel.",
+    "used": "Este enlace ya se usó.",
+    "revoked": "Este enlace ya no funciona.",
+    "expired": "Este enlace venció.",
+    "invalid": "Este enlace no funciona.",
+    "askForNew": "Si crees que debería funcionar, pide uno nuevo a quien te lo envió.",
+    "error": "Algo salió mal. Inténtalo de nuevo.",
+    "jumpToPublish": "Publicarla ↓"
   }
 }

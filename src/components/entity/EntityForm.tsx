@@ -594,6 +594,8 @@ export function EntityForm({ onSuccess, adminMode = false }: EntityFormProps) {
           </div>
         </FormSection>
 
+        {!adminMode && <p className="text-sm text-gray-600">{t("afterReview")}</p>}
+
         <div className="flex gap-4 pt-4">
           <Button
             type="submit"

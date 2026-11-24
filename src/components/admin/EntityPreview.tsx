@@ -484,11 +484,19 @@ export function EntityPreview({
                 ) : (
                   <div className="space-y-3">
                     {(["IDENTITY", "FRIENDLINESS", "AMENITY"] as const).map((category) => {
-                      const categoryTags = allTags.filter(t => t.category === category);
+                      // Identity tags are the owner's to add: anyone else can only
+                      // remove the ones already there (the server enforces this too).
+                      const ownerOnly = category === "IDENTITY" && mode !== "owner";
+                      const categoryTags = allTags.filter(
+                        (t) => t.category === category && (!ownerOnly || (entityData.tagSlugs || []).includes(t.slug))
+                      );
                       if (categoryTags.length === 0) return null;
                       return (
                         <div key={category}>
-                          <p className="text-xs font-medium text-gray-500 mb-1">{category}</p>
+                          <p className="text-xs font-medium text-gray-500 mb-1">
+                            {category}
+                            {ownerOnly && <span className="font-normal"> · {tAdmin("identityTagsOwnerOnly")}</span>}
+                          </p>
                           <div className="flex flex-wrap gap-2">
                             {categoryTags.map((tag) => (
                               <label
