@@ -15,6 +15,8 @@ import { SECTION_COMPONENTS } from "./sections";
 
 interface EntityDetailProps {
   entity: EntityWithRelations;
+  /** Sections to leave out, e.g. "report" on a private draft's preview. */
+  hideSections?: SectionId[];
 }
 
 /**
@@ -115,7 +117,7 @@ function Section({
  * @see src/lib/entityDisplayConfig.ts for layout configurations
  * @see src/components/entity/sections/ for section components
  */
-export function EntityDetail({ entity }: EntityDetailProps) {
+export function EntityDetail({ entity, hideSections = [] }: EntityDetailProps) {
   // Get layout configuration based on entity type
   const config = getLayoutConfig(entity.entityType as EntityType, entity);
 
@@ -127,7 +129,7 @@ export function EntityDetail({ entity }: EntityDetailProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {config.mainSections.map(sectionId => (
+          {config.mainSections.filter((id) => !hideSections.includes(id)).map(sectionId => (
             <Section 
               key={sectionId} 
               sectionId={sectionId} 
@@ -139,7 +141,7 @@ export function EntityDetail({ entity }: EntityDetailProps) {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {config.sidebarSections.map(sectionId => (
+          {config.sidebarSections.filter((id) => !hideSections.includes(id)).map(sectionId => (
             <Section 
               key={sectionId} 
               sectionId={sectionId} 

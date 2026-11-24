@@ -2,10 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { EntityWithRelations, ApiResponse } from "@/types";
-import { StatusBadge } from "@/components/admin/StatusBadge";
+import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { Alert } from "@/components/ui/Alert";
+import { ListingAgreement } from "@/components/entity/ListingAgreement";
 import { usePortalTranslations } from "@/lib/admin-translations";
+import { useAuth } from "@/lib/use-auth";
+import { LISTING_TERMS_VERSION } from "@/lib/entities/policy";
+import { ENTITY_STATUS } from "@/lib/prismaEnums";
+
+type OwnedEntity = EntityWithRelations & {
+  pendingChanges?: number;
+  members?: { role: "OWNER" | "MANAGER"; user: { id: string } }[];
+};
 
 interface EntityStats {
   pageviews: number;
@@ -13,24 +24,31 @@ interface EntityStats {
 }
 
 export default function PortalDashboard() {
-  const [entities, setEntities] = useState<(EntityWithRelations & { pendingChanges?: number })[]>([]);
+  const [entities, setEntities] = useState<OwnedEntity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [entityStats, setEntityStats] = useState<Record<string, EntityStats>>({});
+  const [publishing, setPublishing] = useState<OwnedEntity | null>(null);
+  const [agreed, setAgreed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const tPortal = usePortalTranslations("dashboard");
+  const { user } = useAuth();
+
+  // Bumped after publishing or unpublishing, to reload the list.
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     async function fetchEntities() {
-      setLoading(true);
-      setError(null);
       try {
         const response = await fetch("/api/entities/owned");
-        const data: ApiResponse<EntityWithRelations[]> = await response.json();
+        const data: ApiResponse<OwnedEntity[]> = await response.json();
 
         if (!response.ok || !data.success) {
           throw new Error(data.error || "Failed to fetch entities");
         }
 
+        setError(null);
         setEntities(data.data || []);
       } catch (err) {
         console.error("Error fetching entities:", err);
@@ -41,7 +59,7 @@ export default function PortalDashboard() {
     }
 
     fetchEntities();
-  }, []);
+  }, [reloadKey]);
 
   // Fetch analytics for each entity after entities are loaded
   useEffect(() => {
@@ -72,29 +90,37 @@ export default function PortalDashboard() {
     fetchStats();
   }, [entities]);
 
-  const handleDelete = async (entityId: string, entityName: string) => {
-    if (!confirm(tPortal("deleteConfirm", { name: entityName }))) {
-      return;
-    }
+  const isOwner = (entity: OwnedEntity) =>
+    !!user && !!entity.members?.some((m) => m.role === "OWNER" && m.user.id === user.id);
 
+  /** Publish (with the agreement) or unpublish; both take effect immediately. */
+  async function setPublished(entity: OwnedEntity, publish: boolean) {
+    setBusy(true);
+    setActionError(null);
     try {
-      const response = await fetch(`/api/entities/${entityId}`, {
-        method: "DELETE",
+      const response = await fetch(`/api/entities/${entity.id}/${publish ? "publish" : "unpublish"}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(publish ? { agreedTermsVersion: LISTING_TERMS_VERSION } : {}),
       });
       const data: ApiResponse = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to request removal");
-      }
-
-      // Owners can't delete outright: this created a removal request that an
-      // admin approves. The listing stays until then.
-      alert(tPortal("removalRequested"));
+      if (!response.ok || !data.success) throw new Error(data.error || tPortal("actionError"));
+      setPublishing(null);
+      setReloadKey((key) => key + 1);
     } catch (err) {
-      console.error("Error deleting entity:", err);
-      alert(err instanceof Error ? err.message : tPortal("errorLoading"));
+      const message = err instanceof Error ? err.message : tPortal("actionError");
+      if (publish) setActionError(message);
+      else alert(message);
+    } finally {
+      setBusy(false);
     }
-  };
+  }
+
+  function openPublish(entity: OwnedEntity) {
+    setAgreed(false);
+    setActionError(null);
+    setPublishing(entity);
+  }
 
   return (
     <div>
@@ -138,8 +164,16 @@ export default function PortalDashboard() {
                   <h3 className="text-xl font-semibold text-gray-900 flex-1">
                     {entity.name}
                   </h3>
-                  <StatusBadge status={entity.status} />
+                  {entity.status === ENTITY_STATUS.ACTIVE ? (
+                    <Badge variant="success">{tPortal("published")}</Badge>
+                  ) : (
+                    <Badge variant="neutral">{tPortal("notPublished")}</Badge>
+                  )}
                 </div>
+
+                {entity.status !== ENTITY_STATUS.ACTIVE && (
+                  <p className="text-sm text-gray-600 mb-2">{tPortal("notPublishedHint")}</p>
+                )}
 
                 {!!entity.pendingChanges && (
                   <p className="text-sm text-warning-700 mb-2">
@@ -181,37 +215,73 @@ export default function PortalDashboard() {
 
                 <div className="mt-auto pt-4 border-t border-gray-200 space-y-2">
                   <div className="flex gap-2">
-                    <Button
-                      href={`/entities/${entity.slug}`}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                    >
-                      {tPortal("view")}
-                    </Button>
+                    {entity.status === ENTITY_STATUS.ACTIVE && (
+                      <Button
+                        href={`/entities/${entity.slug}`}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                      >
+                        {tPortal("view")}
+                      </Button>
+                    )}
                     <Button
                       href={`/portal/entity/${entity.id}`}
-                      variant="primary"
+                      variant="outline"
                       size="sm"
                       className="flex-1"
                     >
                       {tPortal("edit")}
                     </Button>
                   </div>
-                  <Button
-                    onClick={() => handleDelete(entity.id, entity.name)}
-                    variant="danger"
-                    size="sm"
-                    className="w-full"
-                  >
-                    {tPortal("delete")}
-                  </Button>
+                  {!isOwner(entity) ? (
+                    <p className="text-xs text-gray-500">{tPortal("ownerOnly")}</p>
+                  ) : entity.status === ENTITY_STATUS.ACTIVE ? (
+                    <Button
+                      onClick={() => {
+                        if (confirm(tPortal("unpublishConfirm", { name: entity.name }))) setPublished(entity, false);
+                      }}
+                      variant="secondary"
+                      size="sm"
+                      className="w-full"
+                      disabled={busy}
+                    >
+                      {tPortal("unpublish")}
+                    </Button>
+                  ) : (
+                    <Button onClick={() => openPublish(entity)} size="sm" className="w-full" disabled={busy}>
+                      {tPortal("publish")}
+                    </Button>
+                  )}
                 </div>
               </Card>
             );
           })}
         </div>
       )}
+
+      <Modal
+        open={!!publishing}
+        onClose={() => !busy && setPublishing(null)}
+        title={publishing ? tPortal("publishTitle", { name: publishing.name }) : ""}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setPublishing(null)} disabled={busy}>
+              {tPortal("cancel")}
+            </Button>
+            <Button onClick={() => publishing && setPublished(publishing, true)} disabled={!agreed || busy}>
+              {tPortal("publish")}
+            </Button>
+          </>
+        }
+      >
+        <ListingAgreement checked={agreed} onChange={setAgreed} disabled={busy} />
+        {actionError && (
+          <Alert variant="error" className="mt-4">
+            {actionError}
+          </Alert>
+        )}
+      </Modal>
     </div>
   );
 }

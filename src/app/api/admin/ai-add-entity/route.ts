@@ -137,9 +137,11 @@ export async function POST(request: NextRequest) {
 
       // Verify tags exist (if provided)
       if (researchResult.tagSlugs && researchResult.tagSlugs.length > 0) {
+        // Valid tags only, and never identity tags: those are the owner's to add.
         const tags = await prisma.tag.findMany({
           where: {
             slug: { in: researchResult.tagSlugs },
+            category: { not: "IDENTITY" },
           },
           select: { id: true, slug: true },
         });

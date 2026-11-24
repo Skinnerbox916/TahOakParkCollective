@@ -11,6 +11,7 @@ import { Alert } from "@/components/ui/Alert";
 import { useAdminTranslations } from "@/lib/admin-translations";
 import { AISuggestUpdatesModal } from "@/components/admin/AISuggestUpdatesModal";
 import { MembersPanel } from "@/components/admin/MembersPanel";
+import { SharePanel } from "@/components/admin/SharePanel";
 
 export default function AdminEditEntityPage() {
   const params = useParams();
@@ -112,6 +113,13 @@ export default function AdminEditEntityPage() {
       <h1 className="text-3xl font-bold text-gray-900 mb-6">
         Edit Entity: {entity.name}
       </h1>
+      <SharePanel
+        entityId={entity.id}
+        entityType={entity.entityType}
+        status={entity.status}
+        consentedAt={entity.consentedAt ? String(entity.consentedAt) : null}
+        consentTermsVersion={entity.consentTermsVersion}
+      />
       <MembersPanel entityId={entity.id} />
       <EntityPreview
         entityData={{

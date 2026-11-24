@@ -21,6 +21,16 @@ export async function canManage(actor: Actor, entityId: string, db: Tx = prisma)
   return !!membership;
 }
 
+/** The user's role on this listing, or null. Unlike canManage, admins get no pass. */
+export async function memberRole(userId: string | null, entityId: string, db: Tx = prisma) {
+  if (!userId) return null;
+  const membership = await db.entityMember.findUnique({
+    where: { entityId_userId: { entityId, userId } },
+    select: { role: true },
+  });
+  return membership?.role ?? null;
+}
+
 /** Whether the user manages at least one listing. */
 export async function managesAnyEntity(userId: string): Promise<boolean> {
   const membership = await prisma.entityMember.findFirst({ where: { userId }, select: { id: true } });

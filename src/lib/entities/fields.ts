@@ -85,15 +85,14 @@ export function isAdminActor(roles: readonly Role[] | undefined): boolean {
 }
 
 /**
- * Throws if a non-admin tries to change an admin-only field. Owners may change
- * status only to INACTIVE (a removal request).
+ * Throws if a non-admin tries to change an admin-only field. Owners never
+ * change status through a proposal: they publish and unpublish (consent.ts).
  */
 export function assertFieldsAllowed(changes: EntityChanges, roles: readonly Role[]) {
   if (isAdminActor(roles)) return;
-  const forbidden = Object.keys(changes).filter((field) => {
-    if (field === "status") return changes.status !== ENTITY_STATUS.INACTIVE;
-    return ADMIN_ONLY_FIELDS.has(field as EntityField);
-  });
+  const forbidden = Object.keys(changes).filter(
+    (field) => field === "status" || ADMIN_ONLY_FIELDS.has(field as EntityField)
+  );
   if (forbidden.length > 0) {
     throw new ValidationError(
       `Only an admin can change: ${forbidden.join(", ")}`,

@@ -80,14 +80,55 @@ export function sendSubscriptionVerification(to: string, token: string, locale: 
   });
 }
 
-/** Tell an admin someone wants to manage a listing (admins read English). */
-export function sendClaimNotification(to: string, entityName: string, claimantEmail: string) {
-  const url = `${siteUrl()}/en/admin/approvals?type=CLAIM_ENTITY`;
-  const intro = `${claimantEmail} asked to manage "${entityName}".`;
+/**
+ * An admin shares a draft listing with its owner. The link opens the listing
+ * as it would appear; the owner publishes it from there.
+ */
+export function sendListingPreview(to: string, entityName: string, url: string, locale: SiteLocale) {
+  const copy =
+    locale === "es"
+      ? {
+          subject: `Tu ficha en ${appName()}: ${entityName}`,
+          intro: `Preparamos una ficha para "${entityName}" en ${appName()}, un directorio de negocios y organizaciones locales del vecindario. Todavía no es pública.`,
+          action: "Mírala aquí. Si te gusta, puedes publicarla en un minuto; si no, no aparecerá:",
+          footer: "El enlace es solo para ti y vence en 30 días. Si no tienes relación con este negocio, ignora este correo.",
+        }
+      : {
+          subject: `Your listing on ${appName()}: ${entityName}`,
+          intro: `We put together a listing for "${entityName}" on ${appName()}, a directory of local businesses and organizations in the neighborhood. It isn't public yet.`,
+          action: "Take a look. If you like it, you can publish it in a minute; if not, it won't appear:",
+          footer: "The link is just for you and expires in 30 days. If you're not connected to this business, you can ignore this email.",
+        };
   return sendMail({
     to,
-    subject: `New claim: ${entityName}`,
-    text: `${intro}\n\nReview it: ${url}`,
-    html: layout([escapeHtml(intro), `<a href="${escapeHtml(url)}">Review the claim</a>`]),
+    subject: copy.subject,
+    text: `${appName()}\n\n${copy.intro}\n\n${copy.action}\n${url}\n\n${copy.footer}`,
+    html: layout([
+      escapeHtml(copy.intro),
+      escapeHtml(copy.action),
+      `<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>`,
+      escapeHtml(copy.footer),
+    ]),
+  });
+}
+
+/** An owner's own submission was approved: it's theirs to publish. */
+export function sendListingReady(to: string, entityName: string, locale: SiteLocale) {
+  const url = `${siteUrl()}/${locale}/portal/dashboard`;
+  const copy =
+    locale === "es"
+      ? {
+          subject: `Tu ficha está lista: ${entityName}`,
+          intro: `Revisamos "${entityName}". Ya puedes publicarla desde tu panel cuando quieras:`,
+        }
+      : {
+          subject: `Your listing is ready: ${entityName}`,
+          intro: `We've reviewed "${entityName}". You can publish it from your dashboard whenever you're ready:`,
+        };
+  return sendMail({
+    to,
+    subject: copy.subject,
+    text: `${appName()}\n\n${copy.intro}\n${url}`,
+    html: layout([escapeHtml(copy.intro), `<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>`]),
   });
 }

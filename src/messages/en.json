@@ -53,7 +53,8 @@
     "businesses": "Entities",
     "dashboard": "Dashboard",
     "admin": "Admin",
-    "portal": "Portal"
+    "portal": "Portal",
+    "listBusiness": "List your business"
   },
   "footer": {
     "title": "TahOak Park Collective",
@@ -138,7 +139,9 @@
     "modificationsText": "TahOak Park Collective may revise these terms of service at any time without notice. By using this Platform, you are agreeing to be bound by the then current version of these terms of service.",
     "contact": "9. Contact Information",
     "contactText": "If you have any questions about these Terms of Use, please",
-    "contactLink": "contact us"
+    "contactLink": "contact us",
+    "listing": "Listing your business",
+    "listingText": "If you publish a listing for a business or organization, you confirm the following:"
   },
   "privacy": {
     "title": "Privacy Policy",
@@ -366,36 +369,9 @@
     "noEntitiesFound": "No entities found",
     "tryAdjustingSearch": "Try adjusting your search or filters to find what you're looking for."
   },
-  "claim": {
-    "title": "Claim an Entity",
-    "subtitle": "Are you the owner of this business or organization? Claim it to manage your listing.",
-    "findEntity": "Find the Entity *",
-    "searchPlaceholder": "Search for a business or organization...",
-    "change": "Change",
-    "selectEntityError": "Please select an entity to claim",
-    "note": "Note:",
-    "noteText": "An admin will confirm you run this business, usually by contacting it directly, before you can manage the listing.",
-    "submitting": "Submitting...",
-    "submitClaimRequest": "Submit Claim Request",
-    "backToDirectory": "Back to Directory",
-    "loading": "Loading...",
-    "failedToSubmit": "Failed to submit claim request",
-    "signInTitle": "Sign in to claim this listing",
-    "signInBody": "Claims are tied to your account, so you can manage the listing once it's approved.",
-    "signIn": "Sign in",
-    "createAccount": "Create an account",
-    "signedInAs": "Claiming as {email}",
-    "messageLabel": "How are you connected to this business?",
-    "messagePlaceholder": "For example: I'm the owner. The best way to confirm is to call the shop and ask for Maria.",
-    "submitted": "Claim submitted",
-    "submittedBody": "An admin will review your claim for {entityName}. Once it's approved, the listing appears in your portal.",
-    "alreadyMember": "You already manage this listing.",
-    "claimPending": "You already have a claim for this listing waiting for review.",
-    "goToPortal": "Go to my listings"
-  },
   "suggest": {
     "title": "Suggest an Entity",
-    "subtitle": "Know a business or organization that should be in our directory? Let us know!",
+    "subtitle": "Know a local business or organization that should be in the directory? Tell us about it. We'll reach out to the owner, and it only appears if they agree.",
     "thankYou": "Thank You!",
     "suggestionSubmitted": "Your suggestion has been submitted successfully. Our team will review it and get back to you soon.",
     "suggestAnother": "Suggest Another",
@@ -475,9 +451,6 @@
     "photos": "Photos",
     "coverImage": "Cover Image",
     "logo": "Logo",
-    "ownThisBusiness": "Own This Entity?",
-    "claimDescription": "Claim this listing to manage your entity information.",
-    "claimThisEntity": "Claim This Entity",
     "foundAnIssue": "Found an Issue?",
     "reportDescription": "See incorrect information? Let us know.",
     "reportAnIssue": "Report an Issue",
@@ -652,6 +625,36 @@
           "OWNER": "Owner",
           "MANAGER": "Manager"
         }
+      },
+      "waitingForOwner": "Waiting for owner",
+      "share": {
+        "title": "Share with the owner",
+        "exempt": "Parks and civic listings don't need an owner's agreement. Publish them with the status switch.",
+        "draft": "Private draft. It goes public only when its owner publishes it.",
+        "published": "Published by its owner on {date} (listing terms {version}).",
+        "hiddenByAdmin": "Hidden by an admin. The owner agreed on {date}, so it can be made active again.",
+        "description": "Send the owner a private link to this listing by text or email. They can publish it from there. Links work once and expire after 30 days.",
+        "language": "Language",
+        "createLink": "Create a link",
+        "linkReady": "Copy this link now; it won't be shown again:",
+        "copy": "Copy",
+        "copied": "Copied",
+        "emailPlaceholder": "Owner's email",
+        "emailIt": "Email it",
+        "emailed": "Sent to {email}.",
+        "emailFailed": "The link was created, but the email couldn't be sent. Copy it instead:",
+        "links": "Links",
+        "noLinks": "No links yet.",
+        "sentTo": "to {email}",
+        "createdOn": "created {date}",
+        "states": {
+          "open": "Open",
+          "used": "Used",
+          "revoked": "Revoked",
+          "expired": "Expired"
+        },
+        "revoke": "Revoke",
+        "error": "Couldn't update share links"
       }
     },
     "quickAdd": {
@@ -805,7 +808,8 @@
         "claimant": "Claimant",
         "claimMessage": "Their note",
         "currentMembers": "Currently managed by",
-        "unclaimed": "Nobody (unclaimed)"
+        "unclaimed": "Nobody (unclaimed)",
+        "identityTagsOwnerOnly": "only the owner can add these"
       },
       "changedFields": "Changes: {fields}"
     },
@@ -969,18 +973,25 @@
       "loading": "Loading entities...",
       "errorLoading": "Failed to load entities",
       "emptyHeading": "No entities yet",
-      "emptyDescription": "Add a new listing, or claim an existing one from its page in the directory.",
+      "emptyDescription": "Add your business or organization. After a quick review, you publish it when you're ready.",
       "addFirst": "Add Your First Entity",
       "view": "View",
       "edit": "Edit",
-      "delete": "Request removal",
       "categoryLabel": "Category:",
-      "deleteConfirm": "Ask an admin to remove \"{name}\" from the directory? It stays listed until the request is approved.",
       "pageViews": "Page Views",
       "visitors": "Visitors",
       "last30Days": "Last 30 days",
-      "removalRequested": "Removal requested. An admin will review it.",
-      "pendingChanges": "{count, plural, one {# change} other {# changes}} waiting for review"
+      "pendingChanges": "{count, plural, one {# change} other {# changes}} waiting for review",
+      "published": "Published",
+      "notPublished": "Not published",
+      "notPublishedHint": "Only you can see it. Publish it when you're ready.",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "publishTitle": "Publish \"{name}\"",
+      "unpublishConfirm": "Take \"{name}\" off the directory now? You can publish it again later.",
+      "ownerOnly": "Only the listing's owner can publish or unpublish it.",
+      "cancel": "Cancel",
+      "actionError": "Something went wrong. Please try again."
     },
     "entity": {
       "editTitle": "Edit Entity",
@@ -1053,7 +1064,7 @@
       "success": {
         "created": "Entity created successfully!",
         "updated": "Entity updated successfully!",
-        "submittedForReview": "Thanks! Your listing was submitted. An admin will review it before it appears in the directory."
+        "submittedForReview": "Thanks! Your listing was submitted. Once our team has reviewed it, you can publish it from your dashboard."
       },
       "buttons": {
         "create": "Create Entity",
@@ -1062,7 +1073,8 @@
         "updating": "Updating...",
         "cancel": "Cancel"
       },
-      "loading": "Updating..."
+      "loading": "Updating...",
+      "afterReview": "After our team reviews it, you'll publish it from your dashboard. It isn't public until you do."
     }
   },
   "account": {
@@ -1112,5 +1124,39 @@
     "lastActive": "Signed in {date}",
     "adminSetupRequired": "As an admin, you need a passkey or an authenticator app to use admin tools. Add one below.",
     "adminVerifyNow": "You have one set up. Verify to use admin tools."
+  },
+  "listingAgreement": {
+    "title": "Listing agreement",
+    "intro": "Before your listing goes public, please confirm:",
+    "represent": "I own this business or organization, or I'm authorized to represent it.",
+    "display": "TahOak Park Collective may show the details on this listing to the public, in English and Spanish (the Spanish may be machine translated), and search engines may index the page.",
+    "identity": "Identity tags, such as Black-owned or women-owned, appear only if I add them myself.",
+    "unpublish": "I can unpublish the listing at any time from my dashboard, and it comes off the site right away. To have it deleted entirely, I can contact the site.",
+    "agree": "I agree to all of the above and to the <terms>Terms of Use</terms>."
+  },
+  "preview": {
+    "metaTitle": "Your listing preview",
+    "bannerTitle": "This listing isn't public yet",
+    "bannerText": "Is this your business? Take a look below. It only appears in the directory if you publish it.",
+    "publishTitle": "Publish your listing",
+    "signedOutText": "To publish it, sign in or create a free account. It takes a minute, and lets you update or unpublish the listing later.",
+    "createAccount": "Create an account",
+    "signIn": "Sign in",
+    "publish": "Publish my listing",
+    "publishing": "Publishing...",
+    "changesFirst": "I'd like to make changes first",
+    "changesFirstHint": "You'll become the listing's owner and can edit it before publishing. Our team reviews edits.",
+    "publishedTitle": "Your listing is live",
+    "publishedText": "Thanks for joining the directory. You can update or unpublish it any time from your dashboard.",
+    "viewListing": "See your listing",
+    "goToDashboard": "Go to your dashboard",
+    "usedByYou": "You've already taken over this listing. You can manage it from your dashboard.",
+    "used": "This link has already been used.",
+    "revoked": "This link no longer works.",
+    "expired": "This link has expired.",
+    "invalid": "This link doesn't work.",
+    "askForNew": "If you think it should, ask the person who sent it for a new one.",
+    "error": "Something went wrong. Please try again.",
+    "jumpToPublish": "Publish it ↓"
   }
 }

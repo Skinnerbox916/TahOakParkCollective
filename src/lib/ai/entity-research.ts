@@ -54,7 +54,9 @@ export async function researchEntity(
     },
   });
 
+  // Identity tags (Black-owned, ...) are left to the listing's owner.
   const tags = await prisma.tag.findMany({
+    where: { category: { not: "IDENTITY" } },
     select: {
       name: true,
       slug: true,

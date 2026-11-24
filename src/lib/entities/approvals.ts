@@ -6,8 +6,8 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApprovalStatus, ApprovalType } from "@/lib/prismaEnums";
-import type { Actor } from "./access";
-import { createEntity, loadEntityState, updateEntity, type Tx } from "./apply";
+import { memberRole, type Actor } from "./access";
+import { createEntity, identityTagSlugs, loadEntityState, updateEntity, type Tx } from "./apply";
 import {
   AlreadyProcessedError,
   ConflictError,
@@ -44,15 +44,20 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
 
     if (approval.type === ApprovalType.NEW_ENTITY) {
       const state = normalizeFields(approval.payload as Record<string, unknown>);
-      // A signed-in submitter becomes the OWNER; AI drafts and public
-      // suggestions start unclaimed.
+      // A signed-in submitter becomes the OWNER and publishes it when ready;
+      // AI drafts and public suggestions start unclaimed, to be shared with
+      // their owner. Either way a listing that needs consent starts private.
       const owner =
         approval.source === "owner" && approval.submittedBy
           ? { userId: approval.submittedBy, addedBy: reviewer.id }
           : undefined;
-      const entityId = await createEntity(tx, state, { createdBy: approval.submittedBy, owner });
+      const entityId = await createEntity(tx, state, {
+        createdBy: approval.submittedBy,
+        owner,
+        allowIdentityTags: !!owner,
+      });
       await tx.approval.update({ where: { id: approvalId }, data: { entityId } });
-      return { approvalId, entityId };
+      return { approvalId, entityId, newOwnerId: owner?.userId ?? null };
     }
 
     if (approval.type === ApprovalType.UPDATE_ENTITY) {
@@ -70,10 +75,12 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
         await updateEntity(tx, approval.targetEntityId, changes, {
           expectedVersion: current.version,
           createdBy: approval.submittedBy,
+          // Identity tags count only if a member of the listing proposed them.
+          allowIdentityTags: (await memberRole(approval.submittedBy, approval.targetEntityId, tx)) !== null,
         });
       }
       await tx.approval.update({ where: { id: approvalId }, data: { entityId: approval.targetEntityId } });
-      return { approvalId, entityId: approval.targetEntityId };
+      return { approvalId, entityId: approval.targetEntityId, newOwnerId: null };
     }
 
     if (approval.type === ApprovalType.CLAIM_ENTITY) {
@@ -92,7 +99,7 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
         update: {},
       });
       await tx.approval.update({ where: { id: approvalId }, data: { entityId: approval.targetEntityId } });
-      return { approvalId, entityId: approval.targetEntityId };
+      return { approvalId, entityId: approval.targetEntityId, newOwnerId: null };
     }
 
     throw new ValidationError(`Unsupported approval type ${approval.type}`, {});
@@ -109,7 +116,8 @@ export async function rejectApproval(reviewer: Actor, approvalId: string, notes?
 /**
  * An admin edits a pending proposal. `input` is the whole edited listing. For
  * updates the proposal is rebased: its base becomes the entity as it is now,
- * which is how a conflicting proposal gets resolved before approval.
+ * which is how a conflicting proposal gets resolved before approval. The edit
+ * can't add identity tags the submitter didn't propose.
  */
 export async function rebaseApproval(reviewer: Actor, approvalId: string, input: Record<string, unknown>) {
   return prisma.$transaction(async (tx) => {
@@ -121,16 +129,29 @@ export async function rebaseApproval(reviewer: Actor, approvalId: string, input:
       throw new ValidationError("Claims can't be edited; approve or reject them", {});
     }
 
+    const original = (approval.payload ?? {}) as { tagSlugs?: string[] };
+    const assertNoNewIdentityTags = async (proposed: string[] | undefined, existing: string[] = []) => {
+      const allowed = new Set([...(original.tagSlugs ?? []), ...existing]);
+      const added = (await identityTagSlugs(tx, proposed)).filter((slug) => !allowed.has(slug));
+      if (added.length > 0) {
+        throw new ValidationError(`Only the listing's owner can add identity tags: ${added.join(", ")}`, {
+          tagSlugs: "validation.identityTagsOwnerOnly",
+        });
+      }
+    };
+
     let data: Prisma.ApprovalUpdateManyMutationInput;
     if (approval.type === ApprovalType.NEW_ENTITY) {
       const state = normalizeFields(input);
       if (!state.name) throw new ValidationError("Entity name is required", { name: "validation.nameRequired" });
+      await assertNoNewIdentityTags(state.tagSlugs);
       data = { payload: json(state) };
     } else {
       if (!approval.targetEntityId) throw new NotFoundError("Target entity");
       const current = await loadEntityState(tx, approval.targetEntityId);
       const changes = diffState(current.state, normalizeFields(input));
       if (Object.keys(changes).length === 0) throw new NoChangesError();
+      await assertNoNewIdentityTags(changes.tagSlugs, current.state.tagSlugs);
       data = {
         payload: json(changes),
         baseValues: json(pickState(current.state, Object.keys(changes))),

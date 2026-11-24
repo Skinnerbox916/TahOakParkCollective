@@ -34,7 +34,6 @@ export type SectionId =
   | 'contact'
   | 'hours'
   | 'socialMedia'
-  | 'claim'
   | 'report';
 
 /**
@@ -85,7 +84,7 @@ export interface EntityLayoutConfig {
  */
 const DEFAULT_LAYOUT: EntityLayoutConfig = {
   mainSections: ['description', 'map', 'photos'],
-  sidebarSections: ['contact', 'hours', 'socialMedia', 'claim', 'report'],
+  sidebarSections: ['contact', 'hours', 'socialMedia', 'report'],
   sections: {
     description: { enabled: true },
     map: { enabled: true },
@@ -96,7 +95,6 @@ const DEFAULT_LAYOUT: EntityLayoutConfig = {
     contact: { enabled: true },
     hours: { enabled: true },
     socialMedia: { enabled: true },
-    claim: { enabled: true },
     report: { enabled: true },
   },
 };
@@ -108,7 +106,7 @@ const DEFAULT_LAYOUT: EntityLayoutConfig = {
  */
 const CIVIC_LAYOUT: EntityLayoutConfig = {
   mainSections: ['description', 'map', 'profileImage', 'photos'],
-  sidebarSections: ['contact', 'socialMedia', 'claim', 'report'],
+  sidebarSections: ['contact', 'socialMedia', 'report'],
   sections: {
     description: { enabled: true },
     map: { enabled: true }, // Will only show if entity has location
@@ -128,7 +126,6 @@ const CIVIC_LAYOUT: EntityLayoutConfig = {
     contact: { enabled: true },
     hours: { enabled: false }, // Not relevant for CIVIC entities
     socialMedia: { enabled: true },
-    claim: { enabled: true },
     report: { enabled: true },
   },
 };
@@ -140,7 +137,7 @@ const CIVIC_LAYOUT: EntityLayoutConfig = {
  */
 const SERVICE_PROVIDER_LAYOUT: EntityLayoutConfig = {
   mainSections: ['description', 'map', 'profileImage', 'photos'],
-  sidebarSections: ['contact', 'hours', 'socialMedia', 'claim', 'report'],
+  sidebarSections: ['contact', 'hours', 'socialMedia', 'report'],
   sections: {
     description: { enabled: true },
     map: { enabled: true },
@@ -159,7 +156,6 @@ const SERVICE_PROVIDER_LAYOUT: EntityLayoutConfig = {
     contact: { enabled: true },
     hours: { enabled: true },
     socialMedia: { enabled: true },
-    claim: { enabled: true },
     report: { enabled: true },
   },
 };
@@ -171,7 +167,7 @@ const SERVICE_PROVIDER_LAYOUT: EntityLayoutConfig = {
  */
 const PUBLIC_SPACE_LAYOUT: EntityLayoutConfig = {
   mainSections: ['description', 'map', 'photos'],
-  sidebarSections: ['contact', 'socialMedia', 'claim', 'report'],
+  sidebarSections: ['contact', 'socialMedia', 'report'],
   sections: {
     description: { enabled: true },
     map: { enabled: true },
@@ -182,7 +178,6 @@ const PUBLIC_SPACE_LAYOUT: EntityLayoutConfig = {
     contact: { enabled: true },
     hours: { enabled: false }, // Parks typically don't have hours
     socialMedia: { enabled: true },
-    claim: { enabled: true },
     report: { enabled: true },
   },
 };
@@ -194,7 +189,7 @@ const PUBLIC_SPACE_LAYOUT: EntityLayoutConfig = {
  */
 const EVENT_LAYOUT: EntityLayoutConfig = {
   mainSections: ['description', 'map', 'profileImage', 'photos'],
-  sidebarSections: ['contact', 'hours', 'socialMedia', 'claim', 'report'],
+  sidebarSections: ['contact', 'hours', 'socialMedia', 'report'],
   sections: {
     description: { enabled: true },
     map: { enabled: true },
@@ -213,7 +208,6 @@ const EVENT_LAYOUT: EntityLayoutConfig = {
     contact: { enabled: true },
     hours: { enabled: true }, // Event schedule/hours
     socialMedia: { enabled: true },
-    claim: { enabled: true },
     report: { enabled: true },
   },
 };

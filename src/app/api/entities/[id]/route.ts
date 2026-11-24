@@ -5,13 +5,13 @@ import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
 import { getCurrentUser } from "@/lib/auth";
 import { entityIncludePublic, entityIncludeWithMembers, transformEntity } from "@/lib/entity-helpers";
-import { deleteEntity, proposeUpdate } from "@/lib/entities";
+import { deleteEntity, proposeUpdate, unpublishListing } from "@/lib/entities";
 import { deleteUpload, keyFromPublicUrl } from "@/lib/storage";
 
 /**
  * Admins and the listing's members get the full record (any status, with members).
- * Everyone else, including anonymous visitors on the claim and report pages,
- * gets the public view of ACTIVE entities only.
+ * Everyone else, including anonymous visitors on the report page, gets the
+ * public view of ACTIVE entities only.
  */
 export async function GET(
   request: NextRequest,
@@ -95,8 +95,8 @@ export async function PUT(
 }
 
 /**
- * Admins delete the listing (approval history is kept). An owner's "delete"
- * is a removal request: a pending change to INACTIVE that an admin approves.
+ * Admins delete the listing (approval history is kept). For its owner,
+ * "delete" unpublishes it right away and withdraws their consent.
  */
 export async function DELETE(
   request: NextRequest,
@@ -115,11 +115,8 @@ export async function DELETE(
         return createSuccessResponse(null, "Entity deleted successfully");
       }
 
-      const result = await proposeUpdate(user, id, { status: ENTITY_STATUS.INACTIVE }, { source: "owner" });
-      return createSuccessResponse(
-        { approval: { id: result.approval.id }, pendingReview: true },
-        "Removal requested"
-      );
+      await unpublishListing(user, id);
+      return createSuccessResponse({ published: false }, "Listing unpublished");
     } catch (error) {
       return entityErrorResponse(error, "Failed to delete entity");
     }

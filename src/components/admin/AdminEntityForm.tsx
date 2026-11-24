@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { ENTITY_TYPES } from "@/lib/constants";
 import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
+import { requiresConsent } from "@/lib/entities/policy";
 import { formatPhoneNumber, normalizeUrl, isValidUrl } from "@/lib/utils";
 import { validateEntityInput } from "@/lib/schemas/entitySchema";
 
@@ -20,7 +21,8 @@ interface User {
 }
 
 interface AdminEntityFormProps {
-  onSuccess?: () => void;
+  /** Called with the new listing's id. */
+  onSuccess?: (entityId: string) => void;
 }
 
 export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
@@ -42,6 +44,7 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
   const [ownerId, setOwnerId] = useState("");
   const [status, setStatus] = useState<EntityStatus>(ENTITY_STATUS.ACTIVE);
   const [entityType, setEntityType] = useState<EntityType>(ENTITY_TYPE.COMMERCE);
+  const needsOwner = requiresConsent(entityType);
   
   // Social media state
   const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>({
@@ -181,7 +184,8 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
         website: normalized.website || undefined,
         categoryIds: categoryId ? [categoryId] : undefined,
         ownerId: ownerId || undefined,
-        status,
+        // Listings that need an owner's agreement start as private drafts.
+        status: needsOwner ? ENTITY_STATUS.INACTIVE : status,
         entityType,
         socialMedia: normalized.socialMedia ?? null,
       };
@@ -192,17 +196,18 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
         body: JSON.stringify(payload),
       });
 
-      const data: ApiResponse = await response.json();
+      const data: ApiResponse<{ id: string }> = await response.json();
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Failed to create entity");
       }
 
-      setSuccess("Entity created successfully!");
+      setSuccess(needsOwner ? "Draft created. Share it with the owner next." : "Entity created successfully!");
       
       if (onSuccess) {
+        const entityId = data.data!.id;
         setTimeout(() => {
-          onSuccess();
+          onSuccess(entityId);
         }, 1500);
       } else {
         setTimeout(() => {
@@ -452,15 +457,22 @@ export function AdminEntityForm({ onSuccess }: AdminEntityFormProps) {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Status
           </label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as EntityStatus)}
-            disabled={loading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            <option value={ENTITY_STATUS.ACTIVE}>Active</option>
-            <option value={ENTITY_STATUS.INACTIVE}>Inactive</option>
-          </select>
+          {needsOwner ? (
+            <p className="text-sm text-gray-600">
+              Private draft. It goes public only when its owner publishes it; you can share it with them on the
+              next page.
+            </p>
+          ) : (
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as EntityStatus)}
+              disabled={loading}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value={ENTITY_STATUS.ACTIVE}>Active</option>
+              <option value={ENTITY_STATUS.INACTIVE}>Inactive</option>
+            </select>
+          )}
         </div>
 
         <div className="flex gap-4 pt-4">

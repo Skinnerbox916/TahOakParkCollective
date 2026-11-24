@@ -12,6 +12,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { KebabIcon } from "@/components/ui/KebabIcon";
 import { SortableTableHeader } from "./SortableTableHeader";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
+import { requiresConsent } from "@/lib/entities/policy";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import { ApiResponse } from "@/types";
 import { cn } from "@/lib/utils";
@@ -197,7 +198,10 @@ export function EntityTable({
                 </span>
               </td>
               <td className="px-3 lg:px-4 py-3 whitespace-nowrap">
-                {onStatusChange ? (
+                {onStatusChange && entity.status !== ENTITY_STATUS.ACTIVE && requiresConsent(entity.entityType) && !entity.consentedAt ? (
+                  // Only its owner can make it public (share it from its edit page).
+                  <span className="text-xs font-medium text-warning-700">{tEntities("waitingForOwner")}</span>
+                ) : onStatusChange ? (
                   <div className="flex flex-col items-start gap-1">
                     <button
                       onClick={() => {

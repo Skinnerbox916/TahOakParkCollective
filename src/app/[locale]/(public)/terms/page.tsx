@@ -5,6 +5,7 @@ import { Link } from "@/i18n/routing";
 
 export default function TermsPage() {
   const t = useTranslations("terms");
+  const tListing = useTranslations("listingAgreement");
   const currentDate = new Date().toLocaleDateString();
 
   return (
@@ -49,6 +50,16 @@ export default function TermsPage() {
             <p className="text-gray-700 leading-relaxed mt-3">
               {t("imageLicensingText2")}
             </p>
+          </section>
+
+          <section id="listing">
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">{t("listing")}</h2>
+            <p className="text-gray-700 leading-relaxed mb-2">{t("listingText")}</p>
+            <ul className="list-disc pl-6 space-y-1 text-gray-700">
+              {(["represent", "display", "identity", "unpublish"] as const).map((point) => (
+                <li key={point}>{tListing(point)}</li>
+              ))}
+            </ul>
           </section>
 
           <section>

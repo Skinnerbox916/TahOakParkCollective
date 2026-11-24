@@ -54,6 +54,13 @@ export class AlreadyProcessedError extends EntityServiceError {
   }
 }
 
+/** A listing that needs its owner's consent can't be public without it. */
+export class ConsentRequiredError extends EntityServiceError {
+  constructor() {
+    super("This listing goes public only when its owner publishes it.", 409, "consent_required");
+  }
+}
+
 export class NoChangesError extends EntityServiceError {
   constructor() {
     super("Nothing changed", 400, "no_changes");

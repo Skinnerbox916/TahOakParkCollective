@@ -22,7 +22,6 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const tNav = useTranslations("nav");
   const tSuggest = useTranslations("suggest");
   const tReport = useTranslations("report");
-  const tClaim = useTranslations("claim");
   const tSubscribe = useTranslations("subscribe");
 
 
@@ -32,7 +31,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       case "directory": return t("directory");
       case "suggest": return tSuggest("title");
       case "report": return tReport("title");
-      case "claim": return tClaim("title");
+      case "listBusiness": return tNav("listBusiness");
       case "subscribe": return tSubscribe("title");
       default: return labelKey;
     }

@@ -4,10 +4,11 @@
  * allowed. Nothing else in the app should write Entity or EntityTag rows.
  */
 import { Prisma } from "@/generated/prisma/client";
-import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
+import { ENTITY_STATUS, ENTITY_TYPE, TagCategory } from "@/lib/prismaEnums";
 import { generateSlug } from "@/lib/utils";
-import { NotFoundError, StaleVersionError, ValidationError } from "./errors";
+import { ConsentRequiredError, NotFoundError, StaleVersionError, ValidationError } from "./errors";
 import type { EntityChanges, EntityState } from "./fields";
+import { requiresConsent } from "./policy";
 
 export type Tx = Prisma.TransactionClient;
 
@@ -113,7 +114,10 @@ async function resolveCategoryIds(db: Tx, slugs: string[]): Promise<string[]> {
 
 async function resolveTags(db: Tx, slugs: string[]) {
   if (slugs.length === 0) return [];
-  const tags = await db.tag.findMany({ where: { slug: { in: slugs } }, select: { id: true, slug: true } });
+  const tags = await db.tag.findMany({
+    where: { slug: { in: slugs } },
+    select: { id: true, slug: true, category: true },
+  });
   const unknown = slugs.filter((s) => !tags.some((t) => t.slug === s));
   if (unknown.length > 0) {
     throw new ValidationError(`Unknown tags: ${unknown.join(", ")}`, { tagSlugs: "validation.unknownTag" });
@@ -121,21 +125,65 @@ async function resolveTags(db: Tx, slugs: string[]) {
   return tags;
 }
 
+/** The IDENTITY tags (Black-owned, ...) among `slugs`. Only a listing's owners add these. */
+export async function identityTagSlugs(db: Tx, slugs: readonly string[] | undefined): Promise<string[]> {
+  if (!slugs || slugs.length === 0) return [];
+  const tags = await db.tag.findMany({
+    where: { slug: { in: [...slugs] }, category: TagCategory.IDENTITY },
+    select: { slug: true },
+  });
+  return tags.map((t) => t.slug);
+}
+
+function assertIdentityTagsAllowed(added: { slug: string; category: string }[], allowed: boolean | undefined) {
+  if (allowed) return;
+  const identity = added.filter((t) => t.category === TagCategory.IDENTITY).map((t) => t.slug);
+  if (identity.length > 0) {
+    throw new ValidationError(`Only the listing's owner can add identity tags: ${identity.join(", ")}`, {
+      tagSlugs: "validation.identityTagsOwnerOnly",
+    });
+  }
+}
+
+/** Opt-in: a listing that needs consent can't be ACTIVE without it. */
+function assertPublishable(status: string, entityType: string, consented: boolean) {
+  if (status === ENTITY_STATUS.ACTIVE && requiresConsent(entityType) && !consented) {
+    throw new ConsentRequiredError();
+  }
+}
+
+/** Consent fields to write with a change: set them, clear them (null), or leave them (undefined). */
+export type ConsentWrite = { at: Date; byId: string; termsVersion: string } | null | undefined;
+
 /**
  * Create an entity from a full proposed state. Tags added through an approved
  * (or admin) change are verified; createdBy records who proposed them. With
  * `owner`, that user becomes the listing's OWNER; otherwise it's unclaimed.
+ * A new listing has no consent yet, so types that need it start INACTIVE
+ * (a private draft) and can't be created ACTIVE. Identity tags need
+ * `allowIdentityTags` (the change comes from the listing's owner).
  */
 export async function createEntity(
   db: Tx,
   state: EntityChanges,
-  opts: { createdBy: string | null; status?: string; owner?: { userId: string; addedBy: string | null } }
+  opts: {
+    createdBy: string | null;
+    status?: string;
+    owner?: { userId: string; addedBy: string | null };
+    allowIdentityTags?: boolean;
+  }
 ) {
   if (!state.name) {
     throw new ValidationError("Entity name is required", { name: "validation.nameRequired" });
   }
+  const entityType = state.entityType ?? ENTITY_TYPE.COMMERCE;
+  const status =
+    opts.status ?? state.status ?? (requiresConsent(entityType) ? ENTITY_STATUS.INACTIVE : ENTITY_STATUS.ACTIVE);
+  assertPublishable(status, entityType, false);
+
   const categoryIds = await resolveCategoryIds(db, state.categorySlugs ?? []);
   const tags = await resolveTags(db, state.tagSlugs ?? []);
+  assertIdentityTagsAllowed(tags, opts.allowIdentityTags);
   const slug = await ensureUniqueSlug(db, state.slug || state.name);
 
   const created = await db.entity.create({
@@ -143,8 +191,8 @@ export async function createEntity(
       ...(scalarData(state) as Prisma.EntityUncheckedCreateInput),
       name: state.name,
       slug,
-      entityType: (state.entityType as Prisma.EntityUncheckedCreateInput["entityType"]) ?? ENTITY_TYPE.COMMERCE,
-      status: (opts.status ?? state.status ?? ENTITY_STATUS.ACTIVE) as Prisma.EntityUncheckedCreateInput["status"],
+      entityType: entityType as Prisma.EntityUncheckedCreateInput["entityType"],
+      status: status as Prisma.EntityUncheckedCreateInput["status"],
       categories: { connect: categoryIds.map((id) => ({ id })) },
     },
     select: { id: true },
@@ -167,16 +215,41 @@ export async function createEntity(
  * Apply `changes` to an entity, bumping its version. Fails with
  * StaleVersionError if the entity is no longer at `expectedVersion`.
  * Untouched fields, and tags that stay, are left exactly as they were.
+ * Refuses to leave a listing that needs consent ACTIVE without it, and to add
+ * identity tags unless `allowIdentityTags`. Only consent.ts passes `consent`.
  */
 export async function updateEntity(
   db: Tx,
   entityId: string,
   changes: EntityChanges,
-  opts: { expectedVersion: number; createdBy: string | null }
+  opts: { expectedVersion: number; createdBy: string | null; allowIdentityTags?: boolean; consent?: ConsentWrite }
 ) {
+  const current = await db.entity.findUnique({
+    where: { id: entityId },
+    select: { status: true, entityType: true, consentedAt: true, tags: { select: { tagId: true } } },
+  });
+  if (!current) throw new NotFoundError();
+  const consented = opts.consent !== undefined ? opts.consent !== null : current.consentedAt !== null;
+  assertPublishable(changes.status ?? current.status, changes.entityType ?? current.entityType, consented);
+
+  let tagChanges: { removed: string[]; added: { id: string }[] } | null = null;
+  if (changes.tagSlugs !== undefined) {
+    const wanted = await resolveTags(db, changes.tagSlugs);
+    const existingIds = new Set(current.tags.map((t) => t.tagId));
+    const wantedIds = new Set(wanted.map((t) => t.id));
+    const added = wanted.filter((t) => !existingIds.has(t.id));
+    assertIdentityTagsAllowed(added, opts.allowIdentityTags);
+    tagChanges = { removed: [...existingIds].filter((id) => !wantedIds.has(id)), added };
+  }
+
   const data = scalarData(changes);
   if (changes.slug !== undefined) {
     data.slug = await ensureUniqueSlug(db, changes.slug, entityId);
+  }
+  if (opts.consent !== undefined) {
+    data.consentedAt = opts.consent?.at ?? null;
+    data.consentedById = opts.consent?.byId ?? null;
+    data.consentTermsVersion = opts.consent?.termsVersion ?? null;
   }
 
   const { count } = await db.entity.updateMany({
@@ -197,19 +270,13 @@ export async function updateEntity(
     });
   }
 
-  if (changes.tagSlugs !== undefined) {
-    const wanted = await resolveTags(db, changes.tagSlugs);
-    const existing = await db.entityTag.findMany({ where: { entityId }, select: { id: true, tagId: true } });
-    const wantedIds = new Set(wanted.map((t) => t.id));
-    const existingIds = new Set(existing.map((t) => t.tagId));
-    const removed = existing.filter((t) => !wantedIds.has(t.tagId)).map((t) => t.id);
-    const added = wanted.filter((t) => !existingIds.has(t.id));
-    if (removed.length > 0) {
-      await db.entityTag.deleteMany({ where: { id: { in: removed } } });
+  if (tagChanges) {
+    if (tagChanges.removed.length > 0) {
+      await db.entityTag.deleteMany({ where: { entityId, tagId: { in: tagChanges.removed } } });
     }
-    if (added.length > 0) {
+    if (tagChanges.added.length > 0) {
       await db.entityTag.createMany({
-        data: added.map((tag) => ({ entityId, tagId: tag.id, verified: true, createdBy: opts.createdBy })),
+        data: tagChanges.added.map((tag) => ({ entityId, tagId: tag.id, verified: true, createdBy: opts.createdBy })),
       });
     }
   }
