@@ -16,7 +16,7 @@ export type ApprovalWithEntity = Approval & {
     name: string;
     slug: string;
   } | null;
-  proposedEntityData?: Record<string, unknown>;
+  payload?: Record<string, unknown>;
 };
 
 type EntityLocalizedFields = {
@@ -66,6 +66,10 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+  fieldErrors?: Record<string, string>;
+  /** Machine-readable error code, e.g. "stale_version" or "conflict". */
+  code?: string;
+  details?: Record<string, unknown>;
 }
 
 export interface PaginatedResponse<T> {

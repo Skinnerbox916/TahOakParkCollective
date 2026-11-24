@@ -30,15 +30,39 @@ interface ResolvedTag {
   category: string;
 }
 
-interface ApprovalWithEntityDetails extends Omit<Approval, "proposedEntityData"> {
+interface ApprovalChange {
+  field: string;
+  before: unknown;
+  current: unknown;
+  proposed: unknown;
+  conflict: boolean;
+}
+
+interface ApprovalChecks {
+  geocodeFailed?: boolean;
+  inCoverage?: boolean;
+}
+
+interface ApprovalWithEntityDetails extends Omit<Approval, "payload" | "checks"> {
   targetEntity?: {
     id: string;
     name: string;
     slug: string;
   } | null;
-  proposedEntityData: Record<string, unknown>;
+  /** What the entity would look like if approved. */
+  proposedState: Record<string, unknown>;
+  changes: ApprovalChange[];
+  conflicts: string[];
+  checks: ApprovalChecks | null;
   resolvedCategories?: ResolvedCategory[];
   resolvedTags?: ResolvedTag[];
+}
+
+function formatValue(value: unknown, empty: string): string {
+  if (value === null || value === undefined || value === "") return empty;
+  if (Array.isArray(value)) return value.length ? value.join(", ") : empty;
+  if (typeof value === "object") return JSON.stringify(value, null, 1);
+  return String(value);
 }
 
 export default function ApprovalDetailPage() {
@@ -165,7 +189,9 @@ export default function ApprovalDetailPage() {
     );
   }
 
-  const entityData = approval.proposedEntityData as Record<string, unknown> | null;
+  const entityData = approval.proposedState as Record<string, unknown> | null;
+  const isPending = approval.status === ApprovalStatus.PENDING;
+  const isClaim = approval.source === "claim";
 
   return (
     <div>
@@ -194,8 +220,68 @@ export default function ApprovalDetailPage() {
         </Card>
       )}
 
+      {/* Conflicts, automated checks, claims */}
+      {isPending && approval.conflicts.length > 0 && (
+        <Card className="mb-6 bg-warning-50 border-warning-200">
+          <h2 className="font-semibold text-warning-800">{t("detail.conflictTitle")}</h2>
+          <p className="text-warning-800 text-sm mt-1">
+            {t("detail.conflictBody", { fields: approval.conflicts.join(", ") })}
+          </p>
+        </Card>
+      )}
+      {approval.checks?.geocodeFailed && (
+        <Card className="mb-6 bg-warning-50 border-warning-200">
+          <p className="text-warning-800 text-sm">{t("detail.geocodeFailed")}</p>
+        </Card>
+      )}
+      {approval.checks?.inCoverage === false && (
+        <Card className="mb-6 bg-warning-50 border-warning-200">
+          <p className="text-warning-800 text-sm">{t("detail.outOfCoverage")}</p>
+        </Card>
+      )}
+      {isClaim && (
+        <Card className="mb-6 bg-primary-50 border-primary-200">
+          <p className="text-primary-800 text-sm">
+            {t("detail.claimNote", { email: approval.submitterEmail || "?" })}
+          </p>
+        </Card>
+      )}
+
+      {/* What an update would change, against the live listing */}
+      {approval.type === ApprovalType.UPDATE_ENTITY && approval.changes.length > 0 && (
+        <Card className="mb-6 overflow-x-auto">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t("detail.changesTitle")}</h2>
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-500">
+                <th className="py-2 pr-4 font-medium">{t("detail.field")}</th>
+                <th className="py-2 pr-4 font-medium">{t("detail.atSubmission")}</th>
+                <th className="py-2 pr-4 font-medium">{t("detail.now")}</th>
+                <th className="py-2 font-medium">{t("detail.proposed")}</th>
+              </tr>
+            </thead>
+            <tbody className="align-top">
+              {approval.changes.map((change) => (
+                <tr key={change.field} className={change.conflict ? "bg-warning-50" : "border-t border-gray-100"}>
+                  <td className="py-2 pr-4 font-mono text-gray-700">{change.field}</td>
+                  <td className="py-2 pr-4 whitespace-pre-wrap text-gray-500">
+                    {formatValue(change.before, t("detail.emptyValue"))}
+                  </td>
+                  <td className={`py-2 pr-4 whitespace-pre-wrap ${change.conflict ? "text-warning-800 font-medium" : "text-gray-500"}`}>
+                    {formatValue(change.current, t("detail.emptyValue"))}
+                  </td>
+                  <td className="py-2 whitespace-pre-wrap text-gray-900">
+                    {formatValue(change.proposed, t("detail.emptyValue"))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
       {/* Entity Preview (for NEW_ENTITY and UPDATE_ENTITY) */}
-      {(approval.type === ApprovalType.NEW_ENTITY || approval.type === ApprovalType.UPDATE_ENTITY) && entityData && (
+      {!isClaim && (approval.type === ApprovalType.NEW_ENTITY || approval.type === ApprovalType.UPDATE_ENTITY) && entityData && (
         <div className="mb-6">
           <EntityPreview
             entityData={entityData as Record<string, unknown>}
@@ -204,17 +290,9 @@ export default function ApprovalDetailPage() {
             approvalId={approval.id}
             entityId={approval.targetEntityId || undefined}
             editable={approval.status === ApprovalStatus.PENDING}
-            onDataUpdated={(updatedData, resolvedCategories, resolvedTags) => {
-              // Update local approval state with new data
-              setApproval(prev => {
-                if (!prev) return null;
-                return {
-                  ...prev,
-                  proposedEntityData: updatedData as any,
-                  resolvedCategories,
-                  resolvedTags,
-                };
-              });
+            onDataUpdated={() => {
+              // Editing rebases the proposal; reload to show the new diff.
+              fetchApproval();
             }}
           />
         </div>

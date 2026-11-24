@@ -6,7 +6,7 @@ import { researchEntity } from "@/lib/ai/entity-research";
 import { generateSlug } from "@/lib/utils";
 import { geocodeAddress } from "@/lib/geocoding";
 import { validateCoverage } from "@/lib/coverage-areas";
-import { normalizeSnapshot } from "@/lib/entitySnapshot";
+import { proposeNewEntity } from "@/lib/entities";
 
 export async function POST(request: NextRequest) {
   return withRole([ROLE.ADMIN], async (user) => {
@@ -147,38 +147,29 @@ export async function POST(request: NextRequest) {
         researchResult.tagSlugs = tags.map((tag) => tag.slug);
       }
 
-      const snapshot = normalizeSnapshot({
-        name: researchResult.name,
-        nameTranslations: researchResult.nameTranslations || null,
-        slug: generateSlug(researchResult.name),
-        description: researchResult.description || null,
-        descriptionTranslations: researchResult.descriptionTranslations || null,
-        address: researchResult.address || null,
-        phone: researchResult.phone || null,
-        website: researchResult.website || null,
-        latitude: entityLatitude,
-        longitude: entityLongitude,
-        entityType: researchResult.entityType as any,
-        hours: researchResult.hours || null,
-        socialMedia: researchResult.socialMedia || null,
-        categorySlugs: researchResult.categorySlugs,
-        tagSlugs: researchResult.tagSlugs || [],
-        displaySettings: researchResult.displaySettings || null,
-        seoTitleTranslations: researchResult.seoTitleTranslations || null,
-        seoDescriptionTranslations: researchResult.seoDescriptionTranslations || null,
-      });
-
-      const approval = await prisma.approval.create({
-        data: {
-          type: ApprovalType.NEW_ENTITY,
-          status: ApprovalStatus.PENDING,
-          targetEntityId: null,
-          proposedEntityData: snapshot as any,
-          submittedBy: user.id,
-          submitterEmail: user.email,
-          source: "ai",
+      const { approval } = await proposeNewEntity(
+        user,
+        {
+          name: researchResult.name,
+          nameTranslations: researchResult.nameTranslations || null,
+          description: researchResult.description || null,
+          descriptionTranslations: researchResult.descriptionTranslations || null,
+          address: researchResult.address || null,
+          phone: researchResult.phone || null,
+          website: researchResult.website || null,
+          latitude: entityLatitude,
+          longitude: entityLongitude,
+          entityType: researchResult.entityType,
+          hours: researchResult.hours || null,
+          socialMedia: researchResult.socialMedia || null,
+          categorySlugs: researchResult.categorySlugs,
+          tagSlugs: researchResult.tagSlugs || [],
+          displaySettings: researchResult.displaySettings || null,
+          seoTitleTranslations: researchResult.seoTitleTranslations || null,
+          seoDescriptionTranslations: researchResult.seoDescriptionTranslations || null,
         },
-      });
+        { source: "ai", autoApprove: false }
+      );
 
       return createSuccessResponse(approval, `Entity "${researchResult.name}" submitted for approval!`);
     } catch (error: unknown) {

@@ -36,6 +36,8 @@ interface ResolvedTag {
  * Entity data from the approval record
  */
 interface EntityData {
+  /** Entity version the editor loaded; sent back so stale saves are refused. */
+  version?: number;
   name?: string;
   slug?: string;
   description?: string;
@@ -151,6 +153,7 @@ export function EntityPreview({
   const [editedData, setEditedData] = useState<EntityData>(entityData);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   
   // Field enable/disable toggles for optional fields
   // Initialize from displaySettings metadata or fallback to checking if values exist
@@ -246,7 +249,7 @@ export function EntityPreview({
         response = await fetch(`/api/admin/approvals/${approvalId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ proposedEntityData: dataToSave }),
+          body: JSON.stringify({ fields: dataToSave }),
         });
       } else {
         if (!entityId) throw new Error("Missing entityId");
@@ -260,9 +263,20 @@ export function EntityPreview({
       const data = await response.json();
       
       if (response.ok && data.success) {
-        const updatedData = mode === "approval" ? data.data.proposedEntityData || data.data : data.data;
-        onDataUpdated?.(updatedData, resolvedCategories, resolvedTags);
-        setIsEditing(false);
+        if (data.data?.pendingReview) {
+          // An owner's edit is a proposal: show that it's waiting, then move on.
+          setNotice(tAdmin("submittedForReview"));
+          setIsEditing(false);
+          setTimeout(() => onDataUpdated?.(dataToSave, resolvedCategories, resolvedTags), 2500);
+        } else {
+          const updatedData = mode === "approval" ? data.data.proposedState || data.data : data.data;
+          onDataUpdated?.(updatedData, resolvedCategories, resolvedTags);
+          setIsEditing(false);
+        }
+      } else if (data.code === "stale_version") {
+        setError(tAdmin("staleVersion"));
+      } else if (data.code === "no_changes") {
+        setError(tAdmin("noChanges"));
       } else {
         // If we have field-specific errors, show them in a user-friendly way
         if (data.fieldErrors && Object.keys(data.fieldErrors).length > 0) {
@@ -395,6 +409,11 @@ export function EntityPreview({
       {error && (
         <div className="mb-4 p-3 bg-error-50 border border-error-200 rounded text-error-700 text-sm">
           {error}
+        </div>
+      )}
+      {notice && (
+        <div className="mb-4 p-3 bg-success-50 border border-success-200 rounded text-success-700 text-sm">
+          {notice}
         </div>
       )}
       

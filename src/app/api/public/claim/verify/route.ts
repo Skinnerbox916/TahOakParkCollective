@@ -38,54 +38,36 @@ export async function GET(request: NextRequest) {
       return createErrorResponse("Entity ID is required", 400);
     }
 
-    // Verify entity exists
     const entity = await prisma.entity.findUnique({
       where: { id: entityId },
-      include: {
-        categories: true,
-        tags: { include: { tag: true } },
-      },
+      select: { id: true, name: true, version: true },
     });
 
     if (!entity) {
       return createErrorResponse("Entity not found", 404);
     }
 
-    // Check if user with this email exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: magicLink.email },
+    const existingUser = await prisma.user.findFirst({
+      where: { email: { equals: magicLink.email, mode: "insensitive" } },
       select: { id: true },
     });
 
-    const snapshot = {
-      name: entity.name,
-      slug: entity.slug,
-      description: entity.description,
-      address: entity.address,
-      phone: entity.phone,
-      website: entity.website,
-      latitude: entity.latitude,
-      longitude: entity.longitude,
-      entityType: entity.entityType as any,
-      hours: entity.hours as any,
-      socialMedia: entity.socialMedia as any,
-      displaySettings: (entity as any).displaySettings || null,
-      categorySlugs: entity.categories.map((c) => c.slug),
-      tagSlugs: (entity.tags || []).map((t) => t.tag?.slug).filter(Boolean),
-      ownerId: existingUser?.id || entity.ownerId,
-    };
-
+    // A claim changes no listing fields; approving it transfers ownership to
+    // the claimant (see approveApproval). Replaced by first-class claims next.
     const approval = await prisma.approval.create({
       data: {
         targetEntityId: entity.id,
         type: ApprovalType.UPDATE_ENTITY,
-        proposedEntityData: snapshot as any,
+        payload: {},
+        baseValues: {},
+        baseVersion: entity.version,
+        submittedBy: existingUser?.id ?? null,
         submitterEmail: magicLink.email,
         notes: existingUser
-          ? `User exists: ${existingUser.id}`
-          : `User does not exist yet. Email: ${magicLink.email}`,
+          ? `Ownership claim by ${magicLink.email}`
+          : `Ownership claim by ${magicLink.email} (no account yet: they must register before this can be approved)`,
         status: ApprovalStatus.PENDING,
-        source: "public",
+        source: "claim",
       },
     });
 

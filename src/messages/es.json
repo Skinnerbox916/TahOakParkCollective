@@ -645,17 +645,15 @@
       "submittedBy": "Por:",
       "types": {
         "NEW_ENTITY": "Nueva Entidad",
-        "UPDATE_ENTITY": "Actualizar Entidad",
-        "ADD_TAG": "Agregar Etiqueta",
-        "REMOVE_TAG": "Eliminar Etiqueta",
-        "UPDATE_IMAGE": "Actualizar Imagen"
+        "UPDATE_ENTITY": "Actualizar Entidad"
       },
       "sources": {
         "ai": "Agregar Rápido IA",
         "ai_suggest": "Actualizaciones Sugeridas IA",
         "public": "Sugerencia Pública",
         "owner": "Propietario de Entidad",
-        "admin": "Administrador"
+        "admin": "Administrador",
+        "claim": "Reclamo de propiedad"
       },
       "detail": {
         "title": "Detalles de Aprobación",
@@ -704,10 +702,23 @@
         "licenseStatus": "Estado de Licencia",
         "owners": "Propietarios/Principales",
         "agentForService": "Agente de Servicio",
-        "source": "Fuente",
         "verifiedDate": "Fecha de Verificación",
-        "notes": "Notas"
-      }
+        "notes": "Notas",
+        "changesTitle": "Cambios propuestos",
+        "atSubmission": "Al enviar",
+        "now": "Ahora",
+        "proposed": "Propuesto",
+        "emptyValue": "(vacío)",
+        "conflictTitle": "Este listado cambió después de enviarse la propuesta",
+        "conflictBody": "Cambió desde entonces: {fields}. Edita la propuesta para basarla en el listado actual y luego apruébala.",
+        "geocodeFailed": "No se encontró la dirección en el mapa, así que el listado no tiene marcador.",
+        "outOfCoverage": "Esta ubicación está fuera del área de cobertura.",
+        "claimNote": "Reclamo de propiedad: al aprobarlo, este listado pasa a {email}.",
+        "staleVersion": "Este listado cambió desde que lo abriste. Recarga para ver la versión más reciente y vuelve a hacer tus cambios.",
+        "submittedForReview": "Tus cambios fueron enviados. Un administrador los revisará antes de que aparezcan.",
+        "noChanges": "No hubo cambios."
+      },
+      "changedFields": "Cambios: {fields}"
     },
     "issueReports": {
       "title": "Reportes de Problemas",
@@ -872,12 +883,13 @@
       "addFirst": "Agrega tu primera entidad",
       "view": "Ver",
       "edit": "Editar",
-      "delete": "Eliminar",
+      "delete": "Solicitar eliminación",
       "categoryLabel": "Categoría:",
-      "deleteConfirm": "¿Seguro que quieres eliminar \"{name}\"? Esta acción no se puede deshacer.",
+      "deleteConfirm": "¿Pedir a un administrador que quite \"{name}\" del directorio? Seguirá publicado hasta que se apruebe la solicitud.",
       "pageViews": "Visitas",
       "visitors": "Visitantes",
-      "last30Days": "Últimos 30 días"
+      "last30Days": "Últimos 30 días",
+      "removalRequested": "Solicitud enviada. Un administrador la revisará."
     },
     "entity": {
       "editTitle": "Editar Entidad",
@@ -963,4 +975,3 @@
     }
   }
 }
-

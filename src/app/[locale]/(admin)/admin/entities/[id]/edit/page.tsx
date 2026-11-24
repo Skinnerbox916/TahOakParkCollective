@@ -113,6 +113,7 @@ export default function AdminEditEntityPage() {
       </h1>
       <EntityPreview
         entityData={{
+          version: entity.version,
           name: entity.name,
           slug: entity.slug,
           description: entity.description || "",

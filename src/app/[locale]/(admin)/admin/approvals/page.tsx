@@ -113,8 +113,8 @@ export default function AdminApprovalsPage() {
   };
 
 const getEntityDisplayName = (approval: ApprovalWithEntity): string => {
-  if (approval.type === ApprovalType.NEW_ENTITY && (approval as any).proposedEntityData) {
-    const data = (approval as any).proposedEntityData as Record<string, unknown>;
+  if (approval.type === ApprovalType.NEW_ENTITY && (approval as any).payload) {
+    const data = (approval as any).payload as Record<string, unknown>;
     return (data.name as string) || "New entity";
   }
   return (approval as any).targetEntity?.name || approval.entity?.name || `Entity ID: ${approval.targetEntityId || approval.entityId}`;
@@ -212,26 +212,33 @@ const getEntityDisplayName = (approval: ApprovalWithEntity): string => {
                     )}
                   </div>
 
-                  {approval.type === ApprovalType.NEW_ENTITY && (approval as any).proposedEntityData && (
+                  {approval.type === ApprovalType.UPDATE_ENTITY && (approval as any).payload && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {approval.source === "claim"
+                        ? t("sources.claim")
+                        : t("changedFields", { fields: Object.keys((approval as any).payload).join(", ") })}
+                    </p>
+                  )}
+                  {approval.type === ApprovalType.NEW_ENTITY && (approval as any).payload && (
                     <div className="space-y-1 text-sm text-gray-600 mb-3">
-                      {!!((approval as any).proposedEntityData as Record<string, unknown>).address && (
-                        <p>📍 {((approval as any).proposedEntityData as Record<string, unknown>).address as string}</p>
+                      {!!((approval as any).payload as Record<string, unknown>).address && (
+                        <p>📍 {((approval as any).payload as Record<string, unknown>).address as string}</p>
                       )}
-                      {!!((approval as any).proposedEntityData as Record<string, unknown>).website && (
+                      {!!((approval as any).payload as Record<string, unknown>).website && (
                         <p>
                           🌐{" "}
                           <a
-                            href={((approval as any).proposedEntityData as Record<string, unknown>).website as string}
+                            href={((approval as any).payload as Record<string, unknown>).website as string}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-primary-600 hover:text-primary-800"
                           >
-                            {((approval as any).proposedEntityData as Record<string, unknown>).website as string}
+                            {((approval as any).payload as Record<string, unknown>).website as string}
                           </a>
                         </p>
                       )}
-                      {!!((approval as any).proposedEntityData as Record<string, unknown>).entityType && (
-                        <p>Type: {((approval as any).proposedEntityData as Record<string, unknown>).entityType as string}</p>
+                      {!!((approval as any).payload as Record<string, unknown>).entityType && (
+                        <p>Type: {((approval as any).payload as Record<string, unknown>).entityType as string}</p>
                       )}
                     </div>
                   )}

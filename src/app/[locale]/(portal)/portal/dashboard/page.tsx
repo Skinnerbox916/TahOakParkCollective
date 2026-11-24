@@ -84,11 +84,12 @@ export default function PortalDashboard() {
       const data: ApiResponse = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to delete entity");
+        throw new Error(data.error || "Failed to request removal");
       }
 
-      // Remove from list
-      setEntities((prev) => prev.filter((e) => e.id !== entityId));
+      // Owners can't delete outright: this created a removal request that an
+      // admin approves. The listing stays until then.
+      alert(tPortal("removalRequested"));
     } catch (err) {
       console.error("Error deleting entity:", err);
       alert(err instanceof Error ? err.message : tPortal("errorLoading"));

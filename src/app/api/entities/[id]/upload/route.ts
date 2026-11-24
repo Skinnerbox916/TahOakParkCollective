@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
+import { createSuccessResponse, createErrorResponse, entityErrorResponse, withRole } from "@/lib/api-helpers";
+import { proposeUpdate } from "@/lib/entities";
 import { ROLE } from "@/lib/prismaEnums";
 import { deleteUpload, detectImageType, keyFromPublicUrl, saveUpload } from "@/lib/storage";
 
@@ -13,7 +14,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  return withRole([ROLE.ADMIN], async () => {
+  return withRole([ROLE.ADMIN], async (user) => {
     try {
       const { id } = await params;
       const searchParams = request.nextUrl.searchParams;
@@ -57,12 +58,12 @@ export async function POST(
       const currentImages = (entity.images as Record<string, string> | null) || {};
       const previousKey = currentImages[type] ? keyFromPublicUrl(currentImages[type]) : null;
 
-      await prisma.entity.update({
-        where: { id },
-        data: {
-          images: { ...currentImages, [type]: publicPath },
-        },
-      });
+      try {
+        await proposeUpdate(user, id, { images: { ...currentImages, [type]: publicPath } }, { source: "admin" });
+      } catch (error) {
+        await deleteUpload(key).catch(() => {});
+        throw error;
+      }
 
       if (previousKey && previousKey !== key) {
         await deleteUpload(previousKey).catch((error) =>
@@ -72,8 +73,7 @@ export async function POST(
 
       return createSuccessResponse({ path: publicPath }, "Image uploaded successfully");
     } catch (error) {
-      console.error("Error uploading image:", error);
-      return createErrorResponse("Failed to upload image", 500);
+      return entityErrorResponse(error, "Failed to upload image");
     }
   });
 }

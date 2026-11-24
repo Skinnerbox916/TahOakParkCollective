@@ -33,6 +33,5 @@
   "exclude": [
     "node_modules",
     "prisma/seed.ts"
-  ],
-  "exclude": ["node_modules"]
+  ]
 }
