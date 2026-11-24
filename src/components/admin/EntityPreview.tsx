@@ -200,13 +200,6 @@ export function EntityPreview({
     }
   };
   
-  // Load categories and tags when entering edit mode
-  useEffect(() => {
-    if (isEditing && allCategories.length === 0) {
-      loadOptions();
-    }
-  }, [isEditing]);
-  
   const loadOptions = async () => {
     setLoadingOptions(true);
     try {
@@ -229,6 +222,13 @@ export function EntityPreview({
     }
     setLoadingOptions(false);
   };
+  
+  // Load categories and tags when entering edit mode
+  useEffect(() => {
+    if (isEditing && allCategories.length === 0) {
+      loadOptions();
+    }
+  }, [isEditing]);
   
   const handleSave = async () => {
     setSaving(true);

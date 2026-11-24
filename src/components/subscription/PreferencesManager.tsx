@@ -178,10 +178,10 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
         <div className="text-center py-8">
           <div className="text-6xl mb-4">📭</div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">
-            You're Unsubscribed
+            You’re Unsubscribed
           </h3>
           <p className="text-gray-600 mb-6">
-            You're no longer receiving emails from TahOak Park Collective.
+            You’re no longer receiving emails from TahOak Park Collective.
           </p>
           <p className="text-sm text-gray-500">
             To resubscribe, please visit the{" "}
@@ -270,7 +270,7 @@ export function PreferencesManager({ token }: PreferencesManagerProps) {
               Unsubscribe
             </h3>
             <p className="text-gray-600 text-sm mb-4">
-              You can unsubscribe from all emails at any time. You'll still be
+              You can unsubscribe from all emails at any time. You’ll still be
               able to manage your preferences if you decide to resubscribe.
             </p>
             <Button
