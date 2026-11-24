@@ -54,11 +54,6 @@ interface ApprovalWithEntityDetails extends Omit<Approval, "payload" | "checks">
   changes: ApprovalChange[];
   conflicts: string[];
   checks: ApprovalChecks | null;
-  claim: {
-    claimant: { id: string; name: string | null; email: string | null } | null;
-    message: string | null;
-    members: { role: string; user: { id: string; name: string | null; email: string | null } }[];
-  } | null;
   resolvedCategories?: ResolvedCategory[];
   resolvedTags?: ResolvedTag[];
 }
@@ -196,7 +191,6 @@ export default function ApprovalDetailPage() {
 
   const entityData = approval.proposedState as Record<string, unknown> | null;
   const isPending = approval.status === ApprovalStatus.PENDING;
-  const isClaim = approval.type === ApprovalType.CLAIM_ENTITY;
 
   return (
     <div>
@@ -225,7 +219,7 @@ export default function ApprovalDetailPage() {
         </Card>
       )}
 
-      {/* Conflicts, automated checks, claims */}
+      {/* Conflicts and automated checks */}
       {isPending && approval.conflicts.length > 0 && (
         <Card className="mb-6 bg-warning-50 border-warning-200">
           <h2 className="font-semibold text-warning-800">{t("detail.conflictTitle")}</h2>
@@ -244,39 +238,6 @@ export default function ApprovalDetailPage() {
           <p className="text-warning-800 text-sm">{t("detail.outOfCoverage")}</p>
         </Card>
       )}
-      {isClaim && approval.claim && (
-        <Card className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-1">
-            {t("detail.claimTitle", { entity: approval.targetEntity?.name ?? "" })}
-          </h2>
-          <p className="text-sm text-gray-600 mb-4">{t("detail.claimNote")}</p>
-          <dl className="space-y-3 text-sm">
-            <div>
-              <dt className="font-medium text-gray-500">{t("detail.claimant")}</dt>
-              <dd className="text-gray-900">
-                {approval.claim.claimant
-                  ? [approval.claim.claimant.name, approval.claim.claimant.email].filter(Boolean).join(" · ")
-                  : approval.submitterEmail}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-medium text-gray-500">{t("detail.claimMessage")}</dt>
-              <dd className="text-gray-900 whitespace-pre-wrap">{approval.claim.message || t("detail.emptyValue")}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-gray-500">{t("detail.currentMembers")}</dt>
-              <dd className="text-gray-900">
-                {approval.claim.members.length === 0
-                  ? t("detail.unclaimed")
-                  : approval.claim.members
-                      .map((m) => `${m.user.name || m.user.email} (${m.role})`)
-                      .join(", ")}
-              </dd>
-            </div>
-          </dl>
-        </Card>
-      )}
-
       {/* What an update would change, against the live listing */}
       {approval.type === ApprovalType.UPDATE_ENTITY && approval.changes.length > 0 && (
         <Card className="mb-6 overflow-x-auto">
@@ -311,7 +272,7 @@ export default function ApprovalDetailPage() {
       )}
 
       {/* Entity Preview (for NEW_ENTITY and UPDATE_ENTITY) */}
-      {!isClaim && (approval.type === ApprovalType.NEW_ENTITY || approval.type === ApprovalType.UPDATE_ENTITY) && entityData && (
+      {(approval.type === ApprovalType.NEW_ENTITY || approval.type === ApprovalType.UPDATE_ENTITY) && entityData && (
         <div className="mb-6">
           <EntityPreview
             entityData={entityData as Record<string, unknown>}

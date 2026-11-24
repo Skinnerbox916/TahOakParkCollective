@@ -285,7 +285,6 @@ enum EntityType {
 enum EntityStatus {
   ACTIVE
   INACTIVE
-  PENDING_REVIEW
 }
 
 enum TagCategory {
@@ -297,7 +296,6 @@ enum TagCategory {
 enum ApprovalType {
   NEW_ENTITY
   UPDATE_ENTITY
-  CLAIM_ENTITY
 }
 
 enum ApprovalStatus {

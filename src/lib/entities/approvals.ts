@@ -83,25 +83,6 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
       return { approvalId, entityId: approval.targetEntityId, newOwnerId: null };
     }
 
-    if (approval.type === ApprovalType.CLAIM_ENTITY) {
-      if (!approval.targetEntityId) throw new NotFoundError("Target entity");
-      if (!approval.submittedBy) throw new ValidationError("This claim has no claimant account", {});
-      // The claimant becomes an OWNER. Existing members stay; an admin can
-      // remove them from the listing's Members panel.
-      await tx.entityMember.upsert({
-        where: { entityId_userId: { entityId: approval.targetEntityId, userId: approval.submittedBy } },
-        create: {
-          entityId: approval.targetEntityId,
-          userId: approval.submittedBy,
-          role: "OWNER",
-          addedBy: reviewer.id,
-        },
-        update: {},
-      });
-      await tx.approval.update({ where: { id: approvalId }, data: { entityId: approval.targetEntityId } });
-      return { approvalId, entityId: approval.targetEntityId, newOwnerId: null };
-    }
-
     throw new ValidationError(`Unsupported approval type ${approval.type}`, {});
   });
 }
@@ -124,10 +105,6 @@ export async function rebaseApproval(reviewer: Actor, approvalId: string, input:
     const approval = await tx.approval.findUnique({ where: { id: approvalId } });
     if (!approval) throw new NotFoundError("Approval");
     if (approval.status !== ApprovalStatus.PENDING) throw new AlreadyProcessedError();
-
-    if (approval.type === ApprovalType.CLAIM_ENTITY) {
-      throw new ValidationError("Claims can't be edited; approve or reject them", {});
-    }
 
     const original = (approval.payload ?? {}) as { tagSlugs?: string[] };
     const assertNoNewIdentityTags = async (proposed: string[] | undefined, existing: string[] = []) => {
@@ -188,10 +165,6 @@ export async function getApprovalView(approval: {
   targetEntityId: string | null;
 }): Promise<ApprovalView> {
   const payload = (approval.payload ?? {}) as Record<string, unknown>;
-
-  if (approval.type === ApprovalType.CLAIM_ENTITY) {
-    return { proposedState: {}, currentState: null, currentVersion: null, changes: [], conflicts: [] };
-  }
 
   if (approval.type !== ApprovalType.UPDATE_ENTITY || !approval.targetEntityId) {
     let proposedState: EntityChanges;
