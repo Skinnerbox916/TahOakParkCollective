@@ -82,6 +82,12 @@ Generated to `src/generated/prisma` (not the default location). Import from ther
 - `docs/API_GUIDE.md` — API architecture details
 - `docs/TRANSLATION_GUIDE.md` — bilingual system details
 
+## CI and Deploys
+
+- Merging to `main` auto-deploys to production (Coolify). CI (`.github/workflows/ci.yml`) must pass first: migrations-vs-schema check, `tsc`, lint, `next build`, and a boot test of the production image.
+- The production image runs `prisma migrate deploy` on start. Write migrations that the currently deployed code can survive (expand first, contract in a later deploy).
+- Lint gates on errors only. `no-explicit-any` and `react-hooks/set-state-in-effect` are temporarily warnings (see `eslint.config.mjs`); don't add new ones.
+
 ## Critical Rules
 
 - **Never hardcode categories, tags, or entities** — the database is the source of truth.

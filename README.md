@@ -146,6 +146,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `POSTGRES_PORT` | PostgreSQL port | `5432` |
 | `DEEPL_API_KEY` | DeepL API key for auto-translation. Required in production for the translate buttons; dev falls back to a mock that prefixes `[ES] ` | - |
 | `UPLOAD_DIR` | Where uploaded images are stored, served at `/uploads/...`. In production, mount a persistent volume here or uploads are lost on redeploy | `<cwd>/uploads` (`/app/uploads` in the Docker image) |
+| `SKIP_MIGRATIONS` | Set to `true` to stop the Docker image from running `prisma migrate deploy` on start | `false` |
 
 ## Database Management
 
@@ -270,6 +271,18 @@ After seeding the database:
 - [ ] Set up monitoring and error tracking
 - [ ] Configure CORS and security headers
 - [ ] Set up SSL/TLS certificates
+
+### CI and Production Deploys
+
+Production runs on Coolify, and every merge to `main` deploys automatically. GitHub Actions (`.github/workflows/ci.yml`) runs on every PR and on `main`:
+
+- applies all migrations to an empty Postgres and checks they match `prisma/schema.prisma`
+- `tsc --noEmit`, `npm run lint` and `npm run build`
+- builds the production image and boots it until `/api/health` responds
+
+The production image applies pending migrations on start (`docker-entrypoint.sh`), so you don't need to run them by hand. The old container keeps serving while the new one migrates, so a migration must still work with the code that's currently deployed. For example, add a column in one deploy and drop the old one in a later deploy. The image's `HEALTHCHECK` calls `/api/health`, which queries the database. A container whose migration fails exits, never turns healthy, and Coolify keeps the previous one running.
+
+The seed script is not run automatically. Run it by hand only on a fresh database.
 
 ### Docker Deployment
 

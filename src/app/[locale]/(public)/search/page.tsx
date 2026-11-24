@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
@@ -102,8 +102,8 @@ function SearchPageContent() {
   }, [locale]);
 
   // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce(async (params: {
+  const debouncedSearch = useMemo(
+    () => debounce(async (params: {
       q: string;
       category: string;
       entityType: EntityType | "";
@@ -137,7 +137,7 @@ function SearchPageContent() {
         setIsLoading(false);
       }
     }, 300),
-    []
+    [locale]
   );
 
   // Fetch entities when filters change (excluding tags - those filter client-side)

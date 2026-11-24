@@ -1,0 +1,93 @@
+name: CI
+
+# Every merge to main auto-deploys to production through Coolify, so these
+# checks are the gate: run them on every PR and on main.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  CHECKPOINT_DISABLE: 1
+  DATABASE_URL: postgresql://tahoak:tahoak@localhost:5432/tahoak_ci
+
+jobs:
+  check:
+    name: Migrations, types, lint, build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tahoak
+          POSTGRES_PASSWORD: tahoak
+          POSTGRES_DB: tahoak_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U tahoak"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Migrations apply to an empty database and match schema.prisma
+        run: |
+          npx prisma migrate deploy
+          npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+      - name: Type-check
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+
+  image:
+    name: Production image boots and migrates
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tahoak
+          POSTGRES_PASSWORD: tahoak
+          POSTGRES_DB: tahoak_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U tahoak"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: tahoak:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Boot against an empty database and wait for /api/health
+        run: |
+          docker run -d --name app --network host \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e NEXTAUTH_SECRET=ci-only-secret \
+            -e NEXTAUTH_URL=http://localhost:3000 \
+            tahoak:ci
+          for i in $(seq 1 45); do
+            if curl -fsS http://localhost:3000/api/health; then
+              echo; docker logs app; exit 0
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' app)" != "true" ]; then
+              break
+            fi
+            sleep 2
+          done
+          echo "Container never became healthy"; docker logs app; exit 1

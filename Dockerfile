@@ -37,6 +37,22 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
+# Prisma CLI for `migrate deploy` at container start. The standalone bundle
+# doesn't include it, so install just the CLI (and dotenv, which
+# prisma.config.ts imports) at the versions the lockfile resolved.
+FROM base AS migrate
+WORKDIR /migrate
+COPY --from=deps /app/node_modules/prisma/package.json /tmp/prisma.json
+COPY --from=deps /app/node_modules/dotenv/package.json /tmp/dotenv.json
+RUN npm init -y >/dev/null \
+  && npm install --no-audit --no-fund \
+    "prisma@$(node -p "require('/tmp/prisma.json').version")" \
+    "dotenv@$(node -p "require('/tmp/dotenv.json').version")" \
+  && npm cache clean --force
+COPY prisma/schema.prisma ./prisma/schema.prisma
+COPY prisma/migrations ./prisma/migrations
+COPY prisma.config.ts ./
+
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -67,6 +83,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Copy Prisma generated client
 COPY --from=builder --chown=nextjs:nodejs /app/src/generated ./src/generated
 
+# Migrations run on start (docker-entrypoint.sh); set SKIP_MIGRATIONS=true to skip.
+COPY --from=migrate /migrate ./migrate
+COPY --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh
+ENV CHECKPOINT_DISABLE=1 PRISMA_HIDE_UPDATE_MESSAGE=1
+
 USER nextjs
 
 EXPOSE 3000
@@ -75,5 +96,9 @@ ENV PORT 3000
 # set hostname to localhost
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
+# The start period covers migrations plus Next boot.
+HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=3 \
+  CMD wget -q -O /dev/null http://127.0.0.1:3000/api/health || exit 1
+
+CMD ["./docker-entrypoint.sh"]
 

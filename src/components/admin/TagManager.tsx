@@ -27,10 +27,6 @@ export function TagManager() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchTags();
-  }, []);
-
   async function fetchTags() {
     try {
       const res = await fetch("/api/tags");
@@ -42,6 +38,10 @@ export function TagManager() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    fetchTags();
+  }, []);
 
   const handleAutoTranslate = async (direction: 'en-to-es' | 'es-to-en') => {
     if (direction === 'en-to-es' && newNameEn) {

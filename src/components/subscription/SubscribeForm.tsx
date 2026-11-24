@@ -53,7 +53,7 @@ export function SubscribeForm({ onSuccess }: SubscribeFormProps) {
           Check Your Email
         </h2>
         <p className="text-gray-600 mb-4">
-          We've sent a verification link to <strong>{email}</strong>
+          We’ve sent a verification link to <strong>{email}</strong>
         </p>
         <p className="text-sm text-gray-500">
           Click the link in the email to confirm your subscription. The link will expire in 7 days.
