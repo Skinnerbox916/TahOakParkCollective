@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createSuccessResponse, entityErrorResponse, withAuth } from "@/lib/api-helpers";
 import { acceptShareLink } from "@/lib/entities";
+import { notifyPublishChange } from "@/lib/email";
 import { HOUR, limitRequest } from "@/lib/rate-limit";
 
 /**
@@ -21,6 +22,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         publish: body?.publish === true,
         agreedTermsVersion: body?.agreedTermsVersion,
       });
+      await notifyPublishChange(result.entityId, result.published, user.email, { tookOver: true });
       return createSuccessResponse(result, result.published ? "Listing published" : "You now manage this listing");
     } catch (error) {
       return entityErrorResponse(error, "Failed to accept the link");

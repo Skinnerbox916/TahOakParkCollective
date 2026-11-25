@@ -13,6 +13,7 @@ import {
   assertFieldsAllowed,
   diffState,
   isAdminActor,
+  mirrorEnglish,
   normalizeFields,
   pickState,
   type EntityChanges,
@@ -47,7 +48,7 @@ export async function proposeNewEntity(
   opts: ProposeOptions & { initialOwnerId?: string }
 ) {
   const isAdmin = isAdminActor(actor.roles);
-  const state = normalizeFields(input);
+  const state = mirrorEnglish(normalizeFields(input));
   if (!state.name) {
     throw new ValidationError("Entity name is required", { name: "validation.nameRequired" });
   }
@@ -126,7 +127,7 @@ export async function proposeUpdate(
     throw new StaleVersionError(current.version);
   }
 
-  const changes: EntityChanges = diffState(current.state, normalizeFields(input));
+  const changes: EntityChanges = diffState(current.state, mirrorEnglish(normalizeFields(input), current.state));
 
   // Keep the map pin in step with the address: geocode a changed address
   // (unless new coordinates came with it) or fill a pin that was never set.

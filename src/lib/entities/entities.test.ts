@@ -7,6 +7,7 @@ vi.mock("@/lib/geocoding", () => ({
 }));
 
 import { prisma } from "@/lib/prisma";
+import { generateSlug } from "@/lib/utils";
 import {
   AlreadyProcessedError,
   ConflictError,
@@ -185,6 +186,41 @@ describe("proposals", () => {
     await expect(proposeUpdate(owner, id, { ownerId: stranger.id }, { source: "owner" })).rejects.toBeInstanceOf(
       NoChangesError
     );
+  });
+
+  it("keeps the English translation equal to the name and description", async () => {
+    const id = await seedEntity();
+    // An owner renames it: the English shown on /en follows; the Spanish stays.
+    const { approval } = await proposeUpdate(owner, id, { name: "Corner Coffee" }, { source: "owner" });
+    expect(approval.payload).toEqual({
+      name: "Corner Coffee",
+      nameTranslations: { en: "Corner Coffee", es: "Café de la Esquina" },
+    });
+    await approveApproval(admin, approval.id);
+    const after = await entity(id);
+    // Display reads the "en" entry first (getTranslatedField), so it must follow the name.
+    expect(after.nameTranslations).toEqual({ en: "Corner Coffee", es: "Café de la Esquina" });
+
+    // A stale English translation (say from an AI draft) never wins over the plain field,
+    // and with no other language there's nothing to store.
+    const { entityId } = await proposeNewEntity(
+      admin,
+      {
+        name: "Bakery",
+        description: "Bread",
+        categorySlugs: ["food"],
+        nameTranslations: { en: "Old Bakery", es: "Panadería" },
+        descriptionTranslations: { en: "Old text" },
+      },
+      { source: "admin" }
+    );
+    const created = await entity(entityId!);
+    expect(created.nameTranslations).toEqual({ en: "Bakery", es: "Panadería" });
+    expect(created.descriptionTranslations).toBeNull();
+
+    // Editing only the Spanish leaves the English alone.
+    await proposeUpdate(admin, entityId!, { nameTranslations: { es: "La Panadería" } }, { source: "admin" });
+    expect((await entity(entityId!)).nameTranslations).toEqual({ en: "Bakery", es: "La Panadería" });
   });
 
   it("geocodes a changed address, and clears the pin when it can't be found", async () => {
@@ -528,6 +564,13 @@ describe("members", () => {
 });
 
 describe("slugs and deletes", () => {
+  it("keeps accented letters in slugs as their base letter", async () => {
+    expect(generateSlug("Taquería El Güero")).toBe("taqueria-el-guero");
+    expect(generateSlug("Peluquería Niño & Señora")).toBe("peluqueria-nino-senora");
+    const { entityId } = await proposeNewEntity(admin, { name: "Café Ñoño", categorySlugs: ["food"] }, { source: "admin" });
+    expect((await entity(entityId!)).slug).toBe("cafe-nono");
+  });
+
   it("gives same-named listings distinct slugs", async () => {
     const a = await seedEntity();
     const b = await seedEntity();

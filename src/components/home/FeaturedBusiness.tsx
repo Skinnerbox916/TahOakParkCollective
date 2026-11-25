@@ -48,17 +48,8 @@ export function FeaturedBusiness({ rotationInterval = 8000 }: FeaturedBusinessPr
     return () => clearInterval(interval);
   }, [entities.length, rotationInterval]);
 
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-8 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-full"></div>
-      </div>
-    );
-  }
-
-  if (entities.length === 0) {
+  // The whole section, heading included, only appears when something is featured.
+  if (isLoading || entities.length === 0) {
     return null;
   }
 
@@ -67,52 +58,54 @@ export function FeaturedBusiness({ rotationInterval = 8000 }: FeaturedBusinessPr
   const displayDescription = entity.descriptionLocalized ?? entity.description;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 relative overflow-hidden">
-      <div className="absolute top-4 right-4">
-        <span className="bg-primary-100 text-primary-800 text-xs font-semibold px-3 py-1 rounded-full">
-          {t("featured")}
-        </span>
-      </div>
-      
-      <div className="mb-4">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{displayName}</h3>
-        {entity.categories?.length > 0 && (
-          <p className="text-primary-600 font-medium">
-            {entity.categories.map((cat: any) => cat.nameLocalized ?? cat.name).join(", ")}
-          </p>
-        )}
-      </div>
-
-      {displayDescription && (
-        <p className="text-gray-600 mb-6 line-clamp-3">{displayDescription}</p>
-      )}
-
-      <div className="flex items-center justify-between">
-        <Link
-          href={`/entities/${entity.slug}`}
-          className="text-primary-600 hover:text-primary-700 font-medium"
-        >
-          {t("learnMore")}
-        </Link>
-        
-        {entities.length > 1 && (
-          <div className="flex gap-2">
-            {entities.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentIndex ? "bg-primary-600" : "bg-gray-300"
-                }`}
-                aria-label={`Go to featured entity ${index + 1}`}
-              />
-            ))}
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">{t("featuredBusiness")}</h2>
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-8 relative overflow-hidden">
+          <div className="absolute top-4 right-4">
+            <span className="bg-primary-100 text-primary-800 text-xs font-semibold px-3 py-1 rounded-full">
+              {t("featured")}
+            </span>
           </div>
-        )}
+      
+          <div className="mb-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{displayName}</h3>
+            {entity.categories?.length > 0 && (
+              <p className="text-primary-600 font-medium">
+                {entity.categories.map((cat: any) => cat.nameLocalized ?? cat.name).join(", ")}
+              </p>
+            )}
+          </div>
+
+          {displayDescription && (
+            <p className="text-gray-600 mb-6 line-clamp-3">{displayDescription}</p>
+          )}
+
+          <div className="flex items-center justify-between">
+            <Link
+              href={`/entities/${entity.slug}`}
+              className="text-primary-600 hover:text-primary-700 font-medium"
+            >
+              {t("learnMore")}
+            </Link>
+        
+            {entities.length > 1 && (
+              <div className="flex gap-2">
+                {entities.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      index === currentIndex ? "bg-primary-600" : "bg-gray-300"
+                    }`}
+                    aria-label={`Go to featured entity ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
-
-
-

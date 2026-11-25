@@ -253,6 +253,29 @@ export function diffState(current: EntityState, incoming: EntityChanges): Entity
   return changes as EntityChanges;
 }
 
+/**
+ * `name` and `description` are the English text. Their translations hold the
+ * other languages, with `en` kept equal to the plain field so the two can't
+ * drift apart (display reads `en` first). With no other language the
+ * translations are null. Pass `current` for updates, where only one side may
+ * be changing.
+ */
+export function mirrorEnglish(next: EntityChanges, current?: EntityState): EntityChanges {
+  const out: EntityChanges = { ...next };
+  for (const [field, translationsField] of [
+    ["name", "nameTranslations"],
+    ["description", "descriptionTranslations"],
+  ] as const) {
+    if (out[field] === undefined && out[translationsField] === undefined) continue;
+    const english = out[field] !== undefined ? out[field] : current?.[field];
+    const translations = out[translationsField] !== undefined ? out[translationsField] : current?.[translationsField];
+    const others = Object.fromEntries(Object.entries(translations ?? {}).filter(([locale]) => locale !== "en"));
+    out[translationsField] =
+      Object.keys(others).length === 0 ? null : english ? { ...others, en: english } : others;
+  }
+  return out;
+}
+
 /** Fields whose current value no longer matches the value a proposal was based on. */
 export function findConflicts(current: EntityState, baseValues: Record<string, unknown>): EntityField[] {
   return Object.keys(baseValues).filter(

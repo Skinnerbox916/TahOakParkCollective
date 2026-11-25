@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createSuccessResponse, createErrorResponse, entityErrorResponse } from "@/lib/api-helpers";
 import { proposeNewEntity } from "@/lib/entities";
+import { notifyAdmins } from "@/lib/email";
 import { isBot, limitRequest } from "@/lib/rate-limit";
 
 /** Anyone can suggest a listing; it waits for an admin, who adds categories before approving. */
@@ -27,6 +28,11 @@ export async function POST(request: NextRequest) {
       { source: "public", geocode: false }
     );
 
+    await notifyAdmins(
+      `New suggestion: ${String(name).slice(0, 120)}`,
+      [`Suggested by ${String(submitterEmail).trim()}. Approving it creates a private draft to share with the owner.`],
+      `/admin/approvals/${approval.id}`
+    );
     return createSuccessResponse({ approval: { id: approval.id } }, "Suggestion submitted successfully");
   } catch (error) {
     return entityErrorResponse(error, "Failed to submit suggestion");

@@ -53,7 +53,7 @@ src/app/api/
 | `src/lib/better-auth.ts` | Better Auth config: email + password, emailed codes, passkeys, authenticator 2FA, admin plugin, rate limits |
 | `src/lib/auth.ts` | Server helpers: `getSession()`, `getCurrentUser()`, `requireAuth()`, `requireRole()`, `isAdmin()` |
 | `src/lib/auth-client.ts`, `src/lib/use-auth.ts` | Browser client and the `useAuth()` hook for client components |
-| `src/lib/email/` | Bilingual emails over SMTP (console in dev) |
+| `src/lib/email/` | Bilingual emails over SMTP (console in dev); `notifyAdmins()` and the contact form go to the site inbox (`CONTACT_EMAIL`, else `EMAIL_REPLY_TO`) |
 | `src/lib/rate-limit.ts` | Per-IP limits and honeypot for public forms |
 | `src/lib/api-helpers.ts` | `withAuth()`, `withRole()` middleware; `createSuccessResponse()` / `createErrorResponse()` |
 | `src/lib/prisma.ts` | Singleton Prisma client with connection pooling |
@@ -65,7 +65,7 @@ src/app/api/
 
 ### Data Model Highlights
 
-- **Entity**: Core model. Has `*Translations` JSON for `{en,es}` name/description/seo. Status: `ACTIVE | INACTIVE`. `version` is bumped on every write. One `entityType` (what it is: COMMERCE, CIVIC, ...) and many categories (what it's about). Shapes of the JSON fields (`hours`, `socialMedia`, `images`, `displaySettings`) are in `src/types/index.ts` and `src/lib/schemas/entitySchema.ts`.
+- **Entity**: Core model. Has `*Translations` JSON for `{en,es}` name/description/seo. `name` and `description` are the English text: the write service keeps their translations' `en` equal to them (`mirrorEnglish` in `fields.ts`) and stores translations only when another language exists, so editors only edit Spanish there. Status: `ACTIVE | INACTIVE`. `version` is bumped on every write. One `entityType` (what it is: COMMERCE, CIVIC, ...) and many categories (what it's about). Shapes of the JSON fields (`hours`, `socialMedia`, `images`, `displaySettings`) are in `src/types/index.ts` and `src/lib/schemas/entitySchema.ts`.
 - **Public reads** show ACTIVE entities only and use `entityIncludePublic`, which never includes members or their emails. Use the helpers above rather than hand-written queries, so counts and translations stay consistent.
 - **Approval**: Every entity change is an approval (`NEW_ENTITY`, `UPDATE_ENTITY`). `payload` holds the full new entity, or only the changed fields for an update, with `baseValues`/`baseVersion` recording what they were based on. Admin changes are auto-approved in the same transaction; anyone else's wait for review. Approving refuses fields that changed since submission (409 `conflict`) until an admin edits (rebases) the proposal. Edit forms send the `version` they loaded; a mismatch is 409 `stale_version`.
 - **Tag**: Three `TagCategory` values — `IDENTITY` (e.g. Black-owned), `FRIENDLINESS` (admin-verified), `AMENITY`. Only a listing's members add IDENTITY tags; admins, AI and the public can't (they can be removed by an admin). The write service enforces this (`allowIdentityTags` in `apply.ts`).

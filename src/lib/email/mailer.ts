@@ -6,6 +6,8 @@ export interface Mail {
   subject: string;
   text: string;
   html: string;
+  /** Overrides EMAIL_REPLY_TO, e.g. so a contact-form reply goes to the sender. */
+  replyTo?: string;
 }
 
 let transport: Transporter | null = null;

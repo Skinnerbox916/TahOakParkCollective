@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
-import { ReportStatus, IssueType } from "@/lib/prismaEnums";
+import { ENTITY_STATUS, ReportStatus, IssueType } from "@/lib/prismaEnums";
 import { isBot, limitRequest } from "@/lib/rate-limit";
+import { notifyAdmins } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,12 +22,12 @@ export async function POST(request: NextRequest) {
       return createErrorResponse("Invalid issue type", 400);
     }
 
-    // Verify entity exists
+    // Only public listings can be reported (drafts aren't visible)
     const entity = await prisma.entity.findUnique({
       where: { id: entityId },
     });
 
-    if (!entity) {
+    if (!entity || entity.status !== ENTITY_STATUS.ACTIVE) {
       return createErrorResponse("Entity not found", 404);
     }
 
@@ -48,7 +49,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return createSuccessResponse(report, "Issue reported successfully");
+    await notifyAdmins(
+      `Issue reported: ${entity.name}`,
+      [`${issueType} from ${submitterEmail}:`, String(description).slice(0, 2000)],
+      "/admin/issue-reports"
+    );
+    return createSuccessResponse({ id: report.id }, "Issue reported successfully");
   } catch (error) {
     console.error("Error reporting issue:", error);
     return createErrorResponse("Failed to report issue", 500);

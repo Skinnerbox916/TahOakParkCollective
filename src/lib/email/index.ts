@@ -2,7 +2,8 @@
  * Every email the site sends, in English and Spanish. Plain, short, and
  * readable as text: most people only need the code or the link.
  */
-import { appName, siteUrl, type SiteLocale } from "@/lib/site";
+import { appName, siteInbox, siteUrl, type SiteLocale } from "@/lib/site";
+import { prisma } from "@/lib/prisma";
 import { sendMail } from "./mailer";
 
 export { consoleOutbox } from "./mailer";
@@ -131,4 +132,74 @@ export function sendListingReady(to: string, entityName: string, locale: SiteLoc
     text: `${appName()}\n\n${copy.intro}\n${url}`,
     html: layout([escapeHtml(copy.intro), `<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>`]),
   });
+}
+
+/** A contact-form message, to the site inbox, with Reply-To set to the sender. */
+export async function sendContactMessage(msg: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  locale: SiteLocale;
+}) {
+  const to = siteInbox();
+  if (!to) {
+    console.error("[mail] No CONTACT_EMAIL or EMAIL_REPLY_TO set; can't deliver a contact message");
+    return false;
+  }
+  const header = `From ${msg.name} <${msg.email}> · ${msg.subject} · site language: ${msg.locale}`;
+  return sendMail({
+    to,
+    replyTo: msg.email,
+    subject: `Contact form: ${msg.subject} (${msg.name})`,
+    text: `${header}\n\n${msg.message}`,
+    html: layout([escapeHtml(header), escapeHtml(msg.message).replace(/\n/g, "<br>")]),
+  });
+}
+
+/**
+ * Tell the people running the site that something needs them, e.g. a listing
+ * waiting for review. English; goes to the site inbox. Never throws.
+ */
+export async function notifyAdmins(subject: string, lines: string[], path?: string) {
+  const to = siteInbox();
+  if (!to) return false;
+  const url = path ? `${siteUrl()}/en${path}` : null;
+  try {
+    return await sendMail({
+      to,
+      subject: `[${appName()}] ${subject}`,
+      text: [...lines, ...(url ? [url] : [])].join("\n\n"),
+      html: layout([
+        ...lines.map((line) => escapeHtml(line)),
+        ...(url ? [`<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>`] : []),
+      ]),
+    });
+  } catch (error) {
+    console.error("[mail] Admin notification failed:", error);
+    return false;
+  }
+}
+
+/** An owner published, unpublished or took over a listing (outreach follow-up). */
+export async function notifyPublishChange(
+  entityId: string,
+  published: boolean,
+  ownerEmail?: string | null,
+  opts: { tookOver?: boolean } = {}
+) {
+  const entity = await prisma.entity.findUnique({ where: { id: entityId }, select: { name: true } }).catch(() => null);
+  const name = entity?.name ?? entityId;
+  const who = ownerEmail ?? "Its owner";
+  const subject = published
+    ? `Published by its owner: ${name}`
+    : opts.tookOver
+      ? `Owner took over (not published yet): ${name}`
+      : `Unpublished by its owner: ${name}`;
+  const line = published
+    ? `${who} published it${opts.tookOver ? " from the share link" : ""}.`
+    : opts.tookOver
+      ? `${who} opened the share link and took the listing over to edit it before publishing.`
+      : `${who} took it off the site and withdrew their consent.`;
+  return notifyAdmins(subject, [line], `/admin/entities/${entityId}/edit`);
 }

@@ -6,6 +6,7 @@ import type { EntityType } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
 import { entityIncludePublic, entityIncludeWithMembers, transformEntity, buildEntityWhereClause } from "@/lib/entity-helpers";
 import { proposeNewEntity } from "@/lib/entities";
+import { notifyAdmins } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
   try {
@@ -100,6 +101,11 @@ export async function POST(request: NextRequest) {
       const result = await proposeNewEntity(user, input, { source: isAdmin ? "admin" : "owner", initialOwnerId });
 
       if (result.pending) {
+        await notifyAdmins(
+          `New listing to review: ${String(input.name ?? "").slice(0, 120)}`,
+          [`${user.email ?? "A signed-in user"} submitted their own listing. Approving it makes them its owner; they publish it from their dashboard.`],
+          `/admin/approvals/${result.approval.id}`
+        );
         return createSuccessResponse(
           { approval: { id: result.approval.id, status: result.approval.status }, pendingReview: true },
           "Submitted for review"

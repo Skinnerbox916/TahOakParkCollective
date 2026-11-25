@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Link } from "@/i18n/routing";
+import { Link, usePathname } from "@/i18n/routing";
+import { publicNavItems } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
+import { usePublicNavLabel } from "./usePublicNavLabel";
 import { useAuth } from "@/lib/use-auth";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +21,8 @@ export function PublicNavbar() {
   const { session, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const t = useTranslations("common");
+  const navLabel = usePublicNavLabel();
+  const pathname = usePathname();
 
   return (
     <>
@@ -30,8 +35,26 @@ export function PublicNavbar() {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+            {/* Desktop links (the logo already goes home) */}
+            <div className="hidden lg:flex items-center gap-1 min-w-0">
+              {publicNavItems
+                .filter((item) => item.href !== "/")
+                .map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors focus-ring",
+                      pathname === item.href ? "text-primary-700 bg-primary-50" : "text-gray-700 hover:bg-gray-100"
+                    )}
+                  >
+                    {navLabel(item.labelKey)}
+                  </Link>
+                ))}
+            </div>
+
+            {/* Desktop account controls */}
+            <div className="hidden lg:flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
               <LanguageSwitcher />
               {loading ? (
                 <span className="text-gray-500 text-sm">{t("loading")}</span>
@@ -49,8 +72,8 @@ export function PublicNavbar() {
               )}
             </div>
 
-            {/* Mobile Navigation */}
-            <div className="flex md:hidden items-center space-x-2">
+            {/* Mobile and tablet: the links live in the menu */}
+            <div className="flex lg:hidden items-center space-x-2">
               <LanguageSwitcher />
               {loading ? (
                 <span className="text-gray-500 text-sm">{t("loading")}</span>

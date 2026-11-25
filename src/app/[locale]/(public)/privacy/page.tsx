@@ -1,11 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 
 export default function PrivacyPage() {
   const t = useTranslations("privacy");
-  const currentDate = new Date().toLocaleDateString();
+  const locale = useLocale();
+  // The date this page's text last changed. Update it with the text.
+  const currentDate = new Date("2026-11-25T12:00:00Z").toLocaleDateString(locale, { dateStyle: "long" });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -35,7 +37,6 @@ export default function PrivacyPage() {
             <h3 className="text-lg font-medium text-gray-800 mb-2">{t("automaticallyCollected")}</h3>
             <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
               <li>{t("automaticallyCollectedText")}</li>
-              <li>{t("usageData")}</li>
             </ul>
           </section>
 
@@ -63,9 +64,9 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">{t("analytics")}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">{t("cookies")}</h2>
             <p className="text-gray-700 leading-relaxed">
-              {t("analyticsText")}
+              {t("cookiesText")}
             </p>
           </section>
 

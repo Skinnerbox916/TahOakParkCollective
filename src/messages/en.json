@@ -54,7 +54,10 @@
     "dashboard": "Dashboard",
     "admin": "Admin",
     "portal": "Portal",
-    "listBusiness": "List your business"
+    "listBusiness": "List your business",
+    "suggest": "Suggest a business",
+    "report": "Report an issue",
+    "subscribe": "Subscribe"
   },
   "footer": {
     "title": "TahOak Park Collective",
@@ -153,14 +156,13 @@
     "accountInfo": "Account Information:",
     "accountInfoText": "Name, email address, password (hashed)",
     "entityInfo": "Entity Information:",
-    "entityInfoText": "Business/organization details you provide when claiming or creating listings",
+    "entityInfoText": "Business or organization details you provide when you create, edit or publish a listing",
     "contactInfo": "Contact Information:",
     "contactInfoText": "Email addresses provided for subscriptions, suggestions, or issue reports",
     "content": "Content:",
     "contentText": "Images, descriptions, and other content you upload",
     "automaticallyCollected": "2.2 Automatically Collected Information",
-    "automaticallyCollectedText": "IP address and browser information (for security and analytics)",
-    "usageData": "Usage data through privacy-focused analytics",
+    "automaticallyCollectedText": "IP address and browser information, used for security (for example, to limit repeated sign-in attempts) and stored with your signed-in sessions",
     "howWeUse": "3. How We Use Your Information",
     "howWeUseText": "We use the information we collect to:",
     "providePlatform": "Provide, maintain, and improve the Platform",
@@ -173,9 +175,7 @@
     "subscriptions": "Subscriptions:",
     "subscriptionsText": "We use a double opt-in process for email subscriptions. You must verify your email address before receiving updates. You can manage your preferences or unsubscribe at any time using the magic links we provide.",
     "transactional": "Transactional Emails:",
-    "transactionalText": "We send essential emails related to your account, entity claims, and platform notifications. These cannot be opted out of as they are necessary for Platform functionality.",
-    "analytics": "5. Analytics",
-    "analyticsText": "We use privacy-focused analytics that do not use cookies or track personal information. We only collect aggregate data about page views and visitor patterns. No cookie banners are required.",
+    "transactionalText": "We send essential emails related to your account, your listings, and platform notifications. These cannot be opted out of as they are necessary for Platform functionality.",
     "informationSharing": "6. Information Sharing",
     "informationSharingText": "We do not sell, trade, or rent your personal information. We may share information:",
     "serviceProviders": "With service providers who assist in operating the Platform (e.g., email service)",
@@ -195,7 +195,9 @@
     "changesText": "We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last updated\" date.",
     "contactUs": "11. Contact Us",
     "contactUsText": "If you have questions about this Privacy Policy, please",
-    "contactLink": "contact us"
+    "contactLink": "contact us",
+    "cookies": "5. Cookies",
+    "cookiesText": "We only use the cookies the site needs: one keeps you signed in, and one remembers your language. We don't use analytics or advertising cookies, and we don't track you across other sites."
   },
   "contact": {
     "title": "Contact Us",
@@ -207,7 +209,6 @@
     "generalInquiry": "General Inquiry",
     "technicalSupport": "Technical Support",
     "suggestion": "Suggestion or Feedback",
-    "entityClaim": "Entity Claim Question",
     "other": "Other",
     "message": "Message",
     "messagePlaceholder": "Please provide details about your inquiry...",
@@ -219,7 +220,10 @@
     "termsAgreement": "By submitting this form, you agree to our",
     "termsLink": "Terms of Use",
     "and": "and",
-    "privacyLink": "Privacy Policy"
+    "privacyLink": "Privacy Policy",
+    "aboutMyListing": "About my listing",
+    "sendFailed": "Your message couldn't be sent. Please try again in a few minutes.",
+    "tooMany": "Too many messages from your connection. Please try again later."
   },
   "auth": {
     "signIn": "Sign In",
@@ -973,9 +977,6 @@
       "view": "View",
       "edit": "Edit",
       "categoryLabel": "Category:",
-      "pageViews": "Page Views",
-      "visitors": "Visitors",
-      "last30Days": "Last 30 days",
       "pendingChanges": "{count, plural, one {# change} other {# changes}} waiting for review",
       "published": "Published",
       "notPublished": "Not published",

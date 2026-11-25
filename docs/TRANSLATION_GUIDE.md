@@ -101,6 +101,8 @@ router.push("/entities"); // Preserves current locale
 
 **Format**: `{"en": "English text", "es": "Spanish text"}`
 
+For an entity's `name` and `description`, the plain column is the English text. The write service sets the translations' `en` to match it on every save (`mirrorEnglish` in `src/lib/entities/fields.ts`), and stores the translations as null when there's no other language. Edit English in the plain field; only edit other languages in the translations.
+
 ### Helper Function
 
 **Always use `getTranslatedField()` to extract translated content:**

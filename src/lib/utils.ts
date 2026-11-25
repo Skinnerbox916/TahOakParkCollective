@@ -9,6 +9,8 @@ export function cn(...inputs: ClassValue[]): string {
 
 export function generateSlug(text: string): string {
   return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Keep accented letters as their base letter: "Taquería" -> "taqueria"
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, "") // Remove special characters
