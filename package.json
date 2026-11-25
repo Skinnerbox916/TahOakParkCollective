@@ -21,12 +21,10 @@
     "@better-auth/prisma-adapter": "1.7.27",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
-    "@types/sharp": "^0.31.1",
     "bcrypt": "^6.0.0",
     "better-auth": "1.7.27",
     "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
-    "libphonenumber-js": "^1.12.37",
     "next": "16.4.6",
     "next-intl": "^4.8.3",
     "nodemailer": "^10.6.1",
@@ -51,7 +49,6 @@
     "@types/pg": "^8.10.9",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/react-leaflet": "^2.8.3",
     "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
@@ -59,8 +56,5 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "4.1.12"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ROLE } from "@/lib/prismaEnums";
 import type { Role } from "@/lib/prismaEnums";
-import { ApiResponse } from "@/types";
 import { useAdminTranslations } from "@/lib/admin-translations";
 
 interface User {

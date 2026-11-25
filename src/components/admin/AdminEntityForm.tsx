@@ -11,7 +11,7 @@ import { ENTITY_TYPES } from "@/lib/constants";
 import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import { requiresConsent } from "@/lib/entities/policy";
-import { formatPhoneNumber, normalizeUrl, isValidUrl } from "@/lib/utils";
+import { normalizeUrl, isValidUrl } from "@/lib/utils";
 import { validateEntityInput } from "@/lib/schemas/entitySchema";
 
 interface User {

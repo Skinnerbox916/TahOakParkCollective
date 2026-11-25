@@ -2,12 +2,12 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, entityErrorResponse, withRole } from "@/lib/api-helpers";
 import { proposeUpdate } from "@/lib/entities";
-import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
+import { ROLE } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import { entityIncludeWithMembers, buildAdminEntitySearchWhere } from "@/lib/entity-helpers";
 
 export async function GET(request: NextRequest) {
-  return withRole([ROLE.ADMIN], async (user) => {
+  return withRole([ROLE.ADMIN], async () => {
     try {
       const searchParams = request.nextUrl.searchParams;
       const status = searchParams.get("status") as EntityStatus | null;

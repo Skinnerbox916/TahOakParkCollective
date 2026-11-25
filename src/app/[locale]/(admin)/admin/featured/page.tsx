@@ -2,10 +2,8 @@
 
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Card } from "@/components/ui/Card";
-import { useAdminTranslations } from "@/lib/admin-translations";
 
 export default function AdminFeaturedPage() {
-  const { t } = useAdminTranslations("featured");
 
   return (
     <div>

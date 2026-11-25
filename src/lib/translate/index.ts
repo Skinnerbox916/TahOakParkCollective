@@ -1,4 +1,4 @@
-import { TranslationProvider, TranslationRequest, TranslationResult, TranslationPair, SupportedLocale } from './types';
+import { TranslationProvider, TranslationPair, SupportedLocale } from './types';
 import { DeepLProvider } from './deepl';
 import { MockProvider } from './mock';
 import { TranslationCache } from './cache';

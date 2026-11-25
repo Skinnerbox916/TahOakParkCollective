@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 
 export default function AuthErrorPage() {
   const t = useTranslations("auth");
-  const tCommon = useTranslations("common");
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 py-8">

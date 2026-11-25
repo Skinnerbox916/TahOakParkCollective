@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { EntityWithRelations, EntityTagWithTag } from "@/types";
 import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 import type { EntityType, TagCategory } from "@/lib/prismaEnums";

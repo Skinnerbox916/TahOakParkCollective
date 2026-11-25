@@ -1,6 +1,6 @@
 "use client";
 
-import { InputHTMLAttributes, forwardRef, useState } from "react";
+import { InputHTMLAttributes, forwardRef, useId, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -9,20 +9,27 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className, type, ...props }, ref) => {
+  ({ label, error, className, type, id, ...props }, ref) => {
+    // Tie the label and error message to the field, for screen readers and autofill.
+    const autoId = useId();
+    const fieldId = id ?? autoId;
+    const errorId = error ? `${fieldId}-error` : undefined;
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === "password";
 
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-1">
             {label}
           </label>
         )}
         <div className="relative">
           <input
             ref={ref}
+            id={fieldId}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={errorId}
             type={isPassword && showPassword ? "text" : type}
             className={cn(
               "w-full px-4 py-2 border rounded-lg focus-ring focus:border-transparent",
@@ -78,7 +85,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1 text-sm text-error-600">{error}</p>
+          <p id={errorId} className="mt-1 text-sm text-error-600">{error}</p>
         )}
       </div>
     );

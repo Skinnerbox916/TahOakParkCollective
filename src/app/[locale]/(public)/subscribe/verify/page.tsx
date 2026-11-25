@@ -2,19 +2,15 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ApiResponse } from "@/types";
-import { Link } from "@/i18n/routing";
 
 function VerifySubscriptionContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const t = useTranslations("subscribe");
-  const tCommon = useTranslations("common");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

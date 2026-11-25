@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { SpotCheckList } from "@/components/admin/SpotCheckList";
 import { EntityWithRelations, ApiResponse } from "@/types";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { LoadingState } from "@/components/ui/LoadingState";

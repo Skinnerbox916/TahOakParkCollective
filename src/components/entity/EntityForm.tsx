@@ -14,7 +14,7 @@ import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { TagSelector } from "@/components/tags/TagSelector";
 import { BusinessHoursInput } from "@/components/form/BusinessHoursInput";
 import { getFormConfig, type SocialPlatform } from "@/lib/entityFormConfig";
-import { formatPhoneNumber, normalizeUrl, isValidUrl } from "@/lib/utils";
+import { normalizeUrl, isValidUrl } from "@/lib/utils";
 import { validateEntityInput } from "@/lib/schemas/entitySchema";
 
 /**
@@ -208,32 +208,6 @@ export function EntityForm({ onSuccess, adminMode = false }: EntityFormProps) {
 
   const handleTagChange = (newTagIds: string[]) => {
     setSelectedTagIds(newTagIds);
-  };
-
-  // Helper function to clean social media links - remove empty values
-  const cleanSocialMedia = (social: SocialMediaLinks): SocialMediaLinks | undefined => {
-    const cleaned: SocialMediaLinks = {};
-    
-    for (const platform of formConfig.socialPlatforms) {
-      if (social[platform] && social[platform]?.trim()) {
-        cleaned[platform] = social[platform]?.trim();
-      }
-    }
-    
-    return Object.keys(cleaned).length > 0 ? cleaned : undefined;
-  };
-
-  // Helper function to clean hours - remove days with no data
-  const cleanHours = (h: BusinessHours): BusinessHours | undefined => {
-    const cleaned: BusinessHours = {};
-    
-    for (const [day, dayHours] of Object.entries(h)) {
-      if (dayHours && (dayHours.closed || (dayHours.open && dayHours.close))) {
-        cleaned[day] = dayHours;
-      }
-    }
-    
-    return Object.keys(cleaned).length > 0 ? cleaned : undefined;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -296,7 +296,7 @@ export function EntityPreview({
           setError(data.error || "Failed to save changes");
         }
       }
-    } catch (err) {
+    } catch {
       setError("Failed to save changes");
     }
     

@@ -335,7 +335,10 @@
     "serverError": "Error del servidor. Por favor intenta más tarde.",
     "notFound": "No encontrado",
     "unauthorized": "No tienes permiso para realizar esta acción.",
-    "validationError": "Por favor verifica tu entrada e intenta de nuevo."
+    "validationError": "Por favor verifica tu entrada e intenta de nuevo.",
+    "notFoundTitle": "Página no encontrada",
+    "notFoundText": "No encontramos esa página. Puede que se haya movido, o que la ficha ya no sea pública.",
+    "backHome": "Volver al directorio"
   },
   "search": {
     "title": "Buscar",

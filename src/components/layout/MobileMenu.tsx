@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { Link } from "@/i18n/routing";
 import { useAuth } from "@/lib/use-auth";
 import { useTranslations } from "next-intl";
-import { ROLE } from "@/lib/prismaEnums";
 import { publicNavItems } from "@/lib/navigation";
 
 interface MobileMenuProps {

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { normalizeUrl, isValidUrl } from "@/lib/utils";
 import { parsePhoneToE164 } from "@/lib/phone";
-import type { BusinessHours, SocialMediaLinks } from "@/types";
+import type { BusinessHours } from "@/types";
 
 // Helper for fields that should be trimmed and nulled if empty
 const normalizedString = z.any().optional().transform((val) => {

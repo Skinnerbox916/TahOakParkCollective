@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { entityIncludeWithMembers } from "@/lib/entity-helpers";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE, ENTITY_STATUS } from "@/lib/prismaEnums";
 
-export async function GET(request: NextRequest) {
-  return withRole([ROLE.ADMIN], async (user) => {
+export async function GET() {
+  return withRole([ROLE.ADMIN], async () => {
     try {
       // Spot Check Logic:
       // 1. Entities not checked in > 6 months (or never checked)

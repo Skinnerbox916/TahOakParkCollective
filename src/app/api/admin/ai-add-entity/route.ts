@@ -1,9 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
-import { ROLE, ENTITY_TYPE, ApprovalType, ApprovalStatus } from "@/lib/prismaEnums";
+import { ROLE, ENTITY_TYPE } from "@/lib/prismaEnums";
 import { researchEntity } from "@/lib/ai/entity-research";
-import { generateSlug } from "@/lib/utils";
 import { geocodeAddress } from "@/lib/geocoding";
 import { validateCoverage } from "@/lib/coverage-areas";
 import { proposeNewEntity } from "@/lib/entities";

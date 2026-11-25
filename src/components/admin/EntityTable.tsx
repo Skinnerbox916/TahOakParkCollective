@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { EntityWithRelations, EntityTagWithTag } from "@/types";
+import { EntityWithRelations } from "@/types";
 import { ownerLabel } from "@/lib/members";
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -14,13 +13,10 @@ import { SortableTableHeader } from "./SortableTableHeader";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { requiresConsent } from "@/lib/entities/policy";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
-import { ApiResponse } from "@/types";
 import { cn } from "@/lib/utils";
 import { formatPhoneForDisplay } from "@/lib/phone";
-import { ENTITY_TYPES } from "@/lib/constants";
 import { useAdminTranslations } from "@/lib/admin-translations";
 import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
-import { TagBadge } from "@/components/tags/TagBadge";
 
 interface EntityTableProps {
   entities: EntityWithRelations[];
@@ -41,8 +37,7 @@ export function EntityTable({
 }: EntityTableProps) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const { t: tEntities, tStatus } = useAdminTranslations("entities");
-  const tCommon = useTranslations("common");
+  const { t: tEntities } = useAdminTranslations("entities");
   const entityTypeLabels = useEntityTypeLabels();
 
   const handleStatusChange = async (entityId: string, newStatus: EntityStatus) => {

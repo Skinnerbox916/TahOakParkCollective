@@ -15,7 +15,6 @@ interface Tag {
 
 export function TagManager() {
   const t = useTranslations("tags");
-  const tCommon = useTranslations("common");
   const { translate, isTranslating } = useTranslate();
   
   const [tags, setTags] = useState<Tag[]>([]);

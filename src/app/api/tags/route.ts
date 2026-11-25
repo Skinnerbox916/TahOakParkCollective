@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSuccessResponse, createErrorResponse, withAuth, withRole } from "@/lib/api-helpers";
+import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE, TagCategory } from "@/lib/prismaEnums";
 import { getLocaleFromRequest } from "@/lib/api-locale";
 import { getTranslatedField } from "@/lib/translations";
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withRole([ROLE.ADMIN], async (user) => {
+  return withRole([ROLE.ADMIN], async () => {
     try {
       const body = await request.json();
       const { name, nameTranslations, category } = body;
