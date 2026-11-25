@@ -61,6 +61,28 @@ export class TranslationService {
   }
 
   /**
+   * Like translate(), but returns null when translation fails instead of the
+   * original text, so callers never store untranslated text as a translation.
+   */
+  async tryTranslate(
+    text: string,
+    targetLocale: SupportedLocale,
+    sourceLocale: SupportedLocale = 'en'
+  ): Promise<string | null> {
+    if (!text.trim() || sourceLocale === targetLocale) return text;
+    const cached = this.cache.get(text, sourceLocale, targetLocale);
+    if (cached) return cached;
+    try {
+      const result = await this.provider.translate({ text, sourceLocale, targetLocale });
+      this.cache.set(text, sourceLocale, targetLocale, result.translatedText);
+      return result.translatedText;
+    } catch (error) {
+      console.error('Translation failed:', error);
+      return null;
+    }
+  }
+
+  /**
    * Generate translations for both locales from a single input
    * Useful for admin forms that need both en/es
    */

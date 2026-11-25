@@ -179,7 +179,10 @@ const seoTitle = getTranslatedField(
 
 ## Auto-Translation System
 
-TahOak can machine-translate with the DeepL API, but only on request: the translate buttons in the entity forms call it. Nothing fills in missing Spanish automatically, so content saved without clicking translate stays English-only and Spanish pages fall back to the English text.
+TahOak machine-translates with the DeepL API in two ways:
+
+- **On save:** when a listing's English description is new or changed and it has no Spanish description, the write service adds a DeepL translation (`src/lib/entities/translate.ts`). Names aren't translated; they're proper nouns, and Spanish pages fall back to the English name. Spanish that someone wrote is never replaced. If the English changes later, existing Spanish is kept, so edit it by hand if it needs to follow. This only runs with a real `DEEPL_API_KEY`, and a failed translation saves without Spanish rather than storing the English text.
+- **On request:** the translate buttons in the admin forms (and the Tags page) call `/api/translate`.
 
 In production, `DEEPL_API_KEY` must be set or the endpoint returns 503. In development without a key, a mock prefixes the text with `[ES] `.
 

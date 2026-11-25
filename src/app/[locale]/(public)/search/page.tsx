@@ -123,19 +123,19 @@ function SearchPageContent() {
           setAllEntities(data.data); // Store all entities
           // Tag filtering happens in useEffect below
         } else {
-          setError(data.error || "Failed to fetch entities");
+          setError(t("loadFailed"));
           setAllEntities([]);
           setEntities([]);
         }
       } catch (err) {
         console.error("Error fetching entities:", err);
-        setError("An error occurred while fetching entities");
+        setError(t("loadFailed"));
         setEntities([]);
       } finally {
         setIsLoading(false);
       }
     }, 300),
-    [locale]
+    [locale, t]
   );
 
   // Fetch entities when filters change (excluding tags - those filter client-side)

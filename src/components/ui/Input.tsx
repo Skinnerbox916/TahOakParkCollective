@@ -1,6 +1,7 @@
 "use client";
 
 import { InputHTMLAttributes, forwardRef, useId, useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -14,6 +15,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const autoId = useId();
     const fieldId = id ?? autoId;
     const errorId = error ? `${fieldId}-error` : undefined;
+    const tCommon = useTranslations("common");
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === "password";
 
@@ -44,7 +46,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus-ring"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? tCommon("hidePassword") : tCommon("showPassword")}
             >
               {showPassword ? (
                 <svg

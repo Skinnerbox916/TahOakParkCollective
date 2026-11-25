@@ -6,8 +6,16 @@ vi.mock("@/lib/geocoding", () => ({
   ),
 }));
 
+// Machine translation: "ES(text)", or a failure for text containing FAIL.
+vi.mock("@/lib/translate", () => ({
+  getTranslationService: () => ({
+    tryTranslate: vi.fn(async (text: string) => (text.includes("FAIL") ? null : `ES(${text})`)),
+  }),
+}));
+
 import { prisma } from "@/lib/prisma";
 import { generateSlug } from "@/lib/utils";
+import { searchEntityIds } from "@/lib/search-entities";
 import {
   AlreadyProcessedError,
   ConflictError,
@@ -221,6 +229,42 @@ describe("proposals", () => {
     // Editing only the Spanish leaves the English alone.
     await proposeUpdate(admin, entityId!, { nameTranslations: { es: "La Panadería" } }, { source: "admin" });
     expect((await entity(entityId!)).nameTranslations).toEqual({ en: "Bakery", es: "La Panadería" });
+  });
+
+  it("adds a Spanish description by machine translation when there's none (with DeepL configured)", async () => {
+    const create = (description: string) =>
+      proposeNewEntity(admin, { name: "Bakery", description, categorySlugs: ["food"] }, { source: "admin" });
+
+    // Off without a DeepL key (development uses a mock that would store "[ES] ...")
+    const { entityId: off } = await create("Fresh bread");
+    expect((await entity(off!)).descriptionTranslations).toBeNull();
+
+    process.env.DEEPL_API_KEY = "test-key";
+    try {
+      const { entityId } = await create("Fresh bread");
+      const id = entityId!;
+      expect((await entity(id)).descriptionTranslations).toEqual({ en: "Fresh bread", es: "ES(Fresh bread)" });
+
+      // Spanish someone wrote is kept
+      await proposeUpdate(
+        admin,
+        id,
+        { description: "Bread daily", descriptionTranslations: { es: "Pan a diario" } },
+        { source: "admin" }
+      );
+      expect((await entity(id)).descriptionTranslations).toEqual({ en: "Bread daily", es: "Pan a diario" });
+
+      // Saving the same text again doesn't call the translator or change anything
+      await expect(proposeUpdate(admin, id, { description: "Bread daily" }, { source: "admin" })).rejects.toBeInstanceOf(
+        NoChangesError
+      );
+
+      // A failed translation saves without Spanish instead of storing English as Spanish
+      const { entityId: failed } = await create("FAIL bread");
+      expect((await entity(failed!)).descriptionTranslations).toBeNull();
+    } finally {
+      delete process.env.DEEPL_API_KEY;
+    }
   });
 
   it("geocodes a changed address, and clears the pin when it can't be found", async () => {
@@ -560,6 +604,48 @@ describe("members", () => {
     await expect(proposeUpdate(stranger, id, { description: "x" }, { source: "owner" })).rejects.toBeInstanceOf(
       ForbiddenError
     );
+  });
+});
+
+describe("search", () => {
+  it("matches English and Spanish text, ignoring case and accents, and needs every word", async () => {
+    const { entityId: cafe } = await proposeNewEntity(
+      admin,
+      {
+        name: "Café Ñoño",
+        description: "Coffee and sweet bread",
+        descriptionTranslations: { es: "Café y pan dulce" },
+        address: "123 Main St",
+        categorySlugs: ["food"],
+        tagSlugs: ["wifi"],
+      },
+      { source: "admin" }
+    );
+    const { entityId: park } = await proposeNewEntity(
+      admin,
+      { name: "Oak Park Green", categorySlugs: ["parks"], entityType: "PUBLIC_SPACE" },
+      { source: "admin" }
+    );
+    const find = (q: string, opts?: { includeAddress?: boolean }) => searchEntityIds(q, opts).then((ids) => ids.sort());
+
+    expect(await find("cafe")).toEqual([cafe]);
+    expect(await find("CAFÉ")).toEqual([cafe]);
+    expect(await find("nono")).toEqual([cafe]); // ñ folds to n
+    expect(await find("pan dulce")).toEqual([cafe]); // Spanish description, both words
+    expect(await find("sweet")).toEqual([cafe]);
+    expect(await find("dulce park")).toEqual([]); // every word has to match
+    expect(await find("oak")).toEqual([park]);
+    expect(await find("100%")).toEqual([]); // LIKE wildcards are literal
+    expect(await find("")).toEqual([]);
+
+    // Category and tag names, in either language, from the database
+    await prisma.category.update({ where: { slug: "food" }, data: { nameTranslations: { en: "Food", es: "Comida y Bebida" } } });
+    expect(await find("comida")).toEqual([cafe]);
+    expect(await find("wifi")).toEqual([cafe]);
+
+    // Address only in admin search
+    expect(await find("main")).toEqual([]);
+    expect(await find("main", { includeAddress: true })).toEqual([cafe]);
   });
 });
 

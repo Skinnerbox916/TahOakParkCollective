@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Card } from "./Card";
 
 interface ModalProps {
@@ -28,6 +29,7 @@ export function Modal({
   actions,
   maxWidth = "lg",
 }: ModalProps) {
+  const tCommon = useTranslations("common");
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Handle Escape key
@@ -72,7 +74,7 @@ export function Modal({
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 text-2xl leading-none focus-ring rounded"
-              aria-label="Close modal"
+              aria-label={tCommon("close")}
             >
               ×
             </button>

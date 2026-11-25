@@ -59,6 +59,7 @@ src/app/api/
 | `src/lib/prisma.ts` | Singleton Prisma client with connection pooling |
 | `src/lib/entity-helpers.ts` | Entity reads: `entityIncludePublic` / `entityIncludeWithMembers`, `transformEntity()` (applies translations), `buildEntityWhereClause()` (public search) |
 | `src/lib/category-helpers.ts` | Category reads; public counts include only ACTIVE entities |
+| `src/lib/search-entities.ts` | Free-text listing search: every word must match the name or description (English or Spanish) or a category or tag name, ignoring case and accents |
 | `src/lib/entityDisplayConfig.ts` | Which profile sections show per entity type, and `displaySettings` (per-field hide/show) |
 | `src/lib/entities/` | **Entity write service.** The only code that writes Entity/EntityTag rows: `proposeNewEntity`, `proposeUpdate`, `approveApproval`, `rejectApproval`, `rebaseApproval`, `deleteEntity` |
 | `src/lib/ai/` | AI-powered entity research and update suggestions (OpenAI) |

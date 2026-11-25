@@ -9,7 +9,11 @@ import { useTranslate } from "@/hooks/useTranslate";
 
 interface Tag {
   id: string;
+  /** In the page's language */
   name: string;
+  /** The English name (the tag's base name) */
+  nameEn: string;
+  nameTranslations: { en?: string; es?: string } | null;
   category: TagCategory;
 }
 
@@ -25,6 +29,33 @@ export function TagManager() {
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<{ id: string; en: string; es: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    if (!editing) return;
+    if (!editing.en.trim() || !editing.es.trim()) {
+      setError(t("bothLanguagesRequired"));
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/tags/${editing.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nameEn: editing.en, nameEs: editing.es }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || t("failedToSave"));
+      setEditing(null);
+      await fetchTags();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("failedToSave"));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function fetchTags() {
     try {
@@ -212,6 +243,9 @@ export function TagManager() {
                 {t("name")}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {t("nameSpanish")}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t("category")}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -225,16 +259,63 @@ export function TagManager() {
           <tbody className="bg-white divide-y divide-gray-200">
             {tags.map((tag) => (
               <tr key={tag.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {tag.name}
-                </td>
+                {editing?.id === tag.id ? (
+                  <>
+                    <td className="px-6 py-2">
+                      <input
+                        aria-label={t("tagNameEnglish")}
+                        value={editing.en}
+                        onChange={(e) => setEditing({ ...editing, en: e.target.value })}
+                        maxLength={60}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus-ring"
+                      />
+                    </td>
+                    <td className="px-6 py-2">
+                      <input
+                        aria-label={t("tagNameSpanish")}
+                        value={editing.es}
+                        onChange={(e) => setEditing({ ...editing, es: e.target.value })}
+                        maxLength={60}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus-ring"
+                      />
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{tag.nameEn}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {tag.nameTranslations?.es ? (
+                        <span className="text-gray-900">{tag.nameTranslations.es}</span>
+                      ) : (
+                        <span className="text-warning-700">{t("spanishMissing")}</span>
+                      )}
+                    </td>
+                  </>
+                )}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {tag.category}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <TagBadge name={tag.name} category={tag.category} />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                  {editing?.id === tag.id ? (
+                    <>
+                      <button onClick={handleSave} disabled={saving} className="text-primary-600 hover:text-primary-800 disabled:text-gray-400">
+                        {saving ? t("saving") : t("save")}
+                      </button>
+                      <button onClick={() => setEditing(null)} disabled={saving} className="text-gray-600 hover:text-gray-800">
+                        {t("cancel")}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setEditing({ id: tag.id, en: tag.nameEn, es: tag.nameTranslations?.es ?? "" })}
+                      className="text-primary-600 hover:text-primary-800"
+                    >
+                      {t("edit")}
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(tag.id)}
                     disabled={deleting === tag.id}

@@ -4,7 +4,8 @@ import { createSuccessResponse, createErrorResponse, entityErrorResponse, withRo
 import { proposeUpdate } from "@/lib/entities";
 import { ROLE } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
-import { entityIncludeWithMembers, buildAdminEntitySearchWhere } from "@/lib/entity-helpers";
+import { entityIncludeWithMembers } from "@/lib/entity-helpers";
+import { searchEntityIds } from "@/lib/search-entities";
 
 export async function GET(request: NextRequest) {
   return withRole([ROLE.ADMIN], async () => {
@@ -43,8 +44,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (search) {
-        const searchConditions = await buildAdminEntitySearchWhere(search);
-        where.OR = searchConditions;
+        where.id = { in: await searchEntityIds(search, { includeAddress: true }) };
       }
 
       // Build dynamic orderBy based on sortBy parameter

@@ -108,7 +108,8 @@ function ReportIssueContent() {
       const data: ApiResponse = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || t("failedToSubmit"));
+        // The API's messages are English; show the visitor's language instead.
+        throw new Error(response.status === 429 ? tCommon("tooManyRequests") : t("failedToSubmit"));
       }
 
       setSuccess(true);

@@ -31,7 +31,8 @@ function VerifySubscriptionContent() {
         const data: ApiResponse = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.error || t("failedToVerify"));
+          // The API's messages are English; a 4xx means a bad, used or expired link.
+          throw new Error(response.status >= 400 && response.status < 500 ? t("invalidVerificationLink") : t("failedToVerify"));
         }
 
         setSuccess(true);
