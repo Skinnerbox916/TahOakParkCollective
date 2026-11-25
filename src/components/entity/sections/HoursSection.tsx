@@ -9,7 +9,7 @@ interface HoursSectionProps {
   config?: SectionConfig;
 }
 
-export function HoursSection({ entity, config }: HoursSectionProps) {
+export function HoursSection({ entity }: HoursSectionProps) {
   if (!entity.hours) {
     return null;
   }

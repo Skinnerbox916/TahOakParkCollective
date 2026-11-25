@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ApiResponse, EntityWithRelations } from "@/types";
 import { IssueType } from "@/lib/prismaEnums";
-import { Link } from "@/i18n/routing";
 import { Honeypot, honeypotValue } from "@/components/ui/Honeypot";
 
 function ReportIssueContent() {

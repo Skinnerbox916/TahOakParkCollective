@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { EntityPreview } from "@/components/admin/EntityPreview";
 import { EntityWithRelations, ApiResponse } from "@/types";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Alert } from "@/components/ui/Alert";

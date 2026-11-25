@@ -335,7 +335,10 @@
     "serverError": "Server error. Please try again later.",
     "notFound": "Not found",
     "unauthorized": "You do not have permission to perform this action.",
-    "validationError": "Please check your input and try again."
+    "validationError": "Please check your input and try again.",
+    "notFoundTitle": "Page not found",
+    "notFoundText": "We couldn't find that page. It may have moved, or the listing may no longer be public.",
+    "backHome": "Back to the directory"
   },
   "search": {
     "title": "Search",

@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE, ReportStatus } from "@/lib/prismaEnums";
 
 export async function GET(request: NextRequest) {
-  return withRole([ROLE.ADMIN], async (user) => {
+  return withRole([ROLE.ADMIN], async () => {
     try {
       const searchParams = request.nextUrl.searchParams;
       const status = searchParams.get("status") as ReportStatus | null;

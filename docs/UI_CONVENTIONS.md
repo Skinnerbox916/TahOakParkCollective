@@ -26,7 +26,7 @@ Colors and fonts are defined once in `src/styles/theme.css` (a Tailwind v4 `@the
 
 Don't use raw hues for these meanings (indigo, green, yellow, red): use the token, so a rebrand is a change to `theme.css` only. A few raw hues remain on purpose (`blue` for info notes, plus some purple, teal and pink badges).
 
-The body font is set with `next/font` in `src/app/layout.tsx` as `--font-body` on `<html>`. It must stay on `<html>`: Tailwind resolves the font variables on `:root`.
+The body font is set with `next/font` in `src/app/[locale]/layout.tsx` (the root layout) as `--font-body` on `<html>`. It must stay on `<html>`: Tailwind resolves the font variables on `:root`.
 
 The site is light-only; there is no dark mode.
 

@@ -71,7 +71,7 @@
 }
 
 /*
- * Fonts are loaded with next/font in src/app/layout.tsx, which sets
+ * Fonts are loaded with next/font in src/app/[locale]/layout.tsx, which sets
  * --font-body / --font-geist-mono on <html>. Change the typeface there.
  */
 @theme inline {

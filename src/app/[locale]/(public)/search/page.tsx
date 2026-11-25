@@ -10,7 +10,6 @@ import { EntityList } from "@/components/entity/EntityList";
 import { Button } from "@/components/ui/Button";
 import { EntityWithRelations, Category, Tag } from "@/types";
 import { parseSearchParams, buildSearchUrl, debounce } from "@/lib/search";
-import { ENTITY_TYPE } from "@/lib/prismaEnums";
 import type { EntityType } from "@/lib/prismaEnums";
 import { SACRAMENTO_CENTER, DEFAULT_ZOOM } from "@/lib/map";
 
@@ -38,7 +37,6 @@ function SearchPageContent() {
   const searchParams = useSearchParams();
   const urlParams = parseSearchParams(searchParams);
   const t = useTranslations('search');
-  const tCommon = useTranslations('common');
   const locale = useLocale();
 
   const [searchQuery, setSearchQuery] = useState(urlParams.q || "");

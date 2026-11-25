@@ -7,7 +7,6 @@ import { EntityWithRelations, ApiResponse } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Alert } from "@/components/ui/Alert";
-import { useAdminTranslations } from "@/lib/admin-translations";
 
 export default function AdminEntityViewPage() {
   const params = useParams();
@@ -15,7 +14,6 @@ export default function AdminEntityViewPage() {
   const [entity, setEntity] = useState<EntityWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { t } = useAdminTranslations("entities");
 
   useEffect(() => {
     async function fetchEntity() {

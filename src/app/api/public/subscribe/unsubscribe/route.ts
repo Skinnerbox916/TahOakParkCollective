@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse } from "@/lib/api-helpers";
 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     });
     
     return createSuccessResponse(null, "Unsubscribed successfully");
-  } catch (error) {
+  } catch {
     return createErrorResponse("Failed to unsubscribe", 500);
   }
 }

@@ -48,7 +48,6 @@ export function SearchFilters({
   const [tagSearch, setTagSearch] = useState("");
   const [showTags, setShowTags] = useState(false);
   const t = useTranslations("search");
-  const tForms = useTranslations("forms");
   const tCommon = useTranslations("common");
   const entityTypeLabels = useEntityTypeLabels();
   

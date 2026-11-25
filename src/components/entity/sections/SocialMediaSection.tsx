@@ -10,7 +10,7 @@ interface SocialMediaSectionProps {
   config?: SectionConfig;
 }
 
-export function SocialMediaSection({ entity, config }: SocialMediaSectionProps) {
+export function SocialMediaSection({ entity }: SocialMediaSectionProps) {
   const t = useTranslations();
 
   if (!entity.socialMedia) {

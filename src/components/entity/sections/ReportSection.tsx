@@ -10,7 +10,7 @@ interface ReportSectionProps {
   config?: SectionConfig;
 }
 
-export function ReportSection({ entity, config }: ReportSectionProps) {
+export function ReportSection({ entity }: ReportSectionProps) {
   const t = useTranslations("entity");
 
   return (

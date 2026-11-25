@@ -1,5 +1,4 @@
 import { Card } from "./Card";
-import { cn } from "@/lib/utils";
 
 interface LoadingStateProps {
   message?: string;

@@ -1,9 +1,8 @@
-import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withRole } from "@/lib/api-helpers";
 import { ROLE, ENTITY_STATUS, ApprovalStatus } from "@/lib/prismaEnums";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   return withRole([ROLE.ADMIN], async () => {
     try {
       // Count entities by status

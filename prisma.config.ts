@@ -9,9 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
     seed: "npx tsx prisma/seed.ts",
   },
-  client: {
-    engineType: "binary",
-  },
   datasource: {
     url: env("DATABASE_URL"),
   },

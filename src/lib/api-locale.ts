@@ -40,7 +40,7 @@ export function getLocaleFromRequest(request: NextRequest): string {
       if (refererPath.length > 0 && isValidLocale(refererPath[0])) {
         return refererPath[0];
       }
-    } catch (e) {
+    } catch {
       // Invalid referer URL, ignore
     }
   }

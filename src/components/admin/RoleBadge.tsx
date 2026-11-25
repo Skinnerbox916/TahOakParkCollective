@@ -13,7 +13,7 @@ const roleClasses: Record<Role, string> = {
   ADMIN: "bg-primary-100 text-primary-800 border-primary-200",
 };
 
-export function RoleBadge({ role, roles }: RoleBadgeProps) {
+export function RoleBadge({ role }: RoleBadgeProps) {
   const { tRole } = useAdminTranslations();
   const className = roleClasses[role];
 

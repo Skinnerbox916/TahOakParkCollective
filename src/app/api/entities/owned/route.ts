@@ -1,11 +1,10 @@
-import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
 import { ApprovalStatus } from "@/lib/prismaEnums";
 import { entityIncludeWithMembers } from "@/lib/entity-helpers";
 
 /** Listings the signed-in user manages, with how many changes await review. */
-export async function GET(request: NextRequest) {
+export async function GET() {
   return withAuth(async (user) => {
     try {
       const entities = await prisma.entity.findMany({

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { EntityTable } from "@/components/admin/EntityTable";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -12,7 +12,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { FilterBar } from "@/components/admin/FilterBar";
 import { EntityWithRelations, ApiResponse } from "@/types";
-import { ENTITY_STATUS, ENTITY_TYPE } from "@/lib/prismaEnums";
+import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 import type { Category } from "@/types";
 import { ENTITY_TYPES } from "@/lib/constants";
@@ -22,7 +22,6 @@ import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 
 function AdminEntitiesContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const locale = useLocale();
   const [entities, setEntities] = useState<EntityWithRelations[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -47,7 +46,6 @@ function AdminEntitiesContent() {
   );
   
   const { t: tEntities, tStatus } = useAdminTranslations("entities");
-  const tCommon = useTranslations("common");
   const entityTypeLabels = useEntityTypeLabels();
 
   useEffect(() => {
