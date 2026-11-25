@@ -28,7 +28,6 @@ export const adminNavItems: NavItem[] = [
   { href: "/admin/dashboard", labelKey: "dashboard" },
   { href: "/admin/approvals", labelKey: "approvals" },
   { href: "/admin/entities", labelKey: "entities" },
-  { href: "/admin/featured", labelKey: "featured" },
   { href: "/admin/quick-add", labelKey: "quickAdd" },
   { href: "/admin/spot-checks", labelKey: "spotChecks" },
   { href: "/admin/issue-reports", labelKey: "issueReports" },

@@ -16,7 +16,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "./errors";
-import { diffState, findConflicts, normalizeFields, pickState, type EntityChanges, type EntityState } from "./fields";
+import { diffState, findConflicts, mirrorEnglish, normalizeFields, pickState, type EntityChanges, type EntityState } from "./fields";
 
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
@@ -119,14 +119,14 @@ export async function rebaseApproval(reviewer: Actor, approvalId: string, input:
 
     let data: Prisma.ApprovalUpdateManyMutationInput;
     if (approval.type === ApprovalType.NEW_ENTITY) {
-      const state = normalizeFields(input);
+      const state = mirrorEnglish(normalizeFields(input));
       if (!state.name) throw new ValidationError("Entity name is required", { name: "validation.nameRequired" });
       await assertNoNewIdentityTags(state.tagSlugs);
       data = { payload: json(state) };
     } else {
       if (!approval.targetEntityId) throw new NotFoundError("Target entity");
       const current = await loadEntityState(tx, approval.targetEntityId);
-      const changes = diffState(current.state, normalizeFields(input));
+      const changes = diffState(current.state, mirrorEnglish(normalizeFields(input), current.state));
       if (Object.keys(changes).length === 0) throw new NoChangesError();
       await assertNoNewIdentityTags(changes.tagSlugs, current.state.tagSlugs);
       data = {

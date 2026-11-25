@@ -54,7 +54,10 @@
     "dashboard": "Panel",
     "admin": "Administrador",
     "portal": "Portal",
-    "listBusiness": "Agrega tu negocio"
+    "listBusiness": "Agrega tu negocio",
+    "suggest": "Sugerir un negocio",
+    "report": "Reportar un problema",
+    "subscribe": "Suscribirse"
   },
   "footer": {
     "title": "TahOak Park Collective",
@@ -153,14 +156,13 @@
     "accountInfo": "Información de Cuenta:",
     "accountInfoText": "Nombre, dirección de correo electrónico, contraseña (hasheada)",
     "entityInfo": "Información de Entidad:",
-    "entityInfoText": "Detalles de negocio/organización que proporcionas al reclamar o crear listados",
+    "entityInfoText": "Detalles del negocio u organización que proporcionas al crear, editar o publicar una ficha",
     "contactInfo": "Información de Contacto:",
     "contactInfoText": "Direcciones de correo electrónico proporcionadas para suscripciones, sugerencias o reportes de problemas",
     "content": "Contenido:",
     "contentText": "Imágenes, descripciones y otro contenido que subes",
     "automaticallyCollected": "2.2 Información Recopilada Automáticamente",
-    "automaticallyCollectedText": "Dirección IP e información del navegador (para seguridad y análisis)",
-    "usageData": "Datos de uso a través de análisis centrados en la privacidad",
+    "automaticallyCollectedText": "Dirección IP e información del navegador, usadas por seguridad (por ejemplo, para limitar intentos repetidos de inicio de sesión) y guardadas con tus sesiones",
     "howWeUse": "3. Cómo Usamos tu Información",
     "howWeUseText": "Usamos la información que recopilamos para:",
     "providePlatform": "Proporcionar, mantener y mejorar la Plataforma",
@@ -173,9 +175,7 @@
     "subscriptions": "Suscripciones:",
     "subscriptionsText": "Usamos un proceso de doble opt-in para suscripciones por correo electrónico. Debes verificar tu dirección de correo electrónico antes de recibir actualizaciones. Puedes gestionar tus preferencias o cancelar la suscripción en cualquier momento usando los enlaces mágicos que proporcionamos.",
     "transactional": "Correos Transaccionales:",
-    "transactionalText": "Enviamos correos electrónicos esenciales relacionados con tu cuenta, reclamos de entidades y notificaciones de la plataforma. Estos no se pueden cancelar ya que son necesarios para la funcionalidad de la Plataforma.",
-    "analytics": "5. Análisis",
-    "analyticsText": "Usamos herramientas de análisis centradas en la privacidad que no usan cookies ni rastrean información personal. Solo recopilamos datos agregados sobre vistas de página y patrones de visitantes. No se requieren banners de cookies.",
+    "transactionalText": "Enviamos correos electrónicos esenciales relacionados con tu cuenta, tus fichas y notificaciones de la plataforma. Estos no se pueden cancelar ya que son necesarios para la funcionalidad de la Plataforma.",
     "informationSharing": "6. Compartir Información",
     "informationSharingText": "No vendemos, intercambiamos ni alquilamos tu información personal. Podemos compartir información:",
     "serviceProviders": "Con proveedores de servicios que ayudan a operar la Plataforma (por ejemplo, servicio de correo electrónico)",
@@ -195,7 +195,9 @@
     "changesText": "Podemos actualizar esta Política de Privacidad de vez en cuando. Te notificaremos de cualquier cambio publicando la nueva Política de Privacidad en esta página y actualizando la fecha de \"Última actualización\".",
     "contactUs": "11. Contáctanos",
     "contactUsText": "Si tienes preguntas sobre esta Política de Privacidad, por favor",
-    "contactLink": "contáctanos"
+    "contactLink": "contáctanos",
+    "cookies": "5. Cookies",
+    "cookiesText": "Solo usamos las cookies que el sitio necesita: una mantiene tu sesión iniciada y otra recuerda tu idioma. No usamos cookies de análisis ni de publicidad, y no te rastreamos en otros sitios."
   },
   "contact": {
     "title": "Contáctanos",
@@ -207,7 +209,6 @@
     "generalInquiry": "Consulta General",
     "technicalSupport": "Soporte Técnico",
     "suggestion": "Sugerencia o Comentario",
-    "entityClaim": "Pregunta sobre Reclamación de Entidad",
     "other": "Otro",
     "message": "Mensaje",
     "messagePlaceholder": "Por favor proporciona detalles sobre tu consulta...",
@@ -219,7 +220,10 @@
     "termsAgreement": "Al enviar este formulario, aceptas nuestros",
     "termsLink": "Términos de Uso",
     "and": "y",
-    "privacyLink": "Política de Privacidad"
+    "privacyLink": "Política de Privacidad",
+    "aboutMyListing": "Sobre mi ficha",
+    "sendFailed": "No se pudo enviar tu mensaje. Inténtalo de nuevo en unos minutos.",
+    "tooMany": "Demasiados mensajes desde tu conexión. Inténtalo más tarde."
   },
   "auth": {
     "signIn": "Iniciar Sesión",
@@ -973,9 +977,6 @@
       "view": "Ver",
       "edit": "Editar",
       "categoryLabel": "Categoría:",
-      "pageViews": "Visitas",
-      "visitors": "Visitantes",
-      "last30Days": "Últimos 30 días",
       "pendingChanges": "{count, plural, one {# cambio} other {# cambios}} esperando revisión",
       "published": "Publicada",
       "notPublished": "Sin publicar",

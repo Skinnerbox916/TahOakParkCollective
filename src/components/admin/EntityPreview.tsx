@@ -7,6 +7,7 @@ import { getTranslatedField } from "@/lib/translations";
 import type { EntityType, TagCategory } from "@/lib/prismaEnums";
 import { TagBadge } from "@/components/tags/TagBadge";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { BusinessHoursInput } from "@/components/form/BusinessHoursInput";
 import { ENTITY_TYPES } from "@/lib/constants";
@@ -172,8 +173,6 @@ export function EntityPreview({
   const [loadingOptions, setLoadingOptions] = useState(false);
   
   // Translation tab state
-  const [nameTranslationLocale, setNameTranslationLocale] = useState<"en" | "es">("en");
-  const [descTranslationLocale, setDescTranslationLocale] = useState<"en" | "es">("en");
   
   // Store original entityData to restore values when toggling fields back on
   const [originalEntityData] = useState<EntityData>(entityData);
@@ -589,74 +588,28 @@ export function EntityPreview({
               )}
             </div>
 
-            {/* Translations */}
+            {/* Spanish. The name and description fields above are the English text. */}
             {isEditing && (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{tAdmin("nameTranslations")}</label>
-                  <div className="border rounded-lg overflow-hidden">
-                    <div className="flex border-b bg-gray-50">
-                      <button
-                        type="button"
-                        className={`px-4 py-2 text-sm font-medium ${nameTranslationLocale === "en" ? "bg-white border-b-2 border-primary-500 text-primary-600" : "text-gray-500"}`}
-                        onClick={() => setNameTranslationLocale("en")}
-                      >
-                        {tAdmin("languageEnglish")}
-                      </button>
-                      <button
-                        type="button"
-                        className={`px-4 py-2 text-sm font-medium ${nameTranslationLocale === "es" ? "bg-white border-b-2 border-primary-500 text-primary-600" : "text-gray-500"}`}
-                        onClick={() => setNameTranslationLocale("es")}
-                      >
-                        {tAdmin("languageSpanish")}
-                      </button>
-                    </div>
-                    <div className="p-3">
-                      <Input
-                        value={editedData.nameTranslations?.[nameTranslationLocale] || ""}
-                        onChange={(e) => updateField("nameTranslations", {
-                          ...editedData.nameTranslations,
-                          [nameTranslationLocale]: e.target.value,
-                        })}
-                        placeholder={tAdmin("nameInLanguage", { language: nameTranslationLocale === "en" ? tAdmin("languageEnglish") : tAdmin("languageSpanish") })}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{tAdmin("descriptionTranslations")}</label>
-                  <div className="border rounded-lg overflow-hidden">
-                    <div className="flex border-b bg-gray-50">
-                      <button
-                        type="button"
-                        className={`px-4 py-2 text-sm font-medium ${descTranslationLocale === "en" ? "bg-white border-b-2 border-primary-500 text-primary-600" : "text-gray-500"}`}
-                        onClick={() => setDescTranslationLocale("en")}
-                      >
-                        {tAdmin("languageEnglish")}
-                      </button>
-                      <button
-                        type="button"
-                        className={`px-4 py-2 text-sm font-medium ${descTranslationLocale === "es" ? "bg-white border-b-2 border-primary-500 text-primary-600" : "text-gray-500"}`}
-                        onClick={() => setDescTranslationLocale("es")}
-                      >
-                        {tAdmin("languageSpanish")}
-                      </button>
-                    </div>
-                    <div className="p-3">
-                      <textarea
-                        value={editedData.descriptionTranslations?.[descTranslationLocale] || ""}
-                        onChange={(e) => updateField("descriptionTranslations", {
-                          ...editedData.descriptionTranslations,
-                          [descTranslationLocale]: e.target.value,
-                        })}
-                        rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        placeholder={tAdmin("descriptionInLanguage", { language: descTranslationLocale === "en" ? tAdmin("languageEnglish") : tAdmin("languageSpanish") })}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <Input
+                  label={`${tAdmin("nameTranslations")} · ${tAdmin("languageSpanish")}`}
+                  value={editedData.nameTranslations?.es || ""}
+                  onChange={(e) => updateField("nameTranslations", {
+                    ...editedData.nameTranslations,
+                    es: e.target.value,
+                  })}
+                  placeholder={tAdmin("nameInLanguage", { language: tAdmin("languageSpanish") })}
+                />
+                <Textarea
+                  label={`${tAdmin("descriptionTranslations")} · ${tAdmin("languageSpanish")}`}
+                  value={editedData.descriptionTranslations?.es || ""}
+                  onChange={(e) => updateField("descriptionTranslations", {
+                    ...editedData.descriptionTranslations,
+                    es: e.target.value,
+                  })}
+                  rows={4}
+                  placeholder={tAdmin("descriptionInLanguage", { language: tAdmin("languageSpanish") })}
+                />
               </div>
             )}
 

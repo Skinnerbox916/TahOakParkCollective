@@ -1,12 +1,14 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 
 export default function TermsPage() {
   const t = useTranslations("terms");
   const tListing = useTranslations("listingAgreement");
-  const currentDate = new Date().toLocaleDateString();
+  const locale = useLocale();
+  // The date this page's text last changed. Update it with the text.
+  const currentDate = new Date("2026-11-24T12:00:00Z").toLocaleDateString(locale, { dateStyle: "long" });
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -87,6 +87,7 @@ In development, emails (including sign-in codes) are printed to `docker logs tah
 | `BETTER_AUTH_URL` | Public origin of the site. Passkeys are bound to this host | `http://localhost:3000` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | Outgoing mail (required in production; unset in dev prints emails to the log) | `smtp.migadu.com`, `465` |
 | `EMAIL_FROM`, `EMAIL_REPLY_TO` | Sender and reply-to for every email | `"TahOak Park Collective <tahoak@canopyds.com>"` |
+| `CONTACT_EMAIL` | Inbox for contact-form messages and admin notifications (new submissions, owner edits, issue reports, owners publishing). Defaults to `EMAIL_REPLY_TO` | `support@canopyds.com` |
 
 ### Optional Variables
 
@@ -226,7 +227,7 @@ After seeding the database:
 ### Production Checklist
 
 - [ ] Strong, unique `BETTER_AUTH_SECRET`, and `BETTER_AUTH_URL` set to the HTTPS origin
-- [ ] SMTP variables, `EMAIL_FROM` and `EMAIL_REPLY_TO`
+- [ ] SMTP variables, `EMAIL_FROM` and `EMAIL_REPLY_TO` (and `CONTACT_EMAIL` if the site inbox differs from the reply-to address)
 - [ ] `DEEPL_API_KEY` (and `OPENAI_API_KEY` for the admin AI tools)
 - [ ] A persistent volume at `UPLOAD_DIR`
 - [ ] Scheduled database backups

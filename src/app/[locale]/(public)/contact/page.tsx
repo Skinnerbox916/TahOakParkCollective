@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { Textarea } from "@/components/ui/Textarea";
+import { Honeypot, honeypotValue } from "@/components/ui/Honeypot";
 
 export default function ContactPage() {
   const t = useTranslations("contact");
-  const tErrors = useTranslations("errors");
+  const locale = useLocale();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,17 +23,23 @@ export default function ContactPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const homepage = honeypotValue(e.currentTarget);
     setError(null);
     setSuccess(false);
     setLoading(true);
 
     try {
-      // For now, we'll just show a success message
-      // In the future, this could send an email via API
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
+      const response = await fetch("/api/public/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, locale, homepage }),
+      });
+      if (!response.ok) {
+        throw new Error(response.status === 429 ? t("tooMany") : t("sendFailed"));
+      }
+
       setSuccess(true);
       setFormData({
         name: "",
@@ -39,7 +48,7 @@ export default function ContactPage() {
         message: "",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : tErrors("generic"));
+      setError(err instanceof Error ? err.message : t("sendFailed"));
     } finally {
       setLoading(false);
     }
@@ -86,7 +95,7 @@ export default function ContactPage() {
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6 relative">
               {error && (
                 <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
                   {error}
@@ -117,42 +126,35 @@ export default function ContactPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("subject")} *
-                </label>
-                <select
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                >
-                  <option value="">{t("selectSubject")}</option>
-                  <option value="general">{t("generalInquiry")}</option>
-                  <option value="support">{t("technicalSupport")}</option>
-                  <option value="suggestion">{t("suggestion")}</option>
-                  <option value="claim">{t("entityClaim")}</option>
-                  <option value="other">{t("other")}</option>
-                </select>
-              </div>
+              <Select
+                name="subject"
+                label={`${t("subject")} *`}
+                value={formData.subject}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              >
+                <option value="">{t("selectSubject")}</option>
+                <option value="general">{t("generalInquiry")}</option>
+                <option value="listing">{t("aboutMyListing")}</option>
+                <option value="support">{t("technicalSupport")}</option>
+                <option value="suggestion">{t("suggestion")}</option>
+                <option value="other">{t("other")}</option>
+              </Select>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("message")} *
-                </label>
-                <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                  rows={6}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder={t("messagePlaceholder")}
-                />
-              </div>
+              <Textarea
+                name="message"
+                label={`${t("message")} *`}
+                value={formData.message}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                rows={6}
+                maxLength={5000}
+                placeholder={t("messagePlaceholder")}
+              />
+
+              <Honeypot />
 
               <Button type="submit" disabled={loading} className="w-full">
                 {loading ? t("sending") : t("sendMessage")}

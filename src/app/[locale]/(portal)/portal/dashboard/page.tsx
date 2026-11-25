@@ -18,16 +18,10 @@ type OwnedEntity = EntityWithRelations & {
   members?: { role: "OWNER" | "MANAGER"; user: { id: string } }[];
 };
 
-interface EntityStats {
-  pageviews: number;
-  visitors: number;
-}
-
 export default function PortalDashboard() {
   const [entities, setEntities] = useState<OwnedEntity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [entityStats, setEntityStats] = useState<Record<string, EntityStats>>({});
   const [publishing, setPublishing] = useState<OwnedEntity | null>(null);
   const [agreed, setAgreed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -60,35 +54,6 @@ export default function PortalDashboard() {
 
     fetchEntities();
   }, [reloadKey]);
-
-  // Fetch analytics for each entity after entities are loaded
-  useEffect(() => {
-    async function fetchStats() {
-      if (entities.length === 0) return;
-
-      const statsPromises = entities.map(async (entity) => {
-        try {
-          const response = await fetch(`/api/entities/${entity.id}/stats`);
-          const data: ApiResponse<EntityStats> = await response.json();
-          if (data.success && data.data) {
-            return { id: entity.id, stats: data.data };
-          }
-        } catch (err) {
-          console.error(`Error fetching stats for entity ${entity.id}:`, err);
-        }
-        return { id: entity.id, stats: { pageviews: 0, visitors: 0 } };
-      });
-
-      const results = await Promise.all(statsPromises);
-      const statsMap: Record<string, EntityStats> = {};
-      for (const result of results) {
-        statsMap[result.id] = result.stats;
-      }
-      setEntityStats(statsMap);
-    }
-
-    fetchStats();
-  }, [entities]);
 
   const isOwner = (entity: OwnedEntity) =>
     !!user && !!entity.members?.some((m) => m.role === "OWNER" && m.user.id === user.id);
@@ -157,7 +122,6 @@ export default function PortalDashboard() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {entities.map((entity) => {
-            const stats = entityStats[entity.id];
             return (
               <Card key={entity.id} className="flex flex-col">
                 <div className="flex items-start justify-between mb-3">
@@ -193,25 +157,6 @@ export default function PortalDashboard() {
                     {entity.description}
                   </p>
                 )}
-
-                {/* Analytics Section */}
-                <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                  <p className="text-xs text-gray-500 mb-2">{tPortal("last30Days")}</p>
-                  <div className="flex gap-4">
-                    <div className="flex-1">
-                      <p className="text-2xl font-semibold text-gray-900">
-                        {stats?.pageviews ?? "—"}
-                      </p>
-                      <p className="text-xs text-gray-500">{tPortal("pageViews")}</p>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-2xl font-semibold text-gray-900">
-                        {stats?.visitors ?? "—"}
-                      </p>
-                      <p className="text-xs text-gray-500">{tPortal("visitors")}</p>
-                    </div>
-                  </div>
-                </div>
 
                 <div className="mt-auto pt-4 border-t border-gray-200 space-y-2">
                   <div className="flex gap-2">

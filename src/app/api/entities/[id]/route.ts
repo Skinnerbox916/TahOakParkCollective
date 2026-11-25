@@ -6,6 +6,7 @@ import { getLocaleFromRequest } from "@/lib/api-locale";
 import { getCurrentUser } from "@/lib/auth";
 import { entityIncludePublic, entityIncludeWithMembers, transformEntity } from "@/lib/entity-helpers";
 import { deleteEntity, proposeUpdate, unpublishListing } from "@/lib/entities";
+import { notifyAdmins, notifyPublishChange } from "@/lib/email";
 import { deleteUpload, keyFromPublicUrl } from "@/lib/storage";
 
 /**
@@ -77,6 +78,12 @@ export async function PUT(
       });
 
       if (result.pending) {
+        const entity = await prisma.entity.findUnique({ where: { id }, select: { name: true } });
+        await notifyAdmins(
+          `Owner edit to review: ${entity?.name ?? id}`,
+          [`${user.email ?? "An owner"} changed: ${Object.keys(result.changes).join(", ")}.`],
+          `/admin/approvals/${result.approval.id}`
+        );
         return createSuccessResponse(
           { approval: { id: result.approval.id }, pendingReview: true },
           "Changes submitted for review"
@@ -116,6 +123,7 @@ export async function DELETE(
       }
 
       await unpublishListing(user, id);
+      await notifyPublishChange(id, false, user.email);
       return createSuccessResponse({ published: false }, "Listing unpublished");
     } catch (error) {
       return entityErrorResponse(error, "Failed to delete entity");

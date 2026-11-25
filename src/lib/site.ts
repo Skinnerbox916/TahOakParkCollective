@@ -8,6 +8,14 @@ export function siteUrl(): string {
   return url.replace(/\/+$/, "");
 }
 
+/**
+ * Where messages for the people running the site go: contact-form messages
+ * and admin notifications. Defaults to the public reply-to address.
+ */
+export function siteInbox(): string | null {
+  return process.env.CONTACT_EMAIL || process.env.EMAIL_REPLY_TO || null;
+}
+
 export function appName(): string {
   return process.env.APP_NAME || "TahOak Park Collective";
 }

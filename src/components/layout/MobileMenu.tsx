@@ -5,6 +5,7 @@ import { Link } from "@/i18n/routing";
 import { useAuth } from "@/lib/use-auth";
 import { useTranslations } from "next-intl";
 import { publicNavItems } from "@/lib/navigation";
+import { usePublicNavLabel } from "./usePublicNavLabel";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -19,22 +20,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { session, isAdmin, needsStepUp, signOut } = useAuth();
   const t = useTranslations("common");
   const tNav = useTranslations("nav");
-  const tSuggest = useTranslations("suggest");
-  const tReport = useTranslations("report");
-  const tSubscribe = useTranslations("subscribe");
-
-
-  // Translation lookup for public nav items
-  const getNavLabel = (labelKey: string) => {
-    switch (labelKey) {
-      case "directory": return t("directory");
-      case "suggest": return tSuggest("title");
-      case "report": return tReport("title");
-      case "listBusiness": return tNav("listBusiness");
-      case "subscribe": return tSubscribe("title");
-      default: return labelKey;
-    }
-  };
+  const getNavLabel = usePublicNavLabel();
 
   // Close menu on ESC key
   useEffect(() => {
