@@ -43,7 +43,11 @@
     "saving": "Guardando...",
     "opensInNewTab": "se abre en una nueva pestaña",
     "account": "Cuenta",
-    "verifyForAdmin": "Verificar para administrar"
+    "verifyForAdmin": "Verificar para administrar",
+    "tooManyRequests": "Demasiados intentos desde tu conexión. Inténtalo más tarde.",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "openMenu": "Abrir menú"
   },
   "nav": {
     "home": "Inicio",
@@ -374,7 +378,8 @@
     "addLocationData": "Agrega datos de ubicación para ver entidades en el mapa",
     "viewDetails": "Ver Detalles →",
     "noEntitiesFound": "No se encontraron entidades",
-    "tryAdjustingSearch": "Intenta ajustar tu búsqueda o filtros para encontrar lo que buscas."
+    "tryAdjustingSearch": "Intenta ajustar tu búsqueda o filtros para encontrar lo que buscas.",
+    "loadFailed": "No pudimos cargar las fichas. Inténtalo de nuevo."
   },
   "suggest": {
     "title": "Sugerir una Entidad",
@@ -432,7 +437,16 @@
     "failedToVerify": "Error al verificar la suscripción",
     "loading": "Cargando...",
     "invalidLinkTitle": "Enlace Inválido",
-    "ifYouNeed": "Si necesitas un nuevo enlace de gestión, por favor"
+    "ifYouNeed": "Si necesitas un nuevo enlace de gestión, por favor",
+    "emailLabel": "Correo electrónico",
+    "subscribing": "Suscribiendo...",
+    "subscribeButton": "Suscribirme",
+    "consent": "Al suscribirte, aceptas recibir novedades por correo de TahOak Park Collective. Puedes darte de baja en cualquier momento.",
+    "checkEmailTitle": "Revisa tu correo",
+    "sentTo": "Te enviamos un enlace de confirmación a <strong>{email}</strong>.",
+    "linkExpires": "Haz clic en el enlace del correo para confirmar tu suscripción. Vence en 7 días.",
+    "failed": "No pudimos suscribirte. Revisa la dirección e inténtalo de nuevo.",
+    "tooMany": "Demasiados intentos desde tu conexión. Inténtalo más tarde."
   },
   "entityTypes": {
     "commerce": "Comercio",
@@ -484,7 +498,14 @@
     "preview": "Vista Previa",
     "actions": "Acciones",
     "failedToCreate": "Error al crear etiqueta",
-    "failedToDelete": "Error al eliminar etiqueta"
+    "failedToDelete": "Error al eliminar etiqueta",
+    "edit": "Editar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "spanishMissing": "Sin español todavía",
+    "failedToSave": "No se pudo guardar la etiqueta",
+    "nameSpanish": "Español"
   },
   "admin": {
     "sidebar": {
@@ -1154,5 +1175,22 @@
     "askForNew": "Si crees que debería funcionar, pide uno nuevo a quien te lo envió.",
     "error": "Algo salió mal. Inténtalo de nuevo.",
     "jumpToPublish": "Publicarla ↓"
+  },
+  "hours": {
+    "title": "Horario",
+    "closed": "Cerrado",
+    "notSpecified": "Horario no especificado",
+    "quickWeekdays": "Lun–Vie 9–17",
+    "quickEveryDay": "Todos los días 9–21",
+    "clearAll": "Borrar todo",
+    "openTime": "Hora de apertura del {day}",
+    "closeTime": "Hora de cierre del {day}",
+    "copyDown": "Copiar ↓",
+    "copyDownTitle": "Copiar este horario a los días siguientes",
+    "helper": "Deja un día en blanco, o marca “Cerrado”, si no abres ese día."
+  },
+  "meta": {
+    "title": "TahOak Park Collective",
+    "description": "Directorio de negocios, organizaciones y espacios públicos locales en Tahoe Park, Oak Park, Elmhurst, Colonial Park y Curtis Park, Sacramento."
   }
 }

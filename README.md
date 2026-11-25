@@ -99,7 +99,7 @@ In development, emails (including sign-in codes) are printed to `docker logs tah
 | `POSTGRES_PASSWORD` | PostgreSQL password | `tahoak_password` |
 | `POSTGRES_DB` | PostgreSQL database name | `tahoak_db` |
 | `POSTGRES_PORT` | PostgreSQL port | `5432` |
-| `DEEPL_API_KEY` | DeepL API key for the translate buttons. Required in production for them; dev falls back to a mock that prefixes `[ES] ` | - |
+| `DEEPL_API_KEY` | DeepL API key. With it, listing descriptions get a Spanish translation on save, and the translate buttons work. Without it, nothing is translated on save, and the buttons use a mock that prefixes `[ES] ` (dev only; production returns an error) | - |
 | `OPENAI_API_KEY` | Admin AI tools (research a new listing, suggest updates). Without it those tools return an error | - |
 | `UPLOAD_DIR` | Where uploaded images are stored, served at `/uploads/...`. In production, mount a persistent volume here or uploads are lost on redeploy | `<cwd>/uploads` (`/app/uploads` in the Docker image) |
 | `SKIP_MIGRATIONS` | Set to `true` to stop the Docker image from running `prisma migrate deploy` on start | `false` |

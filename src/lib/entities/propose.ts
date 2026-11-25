@@ -19,6 +19,7 @@ import {
   type EntityChanges,
 } from "./fields";
 import { locate } from "./locate";
+import { withSpanishDescription } from "./translate";
 
 export type ProposalSource = "owner" | "admin" | "ai" | "ai_suggest" | "public";
 
@@ -48,7 +49,7 @@ export async function proposeNewEntity(
   opts: ProposeOptions & { initialOwnerId?: string }
 ) {
   const isAdmin = isAdminActor(actor.roles);
-  const state = mirrorEnglish(normalizeFields(input));
+  const state = mirrorEnglish(await withSpanishDescription(normalizeFields(input)));
   if (!state.name) {
     throw new ValidationError("Entity name is required", { name: "validation.nameRequired" });
   }
@@ -127,7 +128,8 @@ export async function proposeUpdate(
     throw new StaleVersionError(current.version);
   }
 
-  const changes: EntityChanges = diffState(current.state, mirrorEnglish(normalizeFields(input), current.state));
+  const incoming = await withSpanishDescription(normalizeFields(input), current.state);
+  const changes: EntityChanges = diffState(current.state, mirrorEnglish(incoming, current.state));
 
   // Keep the map pin in step with the address: geocode a changed address
   // (unless new coordinates came with it) or fill a pin that was never set.

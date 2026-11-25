@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
+import { WEEKDAYS, weekdayName } from "@/lib/weekdays";
+
 import { useCallback } from "react";
 import type { BusinessHours } from "@/types";
 
@@ -18,15 +21,7 @@ interface BusinessHoursInputProps {
   disabled?: boolean;
 }
 
-const DAYS = [
-  { key: "monday", label: "Monday", short: "Mon" },
-  { key: "tuesday", label: "Tuesday", short: "Tue" },
-  { key: "wednesday", label: "Wednesday", short: "Wed" },
-  { key: "thursday", label: "Thursday", short: "Thu" },
-  { key: "friday", label: "Friday", short: "Fri" },
-  { key: "saturday", label: "Saturday", short: "Sat" },
-  { key: "sunday", label: "Sunday", short: "Sun" },
-] as const;
+const DAYS = WEEKDAYS.map((key) => ({ key }));
 
 /**
  * Default hours for a new day entry
@@ -51,6 +46,8 @@ export function BusinessHoursInput({
   onChange,
   disabled = false,
 }: BusinessHoursInputProps) {
+  const t = useTranslations("hours");
+  const locale = useLocale();
   
   const getDayHours = useCallback((day: string): DayHours => {
     return value[day] || { ...DEFAULT_HOURS };
@@ -107,7 +104,7 @@ export function BusinessHoursInput({
             }}
             className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 text-gray-600 transition-colors"
           >
-            Mon-Fri 9-5
+            {t("quickWeekdays")}
           </button>
           <button
             type="button"
@@ -120,7 +117,7 @@ export function BusinessHoursInput({
             }}
             className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 text-gray-600 transition-colors"
           >
-            7 Days 9-9
+            {t("quickEveryDay")}
           </button>
           {hasAnyHours && (
             <button
@@ -128,7 +125,7 @@ export function BusinessHoursInput({
               onClick={() => onChange({})}
               className="text-xs px-2 py-1 rounded border border-error-200 hover:bg-error-50 text-error-600 transition-colors"
             >
-              Clear All
+              {t("clearAll")}
             </button>
           )}
         </div>
@@ -149,10 +146,10 @@ export function BusinessHoursInput({
               {/* Day Label */}
               <div className="w-12 sm:w-20 flex-shrink-0">
                 <span className="text-sm font-medium text-gray-700 hidden sm:inline">
-                  {day.label}
+                  {weekdayName(locale, index)}
                 </span>
                 <span className="text-sm font-medium text-gray-700 sm:hidden">
-                  {day.short}
+                  {weekdayName(locale, index, "short")}
                 </span>
               </div>
 
@@ -165,7 +162,7 @@ export function BusinessHoursInput({
                   disabled={disabled}
                   className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
                 />
-                <span className="text-xs text-gray-500">Closed</span>
+                <span className="text-xs text-gray-500">{t("closed")}</span>
               </label>
 
               {/* Time Inputs */}
@@ -176,7 +173,7 @@ export function BusinessHoursInput({
                   onChange={(e) => updateDay(day.key, { open: e.target.value })}
                   disabled={disabled || isClosed}
                   className="w-full sm:w-28 px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:text-gray-400"
-                  aria-label={`${day.label} open time`}
+                  aria-label={t("openTime", { day: weekdayName(locale, index) })}
                 />
                 <span className="text-gray-400 text-sm">–</span>
                 <input
@@ -185,7 +182,7 @@ export function BusinessHoursInput({
                   onChange={(e) => updateDay(day.key, { close: e.target.value })}
                   disabled={disabled || isClosed}
                   className="w-full sm:w-28 px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:text-gray-400"
-                  aria-label={`${day.label} close time`}
+                  aria-label={t("closeTime", { day: weekdayName(locale, index) })}
                 />
               </div>
 
@@ -195,9 +192,9 @@ export function BusinessHoursInput({
                   type="button"
                   onClick={() => copyToRemaining(day.key)}
                   className="flex-shrink-0 text-xs text-primary-600 hover:text-primary-700 hover:underline hidden sm:inline"
-                  title="Copy these hours to all days below"
+                  title={t("copyDownTitle")}
                 >
-                  Copy ↓
+                  {t("copyDown")}
                 </button>
               )}
             </div>
@@ -207,7 +204,7 @@ export function BusinessHoursInput({
 
       {/* Helper text */}
       <p className="text-xs text-gray-500 mt-2">
-        Leave hours blank or check &quot;Closed&quot; for days you&apos;re not open.
+        {t("helper")}
       </p>
     </div>
   );

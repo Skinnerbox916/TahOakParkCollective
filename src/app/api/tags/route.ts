@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
     // Map tags to include translated names
     const translatedTags = tags.map((tag) => ({
       ...tag,
+      nameEn: tag.name,
       name: getTranslatedField(tag.nameTranslations, locale, tag.name),
     }));
 

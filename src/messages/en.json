@@ -43,7 +43,11 @@
     "saving": "Saving...",
     "opensInNewTab": "opens in new tab",
     "account": "Account",
-    "verifyForAdmin": "Verify for admin tools"
+    "verifyForAdmin": "Verify for admin tools",
+    "tooManyRequests": "Too many attempts from your connection. Please try again later.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "openMenu": "Open menu"
   },
   "nav": {
     "home": "Home",
@@ -374,7 +378,8 @@
     "addLocationData": "Add location data to see entities on the map",
     "viewDetails": "View Details →",
     "noEntitiesFound": "No entities found",
-    "tryAdjustingSearch": "Try adjusting your search or filters to find what you're looking for."
+    "tryAdjustingSearch": "Try adjusting your search or filters to find what you're looking for.",
+    "loadFailed": "We couldn't load listings. Please try again."
   },
   "suggest": {
     "title": "Suggest an Entity",
@@ -432,7 +437,16 @@
     "failedToVerify": "Failed to verify subscription",
     "loading": "Loading...",
     "invalidLinkTitle": "Invalid Link",
-    "ifYouNeed": "If you need a new management link, please"
+    "ifYouNeed": "If you need a new management link, please",
+    "emailLabel": "Email address",
+    "subscribing": "Subscribing...",
+    "subscribeButton": "Subscribe",
+    "consent": "By subscribing, you agree to receive email updates from TahOak Park Collective. You can unsubscribe at any time.",
+    "checkEmailTitle": "Check your email",
+    "sentTo": "We've sent a confirmation link to <strong>{email}</strong>.",
+    "linkExpires": "Click the link in the email to confirm your subscription. It expires in 7 days.",
+    "failed": "We couldn't subscribe you. Please check the address and try again.",
+    "tooMany": "Too many attempts from your connection. Please try again later."
   },
   "entityTypes": {
     "commerce": "Commerce",
@@ -484,7 +498,14 @@
     "preview": "Preview",
     "actions": "Actions",
     "failedToCreate": "Failed to create tag",
-    "failedToDelete": "Failed to delete tag"
+    "failedToDelete": "Failed to delete tag",
+    "edit": "Edit",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "spanishMissing": "No Spanish yet",
+    "failedToSave": "Couldn't save the tag",
+    "nameSpanish": "Spanish"
   },
   "admin": {
     "sidebar": {
@@ -1154,5 +1175,22 @@
     "askForNew": "If you think it should, ask the person who sent it for a new one.",
     "error": "Something went wrong. Please try again.",
     "jumpToPublish": "Publish it ↓"
+  },
+  "hours": {
+    "title": "Hours",
+    "closed": "Closed",
+    "notSpecified": "Hours not specified",
+    "quickWeekdays": "Mon–Fri 9–5",
+    "quickEveryDay": "Every day 9–9",
+    "clearAll": "Clear all",
+    "openTime": "{day} opening time",
+    "closeTime": "{day} closing time",
+    "copyDown": "Copy ↓",
+    "copyDownTitle": "Copy these hours to all the days below",
+    "helper": "Leave a day blank, or tick “Closed”, if you're not open that day."
+  },
+  "meta": {
+    "title": "TahOak Park Collective",
+    "description": "A directory of local businesses, organizations and public spaces in Tahoe Park, Oak Park, Elmhurst, Colonial Park and Curtis Park, Sacramento."
   }
 }

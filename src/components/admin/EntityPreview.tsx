@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { WEEKDAYS, weekdayName } from "@/lib/weekdays";
 import { useEntityTypeLabels } from "@/lib/entityTypeTranslations";
 import { getTranslatedField } from "@/lib/translations";
 import type { EntityType, TagCategory } from "@/lib/prismaEnums";
@@ -89,28 +90,17 @@ interface EntityPreviewProps {
 const SOCIAL_PLATFORMS = ["facebook", "instagram", "twitter", "linkedin", "yelp", "tiktok", "youtube", "threads"] as const;
 
 /**
- * Format hours for display
+ * Format hours for display: short day names in `locale`, "Closed" from `closedLabel`.
  */
-function formatHoursDisplay(hours: BusinessHours | null) {
+function formatHoursDisplay(hours: BusinessHours | null, locale: string, closedLabel: string) {
   if (!hours) return null;
-  
-  const days = [
-    { key: "monday", label: "Mon" },
-    { key: "tuesday", label: "Tue" },
-    { key: "wednesday", label: "Wed" },
-    { key: "thursday", label: "Thu" },
-    { key: "friday", label: "Fri" },
-    { key: "saturday", label: "Sat" },
-    { key: "sunday", label: "Sun" },
-  ];
-
-  return days.map(({ key, label }) => {
+  return WEEKDAYS.map((key, index) => {
+    const label = weekdayName(locale, index, "short");
     const dayHours = hours[key];
-    const isClosed = dayHours?.closed ?? false;
-    if (!dayHours || isClosed) {
-      return { label, value: "Closed" };
+    if (!dayHours || dayHours.closed) {
+      return { label, value: closedLabel };
     }
-    return { label, value: `${dayHours.open || "?"} - ${dayHours.close || "?"}` };
+    return { label, value: `${dayHours.open || "?"} – ${dayHours.close || "?"}` };
   });
 }
 
@@ -146,6 +136,7 @@ export function EntityPreview({
   const t = useTranslations("entity");
   const tCommon = useTranslations("common");
   const tAdmin = useTranslations("admin.approvals.detail");
+  const tHours = useTranslations("hours");
   const tEntityForm = useTranslations("admin.entityForm");
   const entityTypeLabels = useEntityTypeLabels();
   
@@ -345,7 +336,7 @@ export function EntityPreview({
   
   // Use editedData when editing, entityData when viewing
   const displayData = isEditing ? editedData : entityData;
-  const formattedHours = formatHoursDisplay(displayData.hours || null);
+  const formattedHours = formatHoursDisplay(displayData.hours || null, locale, tHours("closed"));
   const hasFormattedHours = !!(formattedHours && formattedHours.length > 0);
   const hasSocialMedia = !!(displayData.socialMedia && Object.keys(displayData.socialMedia).length > 0);
   

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ApiResponse } from "@/types";
 import { Honeypot, honeypotValue } from "@/components/ui/Honeypot";
 
 interface SubscribeFormProps {
@@ -12,6 +12,8 @@ interface SubscribeFormProps {
 }
 
 export function SubscribeForm({ onSuccess }: SubscribeFormProps) {
+  const t = useTranslations("subscribe");
+  const locale = useLocale();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,24 +26,20 @@ export function SubscribeForm({ onSuccess }: SubscribeFormProps) {
     setLoading(true);
 
     try {
+      // The language decides which language the confirmation email is in.
       const response = await fetch("/api/public/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, homepage }),
+        body: JSON.stringify({ email, locale, homepage }),
       });
-
-      const data: ApiResponse = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to subscribe");
+      if (!response.ok) {
+        throw new Error(response.status === 429 ? t("tooMany") : t("failed"));
       }
 
       setSuccess(true);
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to subscribe");
+      setError(err instanceof Error ? err.message : t("failed"));
     } finally {
       setLoading(false);
     }
@@ -51,56 +49,37 @@ export function SubscribeForm({ onSuccess }: SubscribeFormProps) {
     return (
       <Card className="text-center">
         <div className="text-6xl mb-4">📧</div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          Check Your Email
-        </h2>
-        <p className="text-gray-600 mb-4">
-          We’ve sent a verification link to <strong>{email}</strong>
-        </p>
-        <p className="text-sm text-gray-500">
-          Click the link in the email to confirm your subscription. The link will expire in 7 days.
-        </p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("checkEmailTitle")}</h2>
+        <p className="text-gray-600 mb-4">{t.rich("sentTo", { email, strong: (chunks) => <strong>{chunks}</strong> })}</p>
+        <p className="text-sm text-gray-500">{t("linkExpires")}</p>
       </Card>
     );
   }
 
   return (
     <Card>
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">
-        Subscribe to Updates
-      </h2>
-      <p className="text-gray-600 mb-6">
-        Get notified about new businesses, events, and community updates in TahOak Park.
-      </p>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-          <Honeypot />
+      <form onSubmit={handleSubmit} className="space-y-4 relative">
+        <Honeypot />
         {error && (
-          <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">
-            {error}
-          </div>
+          <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg text-sm">{error}</div>
         )}
 
         <Input
           type="email"
-          label="Email Address"
+          label={t("emailLabel")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           disabled={loading}
-          placeholder="your@email.com"
+          placeholder="you@example.com"
         />
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Subscribing..." : "Subscribe"}
+          {loading ? t("subscribing") : t("subscribeButton")}
         </Button>
 
-        <p className="text-xs text-gray-500 text-center">
-          By subscribing, you agree to receive email updates from TahOak Park Collective.
-          You can unsubscribe at any time.
-        </p>
+        <p className="text-xs text-gray-500 text-center">{t("consent")}</p>
       </form>
     </Card>
   );
 }
-

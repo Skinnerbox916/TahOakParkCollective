@@ -133,31 +133,33 @@ const CATEGORIES = [
 
 const TAGS = [
   // Identity (owner-assigned)
-  { name: "Black-owned", category: TagCategory.IDENTITY },
-  { name: "LGBTQ-owned", category: TagCategory.IDENTITY },
-  { name: "Women-owned", category: TagCategory.IDENTITY },
-  { name: "Veteran-owned", category: TagCategory.IDENTITY },
-  { name: "Asian-owned", category: TagCategory.IDENTITY },
-  { name: "Latinx-owned", category: TagCategory.IDENTITY },
-  { name: "Indigenous-owned", category: TagCategory.IDENTITY },
-  
+  { name: "Black-owned", es: "De propiedad afroamericana", category: TagCategory.IDENTITY },
+  { name: "LGBTQ-owned", es: "De propiedad LGBTQ", category: TagCategory.IDENTITY },
+  { name: "Women-owned", es: "De propiedad de mujeres", category: TagCategory.IDENTITY },
+  { name: "Veteran-owned", es: "De propiedad de veteranos", category: TagCategory.IDENTITY },
+  { name: "Asian-owned", es: "De propiedad asiática", category: TagCategory.IDENTITY },
+  { name: "Latinx-owned", es: "De propiedad latina", category: TagCategory.IDENTITY },
+  { name: "Indigenous-owned", es: "De propiedad indígena", category: TagCategory.IDENTITY },
+  { name: "Immigrant-owned", es: "De propiedad inmigrante", category: TagCategory.IDENTITY },
+
   // Friendliness (admin-verified)
-  { name: "Kid-friendly", category: TagCategory.FRIENDLINESS },
-  { name: "Dog-friendly", category: TagCategory.FRIENDLINESS },
-  { name: "Neurodiversity-friendly", category: TagCategory.FRIENDLINESS },
-  { name: "Wheelchair-accessible", category: TagCategory.FRIENDLINESS },
-  { name: "Senior-friendly", category: TagCategory.FRIENDLINESS },
-  { name: "Sensory-friendly", category: TagCategory.FRIENDLINESS },
-  
+  { name: "Kid-friendly", es: "Apto para niños", category: TagCategory.FRIENDLINESS },
+  { name: "Dog-friendly", es: "Se admiten perros", category: TagCategory.FRIENDLINESS },
+  { name: "Neurodiversity-friendly", es: "Inclusivo con la neurodiversidad", category: TagCategory.FRIENDLINESS },
+  { name: "Wheelchair-accessible", es: "Accesible en silla de ruedas", category: TagCategory.FRIENDLINESS },
+  { name: "Senior-friendly", es: "Apto para personas mayores", category: TagCategory.FRIENDLINESS },
+  { name: "Sensory-friendly", es: "Adaptado a sensibilidades sensoriales", category: TagCategory.FRIENDLINESS },
+  { name: "Spanish Speaking", es: "Se habla español", category: TagCategory.FRIENDLINESS },
+
   // Amenities (open)
-  { name: "WiFi", category: TagCategory.AMENITY },
-  { name: "Outdoor Seating", category: TagCategory.AMENITY },
-  { name: "Parking Available", category: TagCategory.AMENITY },
-  { name: "Public Restroom", category: TagCategory.AMENITY },
-  { name: "Accepts Cash", category: TagCategory.AMENITY },
-  { name: "Accepts Cards", category: TagCategory.AMENITY },
-  { name: "Gender-neutral Restrooms", category: TagCategory.AMENITY },
-  { name: "Changing Tables", category: TagCategory.AMENITY },
+  { name: "WiFi", es: "Wifi", category: TagCategory.AMENITY },
+  { name: "Outdoor Seating", es: "Mesas al aire libre", category: TagCategory.AMENITY },
+  { name: "Parking Available", es: "Estacionamiento disponible", category: TagCategory.AMENITY },
+  { name: "Public Restroom", es: "Baño público", category: TagCategory.AMENITY },
+  { name: "Accepts Cash", es: "Acepta efectivo", category: TagCategory.AMENITY },
+  { name: "Accepts Cards", es: "Acepta tarjetas", category: TagCategory.AMENITY },
+  { name: "Gender-neutral Restrooms", es: "Baños de género neutro", category: TagCategory.AMENITY },
+  { name: "Changing Tables", es: "Cambiador de pañales", category: TagCategory.AMENITY },
 ];
 
 // =============================================================================
@@ -200,9 +202,10 @@ async function main() {
     const slug = tag.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
     await prisma.tag.upsert({
       where: { slug },
-      update: {},
+      update: {}, // never overwrite an admin's edits
       create: {
         name: tag.name,
+        nameTranslations: { en: tag.name, es: tag.es },
         slug,
         category: tag.category,
       },

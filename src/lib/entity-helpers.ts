@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { getTranslatedField } from "@/lib/translations";
-import { expandSearchQuery, getMatchingCategories } from "@/lib/keyword-search";
+import { searchEntityIds } from "@/lib/search-entities";
 import type { EntityStatus, EntityType } from "@/lib/prismaEnums";
 
 /**
@@ -113,40 +113,6 @@ interface EntityWhereOptions {
 }
 
 /**
- * Builds search conditions with keyword expansion
- */
-export async function buildEntitySearchWhere(searchQuery: string) {
-  const searchTerm = searchQuery.trim();
-  const expandedTerms = expandSearchQuery(searchTerm);
-  const matchingCategorySlugs = getMatchingCategories(searchTerm);
-
-  let matchingCategoryIds: string[] = [];
-  if (matchingCategorySlugs.length > 0) {
-    const categories = await prisma.category.findMany({
-      where: { slug: { in: matchingCategorySlugs } },
-      select: { id: true },
-    });
-    matchingCategoryIds = categories.map((c) => c.id);
-  }
-
-  const searchConditions: any[] = [];
-  expandedTerms.forEach((term) => {
-    searchConditions.push(
-      { name: { contains: term, mode: "insensitive" } },
-      { description: { contains: term, mode: "insensitive" } }
-    );
-  });
-
-  if (matchingCategoryIds.length > 0) {
-    searchConditions.push({
-      categories: { some: { id: { in: matchingCategoryIds } } },
-    });
-  }
-
-  return searchConditions;
-}
-
-/**
  * Builds where clause for entity queries from common options
  */
 export async function buildEntityWhereClause(
@@ -201,47 +167,10 @@ export async function buildEntityWhereClause(
     where.categories = { some: { id: finalCategoryId } };
   }
 
-  // Search query
+  // Free-text search (English and Spanish, ignoring accents): src/lib/search-entities.ts
   if (searchQuery && searchQuery.trim()) {
-    const searchConditions = await buildEntitySearchWhere(searchQuery);
-    where.OR = searchConditions;
+    where.id = { in: await searchEntityIds(searchQuery) };
   }
 
   return where;
 }
-
-/**
- * Builds search where clause for admin entity queries (includes address search)
- */
-export async function buildAdminEntitySearchWhere(searchQuery: string) {
-  const searchTerm = searchQuery.trim();
-  const expandedTerms = expandSearchQuery(searchTerm);
-  const matchingCategorySlugs = getMatchingCategories(searchTerm);
-
-  let matchingCategoryIds: string[] = [];
-  if (matchingCategorySlugs.length > 0) {
-    const categories = await prisma.category.findMany({
-      where: { slug: { in: matchingCategorySlugs } },
-      select: { id: true },
-    });
-    matchingCategoryIds = categories.map((c) => c.id);
-  }
-
-  const searchConditions: any[] = [];
-  expandedTerms.forEach((term) => {
-    searchConditions.push(
-      { name: { contains: term, mode: "insensitive" } },
-      { description: { contains: term, mode: "insensitive" } },
-      { address: { contains: term, mode: "insensitive" } }
-    );
-  });
-
-  if (matchingCategoryIds.length > 0) {
-    searchConditions.push({
-      categories: { some: { id: { in: matchingCategoryIds } } },
-    });
-  }
-
-  return searchConditions;
-}
-
