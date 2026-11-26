@@ -32,6 +32,7 @@ model User {
 
   memberships      EntityMember[]
   consents         Entity[]       @relation("EntityConsent")
+  consentsRecorded Entity[]       @relation("EntityConsentRecorded")
   authSessions     AuthSession[]
   authAccounts     AuthAccount[]
   passkeys         Passkey[]
@@ -92,9 +93,16 @@ model Entity {
   // these. A CHECK constraint (migration 20261125000000_owner_opt_in) keeps
   // listings that need consent from being ACTIVE without it.
   consentedAt         DateTime?
-  consentedById       String?
+  consentedById       String?           // the owner's account, when they published it themselves
   consentedBy         User?             @relation("EntityConsent", fields: [consentedById], references: [id], onDelete: SetNull)
   consentTermsVersion String?
+  // When an admin published it for an owner who agreed offline: who agreed,
+  // how, and which admin recorded it. Admin-only; never in public responses.
+  consentRecordedById String?
+  consentRecordedBy   User?             @relation("EntityConsentRecorded", fields: [consentRecordedById], references: [id], onDelete: SetNull)
+  consentGivenBy      String?           // name and role of the person who agreed
+  consentMethod       String?           // CONSENT_METHODS in src/lib/entities/policy.ts
+  consentNote         String?           @db.Text
   shareLinks          EntityShareLink[]
 
   createdAt     DateTime        @default(now())

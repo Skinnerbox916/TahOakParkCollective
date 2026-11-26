@@ -20,6 +20,10 @@ export default function AdminEditEntityPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  // Bumped to reload the listing after it's published or unpublished from the
+  // panel above; each load remounts the form, so it starts from that version.
+  const [reload, setReload] = useState(0);
+  const [loadCount, setLoadCount] = useState(0);
   const { t } = useAdminTranslations("entities");
 
   useEffect(() => {
@@ -30,7 +34,7 @@ export default function AdminEditEntityPage() {
         return;
       }
 
-      setLoading(true);
+      if (reload === 0) setLoading(true); // a reload keeps the page on screen
       setError(null);
 
       try {
@@ -42,6 +46,7 @@ export default function AdminEditEntityPage() {
         }
 
         setEntity(data.data!);
+        setLoadCount((n) => n + 1);
       } catch (err) {
         console.error("Error fetching entity:", err);
         setError(err instanceof Error ? err.message : "Failed to load entity");
@@ -51,7 +56,7 @@ export default function AdminEditEntityPage() {
     }
 
     fetchEntity();
-  }, [params.id]);
+  }, [params.id, reload]);
 
   if (loading) {
     return (
@@ -113,14 +118,19 @@ export default function AdminEditEntityPage() {
         entityId={entity.id}
         entityType={entity.entityType}
         status={entity.status}
+        entityName={entity.name}
         consentedAt={entity.consentedAt ? String(entity.consentedAt) : null}
         consentTermsVersion={entity.consentTermsVersion}
+        consentGivenBy={entity.consentGivenBy}
+        consentMethod={entity.consentMethod}
+        onChanged={() => setReload((n) => n + 1)}
       />
       <MembersPanel entityId={entity.id} />
       {/* After a save the page passes the saved listing back in: its version
           guards the next save, and its values are what the next diff compares to. */}
       <div className="max-w-3xl">
         <ListingEditor
+          key={loadCount}
           mode="edit"
           role="admin"
           initial={valuesFrom(entity as unknown as Record<string, unknown>)}

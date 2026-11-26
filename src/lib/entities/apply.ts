@@ -139,8 +139,20 @@ function assertPublishable(status: string, entityType: string, consented: boolea
   }
 }
 
-/** Consent fields to write with a change: set them, clear them (null), or leave them (undefined). */
-export type ConsentWrite = { at: Date; byId: string; termsVersion: string } | null | undefined;
+/**
+ * Consent fields to write with a change: set them, clear them (null), or leave
+ * them (undefined). `byId` is the owner's account when they agreed themselves;
+ * `onBehalf` is set instead when an admin recorded an agreement given offline.
+ */
+export type ConsentWrite =
+  | {
+      at: Date;
+      termsVersion: string;
+      byId: string | null;
+      onBehalf?: { recordedById: string; givenBy: string; method: string; note: string | null };
+    }
+  | null
+  | undefined;
 
 /**
  * Create an entity from a full proposed state. Tags added through an approved
@@ -230,9 +242,15 @@ export async function updateEntity(
     data.slug = await ensureUniqueSlug(db, changes.slug, entityId);
   }
   if (opts.consent !== undefined) {
+    // Every consent field is written together, so a new agreement never keeps
+    // pieces of an older one.
     data.consentedAt = opts.consent?.at ?? null;
     data.consentedById = opts.consent?.byId ?? null;
     data.consentTermsVersion = opts.consent?.termsVersion ?? null;
+    data.consentRecordedById = opts.consent?.onBehalf?.recordedById ?? null;
+    data.consentGivenBy = opts.consent?.onBehalf?.givenBy ?? null;
+    data.consentMethod = opts.consent?.onBehalf?.method ?? null;
+    data.consentNote = opts.consent?.onBehalf?.note ?? null;
   }
 
   const { count } = await db.entity.updateMany({

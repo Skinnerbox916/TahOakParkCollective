@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { useAdminTranslations } from "@/lib/admin-translations";
-import { requiresConsent } from "@/lib/entities/policy";
+import { CONSENT_METHODS, requiresConsent, type ConsentMethod } from "@/lib/entities/policy";
+import { PublishForOwner } from "./PublishForOwner";
 import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import type { ApiResponse } from "@/types";
 
@@ -37,14 +38,24 @@ export function SharePanel({
   entityId,
   entityType,
   status,
+  entityName,
   consentedAt,
   consentTermsVersion,
+  consentGivenBy,
+  consentMethod,
+  onChanged,
 }: {
   entityId: string;
   entityType: string;
   status: string;
+  entityName: string;
   consentedAt: string | null;
   consentTermsVersion: string | null;
+  /** Set when an admin published it for an owner who agreed offline. */
+  consentGivenBy: string | null;
+  consentMethod: string | null;
+  /** The listing's status or consent changed: reload it. */
+  onChanged: () => void;
 }) {
   const { t } = useAdminTranslations("entities");
   const pageLocale = useLocale();
@@ -108,6 +119,15 @@ export function SharePanel({
 
   let summary: string;
   if (!needsOwner) summary = t("share.exempt");
+  else if (consentedAt && status === ENTITY_STATUS.ACTIVE && consentGivenBy)
+    summary = t("share.publishedOnBehalf", {
+      date: date(consentedAt),
+      name: consentGivenBy,
+      method: CONSENT_METHODS.includes(consentMethod as ConsentMethod)
+        ? t(`share.onBehalf.methods.${consentMethod}`)
+        : (consentMethod ?? "?"),
+      version: consentTermsVersion ?? "?",
+    });
   else if (consentedAt && status === ENTITY_STATUS.ACTIVE)
     summary = t("share.published", { date: date(consentedAt), version: consentTermsVersion ?? "?" });
   else if (consentedAt) summary = t("share.hiddenByAdmin", { date: date(consentedAt) });
@@ -218,6 +238,12 @@ export function SharePanel({
               ))}
             </ul>
           )}
+          <PublishForOwner
+            entityId={entityId}
+            entityName={entityName}
+            consented={!!consentedAt}
+            onChanged={onChanged}
+          />
         </>
       )}
     </Card>

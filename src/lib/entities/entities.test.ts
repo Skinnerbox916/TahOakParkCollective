@@ -38,6 +38,7 @@ import {
   proposeNewEntity,
   proposeUpdate,
   publishListing,
+  publishOnBehalf,
   rebaseApproval,
   rejectApproval,
   revokeShareLink,
@@ -467,6 +468,100 @@ describe("owner opt-in", () => {
 
     await publish(owner, entityId);
     expect((await entity(entityId)).status).toBe("ACTIVE");
+  });
+});
+
+describe("publishing for an owner who agreed offline", () => {
+  const agreed = {
+    givenBy: "  Maria Lopez, owner ",
+    method: "phone",
+    note: "Called on Nov 25",
+    agreedTermsVersion: LISTING_TERMS_VERSION,
+  };
+  async function draft() {
+    const { entityId } = await proposeNewEntity(admin, { name: "Barber", categorySlugs: ["food"] }, { source: "admin" });
+    return entityId!;
+  }
+
+  it("needs an admin, the current terms, and a record of who agreed and how", async () => {
+    const id = await draft();
+    await expect(publishOnBehalf(owner, id, agreed)).rejects.toBeInstanceOf(ForbiddenError);
+    await expect(publishOnBehalf(admin, id, { ...agreed, givenBy: " " })).rejects.toBeInstanceOf(ValidationError);
+    await expect(publishOnBehalf(admin, id, { ...agreed, method: "telepathy" })).rejects.toBeInstanceOf(ValidationError);
+    await expect(publishOnBehalf(admin, id, { ...agreed, agreedTermsVersion: "1999-01-01" })).rejects.toMatchObject({
+      code: "terms_changed",
+    });
+    expect((await entity(id)).status).toBe("INACTIVE");
+
+    await publishOnBehalf(admin, id, agreed);
+    const live = await entity(id);
+    expect(live).toMatchObject({
+      status: "ACTIVE",
+      consentedById: null,
+      consentRecordedById: admin.id,
+      consentGivenBy: "Maria Lopez, owner",
+      consentMethod: "phone",
+      consentNote: "Called on Nov 25",
+      consentTermsVersion: LISTING_TERMS_VERSION,
+    });
+    expect(live.consentedAt).toBeInstanceOf(Date);
+    const history = await prisma.approval.findFirstOrThrow({
+      where: { targetEntityId: id },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(history).toMatchObject({ status: "APPROVED", source: "admin", submittedBy: admin.id });
+    expect(history.notes).toContain("Maria Lopez, owner");
+
+    // A park has no owner to agree; it's published the ordinary way.
+    const { entityId: park } = await proposeNewEntity(
+      admin,
+      { name: "Park", categorySlugs: ["parks"], entityType: "PUBLIC_SPACE" },
+      { source: "admin" }
+    );
+    await expect(publishOnBehalf(admin, park!, agreed)).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it("lets the owner come off the site by asking an admin, which withdraws the agreement", async () => {
+    const id = await draft();
+    await publishOnBehalf(admin, id, agreed);
+
+    // Just hiding it (say it closed) keeps the agreement, so it can come back.
+    await unpublishListing(admin, id);
+    expect(await entity(id)).toMatchObject({ status: "INACTIVE", consentGivenBy: "Maria Lopez, owner" });
+    await proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" });
+
+    // The owner asks to be taken down: the whole record goes.
+    await expect(unpublishListing(stranger, id, { withdrawConsent: true })).rejects.toBeInstanceOf(ForbiddenError);
+    await unpublishListing(admin, id, { withdrawConsent: true });
+    expect(await entity(id)).toMatchObject({
+      status: "INACTIVE",
+      consentedAt: null,
+      consentTermsVersion: null,
+      consentRecordedById: null,
+      consentGivenBy: null,
+      consentMethod: null,
+      consentNote: null,
+    });
+    await expect(proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" })).rejects.toBeInstanceOf(
+      ConsentRequiredError
+    );
+  });
+
+  it("is replaced by the owner's own agreement if they later take the listing over", async () => {
+    const id = await draft();
+    await publishOnBehalf(admin, id, agreed);
+    const { url } = await createShareLink(admin, id);
+    await acceptShareLink(stranger, tokenOf(url), { publish: true, agreedTermsVersion: LISTING_TERMS_VERSION });
+
+    expect(await entity(id)).toMatchObject({
+      status: "ACTIVE",
+      consentedById: stranger.id,
+      consentRecordedById: null,
+      consentGivenBy: null,
+      consentMethod: null,
+      consentNote: null,
+      members: [{ userId: stranger.id, role: "OWNER" }],
+    });
   });
 });
 

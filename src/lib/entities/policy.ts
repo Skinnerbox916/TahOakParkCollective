@@ -17,8 +17,15 @@ export const CONSENT_EXEMPT_TYPES: readonly string[] = [ENTITY_TYPE.PUBLIC_SPACE
  * The version of the listing agreement an owner accepts when publishing.
  * Bump it whenever the listingAgreement text in src/messages changes.
  */
-export const LISTING_TERMS_VERSION = "2026-11-25.2";
+export const LISTING_TERMS_VERSION = "2026-11-25.3";
 
 export function requiresConsent(entityType: string | null | undefined): boolean {
   return !CONSENT_EXEMPT_TYPES.includes(entityType || ENTITY_TYPE.COMMERCE);
 }
+
+/**
+ * How an owner told an admin they agree, when the admin publishes for them
+ * (publishOnBehalf in consent.ts). Labels are in messages: admin.entities.share.methods.
+ */
+export const CONSENT_METHODS = ["in_person", "phone", "email", "text", "paper"] as const;
+export type ConsentMethod = (typeof CONSENT_METHODS)[number];

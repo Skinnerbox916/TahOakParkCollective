@@ -148,7 +148,7 @@
     "contactText": "If you have any questions about these Terms of Use, please",
     "contactLink": "contact us",
     "listing": "Listing your business",
-    "listingText": "If you publish a listing for a business or organization, you confirm the following:"
+    "listingText": "If you publish a listing for a business or organization, or ask our team to publish it for you, you confirm the following:"
   },
   "privacy": {
     "title": "Privacy Policy",
@@ -160,7 +160,7 @@
     "accountInfo": "Account Information:",
     "accountInfoText": "Name, email address, password (hashed)",
     "entityInfo": "Entity Information:",
-    "entityInfoText": "Business or organization details you provide when you create, edit or publish a listing",
+    "entityInfoText": "Business or organization details you provide when you create, edit or publish a listing. If our team publishes a listing at your request, we keep a record of who agreed and how",
     "contactInfo": "Contact Information:",
     "contactInfoText": "Email addresses provided for subscriptions, suggestions, or issue reports",
     "content": "Content:",
@@ -658,7 +658,7 @@
       "share": {
         "title": "Share with the owner",
         "exempt": "Parks and civic listings don't need an owner's agreement. Publish them with the status switch.",
-        "draft": "Private draft. It goes public only when its owner publishes it.",
+        "draft": "Private draft. It goes public only with its owner's agreement.",
         "published": "Published by its owner on {date} (listing terms {version}).",
         "hiddenByAdmin": "Hidden by an admin. The owner agreed on {date}, so it can be made active again.",
         "description": "Send the owner a private link to this listing by text or email. They can publish it from there. Links work once and expire after 30 days.",
@@ -682,7 +682,40 @@
           "expired": "Expired"
         },
         "revoke": "Revoke",
-        "error": "Couldn't update share links"
+        "error": "Couldn't update share links",
+        "publishedOnBehalf": "Published for its owner on {date}. {name} agreed ({method}), listing terms {version}.",
+        "onBehalf": {
+          "heading": "Owner doesn't want an account?",
+          "text": "If the owner has seen the listing and agreed to it, you can publish it for them. Their agreement is recorded here.",
+          "open": "Publish for the owner",
+          "title": "Publish for the owner",
+          "givenBy": "Who agreed",
+          "givenByPlaceholder": "Name and role, e.g. Maria Lopez, owner",
+          "method": "How they told you",
+          "chooseMethod": "Choose one",
+          "methods": {
+            "in_person": "In person",
+            "phone": "By phone",
+            "email": "By email",
+            "text": "By text message",
+            "paper": "On a signed form"
+          },
+          "note": "Notes (optional)",
+          "notePlaceholder": "e.g. the date you spoke, or where the signed form is kept",
+          "confirm": "I went through the points above with them, and they agreed to all of them.",
+          "publish": "Publish listing",
+          "publishing": "Publishing...",
+          "cancel": "Cancel",
+          "errors": {
+            "givenBy": "Enter the name and role of the person who agreed.",
+            "method": "Choose how they told you.",
+            "confirm": "Confirm that they agreed.",
+            "note": "Keep the note under 1,000 characters."
+          },
+          "withdraw": "Owner asked to take it down",
+          "withdrawConfirm": "Unpublish \"{name}\" and withdraw the owner's agreement? It comes off the site now, and can only be published again with a new agreement.",
+          "error": "Something went wrong. Please try again."
+        }
       }
     },
     "quickAdd": {
@@ -997,8 +1030,9 @@
     "represent": "I own this business or organization, or I'm authorized to represent it.",
     "display": "TahOak Park Collective may show the details on this listing to the public, in English and Spanish (the Spanish may be machine translated), and search engines may index the page.",
     "identity": "Identity tags, such as Black-owned or women-owned, appear only if I add them or ask the site's team to add them.",
-    "unpublish": "I can unpublish the listing at any time from my dashboard, and it comes off the site right away. To have it deleted entirely, I can contact the site.",
-    "agree": "I agree to all of the above and to the <terms>Terms of Use</terms>."
+    "unpublish": "I can unpublish the listing at any time, from my dashboard or by asking the site's team, and it comes off the site right away. To have it deleted entirely, I can contact the site.",
+    "agree": "I agree to all of the above and to the <terms>Terms of Use</terms>.",
+    "onBehalfIntro": "Go through these with the owner, in their own language. Publishing records that they agreed:"
   },
   "preview": {
     "metaTitle": "Your listing preview",
@@ -1023,7 +1057,16 @@
     "invalid": "This link doesn't work.",
     "askForNew": "If you think it should, ask the person who sent it for a new one.",
     "error": "Something went wrong. Please try again.",
-    "jumpToPublish": "Publish it ↓"
+    "jumpToPublish": "Publish it ↓",
+    "bannerTitleLive": "This is your listing on TahOak Park Collective",
+    "bannerTextLive": "It's already public. Take it over to update it or take it down yourself.",
+    "jumpToTakeOver": "Take it over ↓",
+    "takeOverTitle": "Manage your listing",
+    "signedOutTextLive": "To manage it, sign in or create a free account. It takes a minute.",
+    "takeOver": "Take over my listing",
+    "takingOver": "Saving...",
+    "takenOverTitle": "You now manage this listing",
+    "takenOverText": "You can update it or unpublish it any time from your dashboard."
   },
   "hours": {
     "title": "Hours",
@@ -1085,8 +1128,8 @@
       "descriptionEs": "Leave it blank and we'll translate the English description automatically.",
       "categories": "Pick at least one.",
       "noCategories": "No categories fit this type yet.",
-      "draftNote": "Private draft. It goes public only when its owner publishes it.",
-      "publishedNote": "Published by its owner.",
+      "draftNote": "Private draft. It goes public only with its owner's agreement.",
+      "publishedNote": "Published with its owner's agreement.",
       "noOwner": "No owner yet",
       "slug": "The part after /entities/ in the listing's address.",
       "showOnProfile": "Show on profile",

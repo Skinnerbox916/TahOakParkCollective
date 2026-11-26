@@ -33,7 +33,22 @@ export const entityIncludeWithMembers = {
 } as const;
 
 /** Entity fields only admins should see. */
-const ADMIN_ONLY_ENTITY_FIELDS = ["verificationContact", "consentedById"] as const;
+const ADMIN_ONLY_ENTITY_FIELDS = [
+  "verificationContact",
+  "consentedById",
+  // Who agreed for a listing an admin published for its owner: a person's name.
+  "consentRecordedById",
+  "consentGivenBy",
+  "consentMethod",
+  "consentNote",
+] as const;
+
+/** A copy of `entity` without the admin-only fields, for anyone who isn't an admin. */
+export function withoutAdminFields<T extends Record<string, unknown>>(entity: T): T {
+  const copy: Record<string, unknown> = { ...entity };
+  for (const field of ADMIN_ONLY_ENTITY_FIELDS) delete copy[field];
+  return copy as T;
+}
 
 /**
  * Transforms an entity with translations for entity, categories, and tags.

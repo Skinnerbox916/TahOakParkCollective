@@ -7,7 +7,7 @@ export { canManage, managesAnyEntity, memberRole } from "./access";
 export { listMembers, addMember, removeMember } from "./members";
 export { proposeNewEntity, proposeUpdate, deleteEntity, type ProposalSource } from "./propose";
 export { approveApproval, rejectApproval, rebaseApproval, getApprovalView, type ApprovalView } from "./approvals";
-export { publishListing, unpublishListing, TermsChangedError } from "./consent";
+export { publishListing, publishOnBehalf, unpublishListing, TermsChangedError } from "./consent";
 export {
   createShareLink,
   listShareLinks,
@@ -17,6 +17,6 @@ export {
   shareLinkUrl,
   type ShareLinkState,
 } from "./share-links";
-export { CONSENT_EXEMPT_TYPES, LISTING_TERMS_VERSION, requiresConsent } from "./policy";
+export { CONSENT_EXEMPT_TYPES, CONSENT_METHODS, LISTING_TERMS_VERSION, requiresConsent, type ConsentMethod } from "./policy";
 export { ENTITY_FIELDS, type EntityState, type EntityChanges, type EntityField } from "./fields";
 export * from "./errors";
