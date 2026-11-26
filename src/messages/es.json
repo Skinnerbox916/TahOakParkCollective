@@ -654,13 +654,11 @@
           "MANAGER": "Administrador"
         }
       },
-      "waitingForOwner": "Esperando al dueño",
       "share": {
         "title": "Compartir con el dueño",
         "exempt": "Los parques y las fichas cívicas no necesitan la aprobación de un dueño. Publícalas con el interruptor de estado.",
-        "draft": "Borrador privado. Solo es pública cuando su dueño la publica.",
+        "draft": "No es pública. Cambia su estado a Activa para publicarla tú, o envía un enlace a su dueño para que lo haga.",
         "published": "Publicada por su dueño el {date} (términos {version}).",
-        "hiddenByAdmin": "Ocultada por un administrador. El dueño aceptó el {date}, así que se puede volver a activar.",
         "description": "Envía al dueño un enlace privado a esta ficha por mensaje de texto o correo. Desde ahí puede publicarla. Los enlaces sirven una vez y vencen a los 30 días.",
         "language": "Idioma",
         "createLink": "Crear un enlace",
@@ -682,7 +680,8 @@
           "expired": "Vencido"
         },
         "revoke": "Revocar",
-        "error": "No se pudieron actualizar los enlaces"
+        "error": "No se pudieron actualizar los enlaces",
+        "publishedByAdmin": "Hecha pública por un administrador el {date}."
       }
     },
     "quickAdd": {
@@ -996,8 +995,8 @@
     "intro": "Antes de que tu ficha sea pública, confirma lo siguiente:",
     "represent": "Soy dueño(a) de este negocio u organización, o estoy autorizado(a) para representarlo.",
     "display": "TahOak Park Collective puede mostrar al público los datos de esta ficha, en inglés y en español (el español puede ser traducción automática), y los buscadores pueden indexar la página.",
-    "identity": "Las etiquetas de identidad, como «De propiedad afroamericana» o «De propiedad de mujeres», solo aparecen si yo las agrego o le pido al equipo del sitio que las agregue.",
-    "unpublish": "Puedo despublicar la ficha en cualquier momento desde mi panel, y desaparece del sitio de inmediato. Para que se borre por completo, puedo contactar al sitio.",
+    "identity": "Las etiquetas de identidad, como «De propiedad afroamericana» o «De propiedad de mujeres», las agrego yo o el equipo del sitio, y puedo pedir que quiten cualquiera.",
+    "unpublish": "Puedo despublicar la ficha en cualquier momento, desde mi panel o pidiéndoselo al equipo del sitio, y desaparece del sitio de inmediato. Para que se borre por completo, puedo contactar al sitio.",
     "agree": "Acepto todo lo anterior y los <terms>Términos de uso</terms>."
   },
   "preview": {
@@ -1023,7 +1022,16 @@
     "invalid": "Este enlace no funciona.",
     "askForNew": "Si crees que debería funcionar, pide uno nuevo a quien te lo envió.",
     "error": "Algo salió mal. Inténtalo de nuevo.",
-    "jumpToPublish": "Publicarla ↓"
+    "jumpToPublish": "Publicarla ↓",
+    "bannerTitleLive": "Esta es tu ficha en TahOak Park Collective",
+    "bannerTextLive": "Ya es pública. Hazte cargo de ella para actualizarla o quitarla tú mismo.",
+    "jumpToTakeOver": "Hacerme cargo ↓",
+    "takeOverTitle": "Administra tu ficha",
+    "signedOutTextLive": "Para administrarla, inicia sesión o crea una cuenta gratis. Toma un minuto.",
+    "takeOver": "Hacerme cargo de mi ficha",
+    "takingOver": "Guardando...",
+    "takenOverTitle": "Ahora administras esta ficha",
+    "takenOverText": "Puedes actualizarla o despublicarla cuando quieras desde tu panel."
   },
   "hours": {
     "title": "Horario",
@@ -1085,8 +1093,6 @@
       "descriptionEs": "Si la dejas en blanco, traducimos la descripción en inglés automáticamente. Si prefieres escribir solo en español, deja en blanco la de arriba.",
       "categories": "Elige al menos una.",
       "noCategories": "Todavía no hay categorías para este tipo.",
-      "draftNote": "Borrador privado. Solo es pública cuando su dueño la publica.",
-      "publishedNote": "Publicada por su dueño.",
       "noOwner": "Sin dueño todavía",
       "slug": "La parte después de /entities/ en la dirección de la ficha.",
       "showOnProfile": "Mostrar en la ficha",
@@ -1100,7 +1106,7 @@
         "SERVICE_PROVIDER": "Opcional: muchos trabajan desde casa",
         "NON_PROFIT": "Dónde pueden encontrarte, si aplica"
       },
-      "identityAtOwnersRequest": "Agrégalas solo cuando el dueño las pida."
+      "statusOwnerTypes": "Las fichas ocultas son privadas. Actívala tú, o compártela con su dueño para que la publique."
     },
     "tagGroups": {
       "IDENTITY": "Identidad",
@@ -1124,7 +1130,7 @@
     },
     "notices": {
       "created": "Ficha creada.",
-      "draftCreated": "Borrador creado. Ahora compártelo con su dueño.",
+      "draftCreated": "Borrador creado. Publícalo tú, o compártelo con su dueño.",
       "submittedForReview": "¡Gracias! Enviaste tu ficha. Cuando nuestro equipo la revise, podrás publicarla desde tu panel.",
       "editsSubmitted": "¡Gracias! Tus cambios se enviaron para revisión.",
       "saved": "Guardado.",

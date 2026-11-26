@@ -654,13 +654,11 @@
           "MANAGER": "Manager"
         }
       },
-      "waitingForOwner": "Waiting for owner",
       "share": {
         "title": "Share with the owner",
         "exempt": "Parks and civic listings don't need an owner's agreement. Publish them with the status switch.",
-        "draft": "Private draft. It goes public only when its owner publishes it.",
+        "draft": "Not public. Switch its status to Active to publish it yourself, or send its owner a link so they can.",
         "published": "Published by its owner on {date} (listing terms {version}).",
-        "hiddenByAdmin": "Hidden by an admin. The owner agreed on {date}, so it can be made active again.",
         "description": "Send the owner a private link to this listing by text or email. They can publish it from there. Links work once and expire after 30 days.",
         "language": "Language",
         "createLink": "Create a link",
@@ -682,7 +680,8 @@
           "expired": "Expired"
         },
         "revoke": "Revoke",
-        "error": "Couldn't update share links"
+        "error": "Couldn't update share links",
+        "publishedByAdmin": "Made public by an admin on {date}."
       }
     },
     "quickAdd": {
@@ -996,8 +995,8 @@
     "intro": "Before your listing goes public, please confirm:",
     "represent": "I own this business or organization, or I'm authorized to represent it.",
     "display": "TahOak Park Collective may show the details on this listing to the public, in English and Spanish (the Spanish may be machine translated), and search engines may index the page.",
-    "identity": "Identity tags, such as Black-owned or women-owned, appear only if I add them or ask the site's team to add them.",
-    "unpublish": "I can unpublish the listing at any time from my dashboard, and it comes off the site right away. To have it deleted entirely, I can contact the site.",
+    "identity": "Identity tags, such as Black-owned or women-owned, are added by me or by the site's team, and I can have any of them removed.",
+    "unpublish": "I can unpublish the listing at any time, from my dashboard or by asking the site's team, and it comes off the site right away. To have it deleted entirely, I can contact the site.",
     "agree": "I agree to all of the above and to the <terms>Terms of Use</terms>."
   },
   "preview": {
@@ -1023,7 +1022,16 @@
     "invalid": "This link doesn't work.",
     "askForNew": "If you think it should, ask the person who sent it for a new one.",
     "error": "Something went wrong. Please try again.",
-    "jumpToPublish": "Publish it ↓"
+    "jumpToPublish": "Publish it ↓",
+    "bannerTitleLive": "This is your listing on TahOak Park Collective",
+    "bannerTextLive": "It's already public. Take it over to update it or take it down yourself.",
+    "jumpToTakeOver": "Take it over ↓",
+    "takeOverTitle": "Manage your listing",
+    "signedOutTextLive": "To manage it, sign in or create a free account. It takes a minute.",
+    "takeOver": "Take over my listing",
+    "takingOver": "Saving...",
+    "takenOverTitle": "You now manage this listing",
+    "takenOverText": "You can update it or unpublish it any time from your dashboard."
   },
   "hours": {
     "title": "Hours",
@@ -1085,8 +1093,6 @@
       "descriptionEs": "Leave it blank and we'll translate the English description automatically.",
       "categories": "Pick at least one.",
       "noCategories": "No categories fit this type yet.",
-      "draftNote": "Private draft. It goes public only when its owner publishes it.",
-      "publishedNote": "Published by its owner.",
       "noOwner": "No owner yet",
       "slug": "The part after /entities/ in the listing's address.",
       "showOnProfile": "Show on profile",
@@ -1100,7 +1106,7 @@
         "SERVICE_PROVIDER": "Optional: many service providers work from home",
         "NON_PROFIT": "Where people can find you, if anywhere"
       },
-      "identityAtOwnersRequest": "Add these only when the owner asks for them."
+      "statusOwnerTypes": "Hidden listings are private. Make it Active yourself, or share it with its owner to publish."
     },
     "tagGroups": {
       "IDENTITY": "Identity",
@@ -1124,7 +1130,7 @@
     },
     "notices": {
       "created": "Listing created.",
-      "draftCreated": "Draft created. Share it with its owner next.",
+      "draftCreated": "Draft created. Publish it yourself, or share it with its owner.",
       "submittedForReview": "Thanks! Your listing was submitted. Once our team has reviewed it, you can publish it from your dashboard.",
       "editsSubmitted": "Thanks! Your changes were sent for review.",
       "saved": "Saved.",

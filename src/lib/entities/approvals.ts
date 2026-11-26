@@ -51,7 +51,11 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
         approval.source === "owner" && approval.submittedBy
           ? { userId: approval.submittedBy, addedBy: reviewer.id }
           : undefined;
-      const entityId = await createEntity(tx, state, { createdBy: approval.submittedBy, owner });
+      const entityId = await createEntity(tx, state, {
+        createdBy: approval.submittedBy,
+        owner,
+        actingAdminId: reviewer.id,
+      });
       await tx.approval.update({ where: { id: approvalId }, data: { entityId } });
       return { approvalId, entityId, newOwnerId: owner?.userId ?? null };
     }
@@ -71,6 +75,7 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
         await updateEntity(tx, approval.targetEntityId, changes, {
           expectedVersion: current.version,
           createdBy: approval.submittedBy,
+          actingAdminId: reviewer.id,
         });
       }
       await tx.approval.update({ where: { id: approvalId }, data: { entityId: approval.targetEntityId } });

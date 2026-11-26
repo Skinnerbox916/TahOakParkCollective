@@ -127,7 +127,6 @@ export default function AdminEditEntityPage() {
           entityId={entity.id}
           version={entity.version}
           hasMapPin={entity.latitude != null && entity.longitude != null}
-          consented={!!entity.consentedAt}
           onSaved={(result) => {
             if (result.kind === "saved") setEntity(result.entity as unknown as EntityWithRelations);
           }}

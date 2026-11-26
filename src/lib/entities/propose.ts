@@ -102,6 +102,7 @@ export async function proposeNewEntity(
         createdBy: actor.id,
         status: state.status,
         owner: opts.initialOwnerId ? { userId: opts.initialOwnerId, addedBy: actor.id } : undefined,
+        actingAdminId: actor.id,
       });
       const approval = await tx.approval.create({
         data: {
@@ -185,6 +186,7 @@ export async function proposeUpdate(
       const version = await updateEntity(tx, entityId, changes, {
         expectedVersion: current.version,
         createdBy: actor.id,
+        actingAdminId: actor.id,
       });
       const approval = await tx.approval.create({
         data: {

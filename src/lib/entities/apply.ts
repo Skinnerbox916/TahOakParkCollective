@@ -132,7 +132,12 @@ export async function identityTagSlugs(db: Tx, slugs: readonly string[] | undefi
   return tags.map((t) => t.slug);
 }
 
-/** Opt-in: a listing that needs consent can't be ACTIVE without it. */
+/**
+ * Opt-in: a listing that needs consent can't be ACTIVE without it. Consent is
+ * the owner publishing it (consent.ts), or an admin making it public
+ * themselves (`actingAdminId`). Nothing else can: not an approved suggestion,
+ * an AI draft, or an owner's ordinary edit.
+ */
 function assertPublishable(status: string, entityType: string, consented: boolean) {
   if (status === ENTITY_STATUS.ACTIVE && requiresConsent(entityType) && !consented) {
     throw new ConsentRequiredError();
@@ -140,7 +145,7 @@ function assertPublishable(status: string, entityType: string, consented: boolea
 }
 
 /** Consent fields to write with a change: set them, clear them (null), or leave them (undefined). */
-export type ConsentWrite = { at: Date; byId: string; termsVersion: string } | null | undefined;
+export type ConsentWrite = { at: Date; byId: string; termsVersion: string | null } | null | undefined;
 
 /**
  * Create an entity from a full proposed state. Tags added through an approved
@@ -156,6 +161,8 @@ export async function createEntity(
     createdBy: string | null;
     status?: string;
     owner?: { userId: string; addedBy: string | null };
+    /** The admin doing this themselves, who may make any listing public. */
+    actingAdminId?: string | null;
   }
 ) {
   if (!state.name) {
@@ -164,7 +171,9 @@ export async function createEntity(
   const entityType = state.entityType ?? ENTITY_TYPE.COMMERCE;
   const status =
     opts.status ?? state.status ?? (requiresConsent(entityType) ? ENTITY_STATUS.INACTIVE : ENTITY_STATUS.ACTIVE);
-  assertPublishable(status, entityType, false);
+  // An admin publishing it stands in for the owner's agreement, and is recorded as such.
+  const adminPublishes = status === ENTITY_STATUS.ACTIVE && requiresConsent(entityType) && !!opts.actingAdminId;
+  assertPublishable(status, entityType, adminPublishes);
 
   const categoryIds = await resolveCategoryIds(db, state.categorySlugs ?? []);
   const tags = await resolveTags(db, state.tagSlugs ?? []);
@@ -177,6 +186,7 @@ export async function createEntity(
       slug,
       entityType: entityType as Prisma.EntityUncheckedCreateInput["entityType"],
       status: status as Prisma.EntityUncheckedCreateInput["status"],
+      ...(adminPublishes && { consentedAt: new Date(), consentedById: opts.actingAdminId }),
       categories: { connect: categoryIds.map((id) => ({ id })) },
     },
     select: { id: true },
@@ -206,15 +216,30 @@ export async function updateEntity(
   db: Tx,
   entityId: string,
   changes: EntityChanges,
-  opts: { expectedVersion: number; createdBy: string | null; consent?: ConsentWrite }
+  opts: {
+    expectedVersion: number;
+    createdBy: string | null;
+    consent?: ConsentWrite;
+    /** The admin doing this themselves, who may make any listing public. */
+    actingAdminId?: string | null;
+  }
 ) {
   const current = await db.entity.findUnique({
     where: { id: entityId },
     select: { status: true, entityType: true, consentedAt: true, tags: { select: { tagId: true } } },
   });
   if (!current) throw new NotFoundError();
-  const consented = opts.consent !== undefined ? opts.consent !== null : current.consentedAt !== null;
-  assertPublishable(changes.status ?? current.status, changes.entityType ?? current.entityType, consented);
+  const nextStatus = changes.status ?? current.status;
+  const nextType = changes.entityType ?? current.entityType;
+  let consent = opts.consent;
+  let consented = consent !== undefined ? consent !== null : current.consentedAt !== null;
+  if (!consented && consent === undefined && opts.actingAdminId && nextStatus === ENTITY_STATUS.ACTIVE && requiresConsent(nextType)) {
+    // An admin publishing it stands in for the owner's agreement, and is
+    // recorded as such (no terms version: the owner didn't go through them).
+    consent = { at: new Date(), byId: opts.actingAdminId, termsVersion: null };
+    consented = true;
+  }
+  assertPublishable(nextStatus, nextType, consented);
 
   let tagChanges: { removed: string[]; added: { id: string }[] } | null = null;
   if (changes.tagSlugs !== undefined) {
@@ -229,10 +254,10 @@ export async function updateEntity(
   if (changes.slug !== undefined) {
     data.slug = await ensureUniqueSlug(db, changes.slug, entityId);
   }
-  if (opts.consent !== undefined) {
-    data.consentedAt = opts.consent?.at ?? null;
-    data.consentedById = opts.consent?.byId ?? null;
-    data.consentTermsVersion = opts.consent?.termsVersion ?? null;
+  if (consent !== undefined) {
+    data.consentedAt = consent?.at ?? null;
+    data.consentedById = consent?.byId ?? null;
+    data.consentTermsVersion = consent?.termsVersion ?? null;
   }
 
   const { count } = await db.entity.updateMany({

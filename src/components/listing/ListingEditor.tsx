@@ -54,6 +54,10 @@ interface UserOption {
   email: string;
 }
 
+/** Businesses and the like start hidden (their owner usually publishes them); parks and civic listings start public. */
+const defaultStatus = (entityType: string) =>
+  requiresConsent(entityType) ? ENTITY_STATUS.INACTIVE : ENTITY_STATUS.ACTIVE;
+
 /** "Show on profile" under a field: the field's displaySettings switch. */
 function ShowToggle({ checked, onChange, label }: { checked: boolean; onChange: (shown: boolean) => void; label: string }) {
   return (
@@ -78,9 +82,8 @@ export interface ListingEditorProps {
   approvalId?: string;
   /** The version the form loaded (edit), so a stale save is refused. */
   version?: number;
-  /** Edit: whether the listing has a map pin, and its owner's agreement (for the status note). */
+  /** Edit: whether the listing has a map pin. */
   hasMapPin?: boolean;
-  consented?: boolean;
   onSaved?: (result: SaveResult) => void;
   onCancel?: () => void;
 }
@@ -98,7 +101,6 @@ export function ListingEditor({
   approvalId,
   version,
   hasMapPin = false,
-  consented = false,
   onSaved,
   onCancel,
 }: ListingEditorProps) {
@@ -107,7 +109,12 @@ export function ListingEditor({
   const typeLabels = useEntityTypeLabels();
   // What the form is compared against: the listing as loaded, then as last
   // saved. The form owns it (and the version), so a save moves both forward.
-  const [start, setStart] = useState<ListingValues>(() => initial ?? emptyValues());
+  // A new listing of a type that normally waits for its owner starts hidden;
+  // the admin can switch it to Active here.
+  const [start, setStart] = useState<ListingValues>(
+    () => initial ?? { ...emptyValues(), status: defaultStatus(emptyValues().entityType) }
+  );
+  const [statusTouched, setStatusTouched] = useState(false);
   const [currentVersion, setCurrentVersion] = useState(version);
   const [values, setValues] = useState<ListingValues>(start);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -138,7 +145,7 @@ export function ListingEditor({
   const hoursConfig = config.sections.hours;
   const platforms = config.socialPlatforms;
   const needsOwner = requiresConsent(values.entityType);
-  const statusEditable = role === "admin" && mode !== "review" && !needsOwner;
+  const statusEditable = role === "admin" && mode !== "review";
   const fitting = (categories ?? []).filter((c) => c.entityTypes.includes(values.entityType));
 
   // An existing listing or proposal can only be saved once something differs
@@ -172,7 +179,13 @@ export function ListingEditor({
   function changeType(entityType: EntityType) {
     // Keep only the categories that still fit the new type.
     const allowed = new Set((categories ?? []).filter((c) => c.entityTypes.includes(entityType)).map((c) => c.slug));
-    setValues((v) => ({ ...v, entityType, categorySlugs: v.categorySlugs.filter((s) => allowed.has(s)) }));
+    setValues((v) => ({
+      ...v,
+      entityType,
+      categorySlugs: v.categorySlugs.filter((s) => allowed.has(s)),
+      // On a new listing, follow the type's usual starting status until the admin picks one.
+      status: mode === "create" && !statusTouched ? defaultStatus(entityType) : v.status,
+    }));
   }
 
   /** A message key from the schema or the server ("validation.invalidPhone"), in the page's language. */
@@ -229,7 +242,8 @@ export function ListingEditor({
         setStart(values); // sent for review, or the proposal was saved: nothing unsent
       }
       if (result.kind === "pending") setNotice(t(mode === "create" ? "notices.submittedForReview" : "notices.editsSubmitted"));
-      else if (result.kind === "created") setNotice(t(needsOwner ? "notices.draftCreated" : "notices.created"));
+      else if (result.kind === "created")
+        setNotice(t(values.status === ENTITY_STATUS.INACTIVE ? "notices.draftCreated" : "notices.created"));
       else if (result.kind === "saved") setNotice(t("notices.saved"));
       else setNotice(t("notices.proposalSaved"));
       onSaved?.(result);
@@ -471,10 +485,6 @@ export function ListingEditor({
               <div key={group}>
                 <p className="text-xs font-medium text-gray-500 mb-1">
                   {t(`tagGroups.${group}`)}
-                  {/* Identity tags are the owner's call; an admin adds them when the owner asks. */}
-                  {group === TagCategory.IDENTITY && role === "admin" && (
-                    <span className="font-normal"> · {t("hints.identityAtOwnersRequest")}</span>
-                  )}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {groupTags.map((tag) => (
@@ -507,22 +517,20 @@ export function ListingEditor({
       {role === "admin" && mode !== "review" && (
         <FormSection title={t("sections.admin")} defaultExpanded collapsible={false}>
           <div className="space-y-4">
-            {statusEditable ? (
+            <div>
               <Select
                 label={t("fields.status")}
                 value={values.status}
-                onChange={(e) => set("status", e.target.value as EntityStatus)}
+                onChange={(e) => {
+                  setStatusTouched(true);
+                  set("status", e.target.value as EntityStatus);
+                }}
               >
                 <option value={ENTITY_STATUS.ACTIVE}>{t("status.ACTIVE")}</option>
                 <option value={ENTITY_STATUS.INACTIVE}>{t("status.INACTIVE")}</option>
               </Select>
-            ) : (
-              <p className="text-sm text-gray-600">
-                {mode === "edit" && consented && values.status === ENTITY_STATUS.ACTIVE
-                  ? t("hints.publishedNote")
-                  : t("hints.draftNote")}
-              </p>
-            )}
+              {needsOwner && <p className="mt-1 text-xs text-gray-500">{t("hints.statusOwnerTypes")}</p>}
+            </div>
             {mode === "create" && (
               <Select label={t("fields.owner")} value={values.ownerId} onChange={(e) => set("ownerId", e.target.value)}>
                 <option value="">{t("hints.noOwner")}</option>

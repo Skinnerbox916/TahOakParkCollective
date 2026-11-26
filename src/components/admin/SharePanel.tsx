@@ -108,9 +108,10 @@ export function SharePanel({
 
   let summary: string;
   if (!needsOwner) summary = t("share.exempt");
-  else if (consentedAt && status === ENTITY_STATUS.ACTIVE)
-    summary = t("share.published", { date: date(consentedAt), version: consentTermsVersion ?? "?" });
-  else if (consentedAt) summary = t("share.hiddenByAdmin", { date: date(consentedAt) });
+  else if (status === ENTITY_STATUS.ACTIVE && consentedAt && consentTermsVersion)
+    summary = t("share.published", { date: date(consentedAt), version: consentTermsVersion });
+  else if (status === ENTITY_STATUS.ACTIVE && consentedAt)
+    summary = t("share.publishedByAdmin", { date: date(consentedAt) }); // no terms version: an admin switched it on
   else summary = t("share.draft");
 
   return (

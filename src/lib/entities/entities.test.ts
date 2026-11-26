@@ -19,7 +19,6 @@ import { searchEntityIds } from "@/lib/search-entities";
 import {
   AlreadyProcessedError,
   ConflictError,
-  ConsentRequiredError,
   EntityServiceError,
   ForbiddenError,
   LISTING_TERMS_VERSION,
@@ -374,17 +373,10 @@ const publish = (actor: Actor, id: string) => publishListing(actor, id, { agreed
 const tokenOf = (url: string) => url.split("/").pop()!;
 
 describe("owner opt-in", () => {
-  it("keeps businesses private until their owner publishes; parks and civic listings don't wait", async () => {
+  it("starts businesses as private drafts; parks and civic listings start public", async () => {
     const id = await seedEntity();
     expect(await entity(id)).toMatchObject({ status: "INACTIVE", consentedAt: null });
-
-    await expect(proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" })).rejects.toBeInstanceOf(
-      ConsentRequiredError
-    );
-    await expect(
-      proposeNewEntity(admin, { name: "Bakery", categorySlugs: ["food"], status: "ACTIVE" }, { source: "admin" })
-    ).rejects.toBeInstanceOf(ConsentRequiredError);
-    // The database refuses it too, whatever the application does.
+    // The database refuses a public listing with nobody's say-so, whatever the application does.
     await expect(
       prisma.$executeRawUnsafe(`UPDATE "Entity" SET "status" = 'ACTIVE' WHERE "id" = $1`, id)
     ).rejects.toThrow(/Entity_active_needs_consent/);
@@ -393,9 +385,32 @@ describe("owner opt-in", () => {
     const { entityId: office } = await proposeNewEntity(admin, { name: "Library", categorySlugs: ["parks"], entityType: "CIVIC" }, { source: "admin" });
     expect((await entity(park!)).status).toBe("ACTIVE");
     expect((await entity(office!)).status).toBe("ACTIVE");
-    // A public park can't quietly become a business.
-    await expect(proposeUpdate(admin, park!, { entityType: "COMMERCE" }, { source: "admin" })).rejects.toBeInstanceOf(
-      ConsentRequiredError
+  });
+
+  it("lets an admin make any listing public themselves, and records that they did", async () => {
+    // Switching an existing draft on
+    const id = await seedEntity();
+    await proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" });
+    const live = await entity(id);
+    expect(live).toMatchObject({ status: "ACTIVE", consentedById: admin.id, consentTermsVersion: null });
+    expect(live.consentedAt).toBeInstanceOf(Date);
+
+    // Creating one that's public from the start
+    const { entityId } = await proposeNewEntity(
+      admin,
+      { name: "Bakery", categorySlugs: ["food"], status: "ACTIVE" },
+      { source: "admin" }
+    );
+    expect(await entity(entityId!)).toMatchObject({ status: "ACTIVE", consentedById: admin.id });
+
+    // Hiding it and bringing it back
+    await proposeUpdate(admin, id, { status: "INACTIVE" }, { source: "admin" });
+    await proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" });
+    expect((await entity(id)).status).toBe("ACTIVE");
+
+    // Owners still can't change status through an edit; they publish and unpublish.
+    await expect(proposeUpdate(owner, id, { status: "INACTIVE" }, { source: "owner" })).rejects.toBeInstanceOf(
+      ValidationError
     );
   });
 
@@ -448,9 +463,9 @@ describe("owner opt-in", () => {
     await expect(unpublishListing(stranger, id)).rejects.toBeInstanceOf(ForbiddenError);
     await unpublishListing(owner, id);
     expect(await entity(id)).toMatchObject({ status: "INACTIVE", consentedAt: null, consentedById: null });
-    await expect(proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" })).rejects.toBeInstanceOf(
-      ConsentRequiredError
-    );
+    // An admin can put it back up (say the owner asked them to).
+    await proposeUpdate(admin, id, { status: "ACTIVE" }, { source: "admin" });
+    expect(await entity(id)).toMatchObject({ status: "ACTIVE", consentedById: admin.id, consentTermsVersion: null });
   });
 
   it("makes an owner's own submission theirs to publish once approved", async () => {
