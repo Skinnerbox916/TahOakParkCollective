@@ -25,7 +25,8 @@ export const ENTITY_FIELDS = [
   "hours",
   "socialMedia",
   "displaySettings",
-  "images",
+  "logoImage",
+  "coverImage",
   "categorySlugs",
   "tagSlugs",
   "slug",
@@ -56,7 +57,9 @@ export type EntityState = {
   hours: Json;
   socialMedia: Json;
   displaySettings: Json;
-  images: Json;
+  /** Our own upload URLs. Stored together in the `images` column as { logo, hero }. */
+  logoImage: string | null;
+  coverImage: string | null;
   categorySlugs: string[];
   tagSlugs: string[];
   slug: string;
@@ -77,8 +80,31 @@ const ADMIN_ONLY_FIELDS: ReadonlySet<EntityField> = new Set<EntityField>([
   "featured",
   "spotCheckDate",
   "verificationContact",
-  "images",
 ]);
+
+/** The image fields, and the key each one has in the `images` column. */
+export const IMAGE_FIELDS = { logoImage: "logo", coverImage: "hero" } as const;
+export type ImageField = keyof typeof IMAGE_FIELDS;
+
+/** The upload folder (storage key) that holds a listing's images. */
+export const listingUploadFolder = (entityId: string) => `entities/${entityId}`;
+
+const UPLOAD_URL = /^\/uploads\/entities\/([^/]+)\/[A-Za-z0-9._-]+$/;
+
+/**
+ * Images are files we stored for this listing, never a link to somewhere
+ * else: throws unless every image in `changes` is under the listing's own
+ * upload folder. A new listing has no folder yet, so it has no images.
+ */
+export function assertOwnImages(entityId: string | null, changes: EntityChanges) {
+  for (const field of Object.keys(IMAGE_FIELDS) as ImageField[]) {
+    const url = changes[field];
+    if (url == null) continue;
+    if (!entityId || UPLOAD_URL.exec(url)?.[1] !== entityId) {
+      throw new ValidationError("Images must be uploaded to this listing", { [field]: "validation.invalidImage" });
+    }
+  }
+}
 
 export function isAdminActor(roles: readonly Role[] | undefined): boolean {
   return roles?.includes(ROLE.ADMIN) ?? false;
@@ -197,8 +223,12 @@ function normalizeField(field: EntityField, value: unknown): { value: unknown } 
       return slug ? { value: slug } : { error: "validation.slugRequired" };
     }
     case "displaySettings":
-    case "images":
       return { value: cleanJsonObject(value) };
+    case "logoImage":
+    case "coverImage": {
+      if (value === null || value === undefined || value === "") return { value: null };
+      return typeof value === "string" && UPLOAD_URL.test(value) ? { value } : { error: "validation.invalidImage" };
+    }
     default:
       return { value };
   }

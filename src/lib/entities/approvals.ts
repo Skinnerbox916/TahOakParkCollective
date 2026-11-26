@@ -16,7 +16,18 @@ import {
   NotFoundError,
   ValidationError,
 } from "./errors";
-import { diffState, findConflicts, mirrorEnglish, normalizeFields, pickState, type EntityChanges, type EntityState } from "./fields";
+import {
+  assertOwnImages,
+  diffState,
+  findConflicts,
+  IMAGE_FIELDS,
+  mirrorEnglish,
+  normalizeFields,
+  pickState,
+  type EntityChanges,
+  type EntityState,
+} from "./fields";
+import { sweepListingImages } from "./images";
 
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
@@ -38,7 +49,18 @@ async function claimPending(tx: Tx, approvalId: string, status: string, reviewer
   return tx.approval.findUniqueOrThrow({ where: { id: approvalId } });
 }
 
+/** After a decision on a proposal, drop the image files nothing points at any more. */
+async function sweepAfterReview(entityId: string | null) {
+  if (entityId) await sweepListingImages(entityId).catch((error) => console.warn("Image sweep failed:", error));
+}
+
 export async function approveApproval(reviewer: Actor, approvalId: string, notes?: string | null) {
+  const result = await approveInTx(reviewer, approvalId, notes);
+  await sweepAfterReview(result.entityId);
+  return result;
+}
+
+function approveInTx(reviewer: Actor, approvalId: string, notes?: string | null) {
   return prisma.$transaction(async (tx) => {
     const approval = await claimPending(tx, approvalId, ApprovalStatus.APPROVED, reviewer, notes);
 
@@ -87,10 +109,11 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
 }
 
 export async function rejectApproval(reviewer: Actor, approvalId: string, notes?: string | null) {
-  return prisma.$transaction(async (tx) => {
-    await claimPending(tx, approvalId, ApprovalStatus.REJECTED, reviewer, notes);
-    return { approvalId };
-  });
+  const approval = await prisma.$transaction((tx) =>
+    claimPending(tx, approvalId, ApprovalStatus.REJECTED, reviewer, notes)
+  );
+  await sweepAfterReview(approval.targetEntityId);
+  return { approvalId };
 }
 
 /**
@@ -108,12 +131,25 @@ export async function rebaseApproval(reviewer: Actor, approvalId: string, input:
     if (approval.type === ApprovalType.NEW_ENTITY) {
       const state = mirrorEnglish(normalizeFields(input));
       if (!state.name) throw new ValidationError("Entity name is required", { name: "validation.nameRequired" });
+      delete state.logoImage;
+      delete state.coverImage;
       data = { payload: json(state) };
     } else {
       if (!approval.targetEntityId) throw new NotFoundError("Target entity");
       const current = await loadEntityState(tx, approval.targetEntityId);
-      const changes = diffState(current.state, mirrorEnglish(normalizeFields(input), current.state));
+      // The edit form doesn't carry images, so a proposed image stays as proposed.
+      const proposed = approval.payload as Record<string, unknown>;
+      const kept = Object.fromEntries(
+        Object.keys(IMAGE_FIELDS)
+          .filter((field) => field in proposed && !(field in input))
+          .map((field) => [field, proposed[field]])
+      );
+      const changes = diffState(
+        current.state,
+        mirrorEnglish(normalizeFields({ ...input, ...kept }), current.state)
+      );
       if (Object.keys(changes).length === 0) throw new NoChangesError();
+      assertOwnImages(approval.targetEntityId, changes);
       data = {
         payload: json(changes),
         baseValues: json(pickState(current.state, Object.keys(changes))),

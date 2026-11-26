@@ -13,6 +13,11 @@ vi.mock("@/lib/translate", () => ({
   }),
 }));
 
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import sharp from "sharp";
+import { keyFromPublicUrl, listUploads, readUpload } from "@/lib/storage";
 import { prisma } from "@/lib/prisma";
 import { generateSlug } from "@/lib/utils";
 import { searchEntityIds } from "@/lib/search-entities";
@@ -39,8 +44,11 @@ import {
   publishListing,
   rebaseApproval,
   rejectApproval,
+  removeListingImage,
   revokeShareLink,
+  sweepListingImages,
   unpublishListing,
+  uploadListingImage,
   type Actor,
 } from "@/lib/entities";
 
@@ -703,5 +711,132 @@ describe("slugs and deletes", () => {
     const kept = await prisma.approval.findUniqueOrThrow({ where: { id: approval.id } });
     expect(kept.targetEntityId).toBeNull();
     await expect(deleteEntity(owner, id)).rejects.toBeInstanceOf(ForbiddenError);
+  });
+});
+
+describe("images", () => {
+  const uploadDir = mkdtempSync(path.join(tmpdir(), "tahoak-uploads-"));
+  process.env.UPLOAD_DIR = uploadDir;
+  afterAll(() => rmSync(uploadDir, { recursive: true, force: true }));
+
+  const photo = (width: number, height: number) =>
+    sharp({ create: { width, height, channels: 3, background: { r: 200, g: 60, b: 40 } } });
+  const jpeg = (width: number, height: number) => photo(width, height).jpeg().toBuffer();
+  const stored = (url: string | null | undefined) => readUpload(keyFromPublicUrl(url ?? "") ?? "missing");
+  const images = async (id: string) =>
+    ((await prisma.entity.findUniqueOrThrow({ where: { id } })).images ?? {}) as Record<string, string>;
+  const pendingFor = (id: string) =>
+    prisma.approval.findMany({ where: { targetEntityId: id, status: "PENDING" }, orderBy: { createdAt: "asc" } });
+
+  it("stores a resized WebP with the photo's metadata stripped", async () => {
+    const id = await seedEntity();
+    const withExif = await photo(3000, 2000)
+      .withExif({ IFD0: { Copyright: "Someone" }, IFD3: { GPSLatitudeRef: "N", GPSLatitude: "38/1 33/1 0/1" } })
+      .jpeg()
+      .toBuffer();
+    expect((await sharp(withExif).metadata()).exif).toBeDefined();
+
+    const cover = await uploadListingImage(admin, id, "cover", withExif);
+    expect(cover.pending).toBe(false);
+    expect(cover.url).toMatch(new RegExp(`^/uploads/entities/${id}/cover-[0-9a-f]+\\.webp$`));
+    const meta = await sharp((await stored(cover.url))!).metadata();
+    expect(meta).toMatchObject({ format: "webp", width: 1920, height: 1280 });
+    expect(meta.exif).toBeUndefined();
+
+    const logo = await uploadListingImage(admin, id, "logo", await photo(900, 300).png().toBuffer());
+    expect(await sharp((await stored(logo.url))!).metadata()).toMatchObject({ format: "webp", width: 512, height: 171 });
+    expect(await images(id)).toEqual({ logo: logo.url, hero: cover.url });
+  });
+
+  it("holds an owner's upload for review and keeps the live image until then", async () => {
+    const id = await seedEntity();
+    const live = await uploadListingImage(admin, id, "logo", await jpeg(400, 400));
+    const proposed = await uploadListingImage(owner, id, "logo", await jpeg(300, 300));
+    expect(proposed.pending).toBe(true);
+    expect((await images(id)).logo).toBe(live.url);
+
+    // The sweep keeps a file that a pending proposal points at.
+    await sweepListingImages(id, 0);
+    expect(await stored(proposed.url)).not.toBeNull();
+
+    await approveApproval(admin, proposed.approvalId);
+    expect((await images(id)).logo).toBe(proposed.url);
+    await sweepListingImages(id, 0);
+    expect(await stored(live.url)).toBeNull();
+    expect(await stored(proposed.url)).not.toBeNull();
+  });
+
+  it("deletes a rejected upload's file, and a removal goes through review too", async () => {
+    const id = await seedEntity();
+    const proposed = await uploadListingImage(owner, id, "cover", await jpeg(1200, 800));
+    await rejectApproval(admin, proposed.approvalId);
+    await sweepListingImages(id, 0);
+    expect(await stored(proposed.url)).toBeNull();
+    expect(await images(id)).toEqual({});
+
+    const live = await uploadListingImage(admin, id, "cover", await jpeg(1200, 800));
+    const removal = await removeListingImage(owner, id, "cover");
+    expect(removal.pending).toBe(true);
+    expect((await images(id)).hero).toBe(live.url);
+    await approveApproval(admin, removal.approvalId);
+    expect(await images(id)).toEqual({});
+  });
+
+  it("lets a logo and a cover wait for review side by side; a newer upload replaces an older one", async () => {
+    const id = await seedEntity();
+    const firstLogo = await uploadListingImage(owner, id, "logo", await jpeg(300, 300));
+    const logo = await uploadListingImage(owner, id, "logo", await jpeg(320, 320));
+    const cover = await uploadListingImage(owner, id, "cover", await jpeg(1200, 800));
+
+    const pending = await pendingFor(id);
+    expect(pending.map((a) => a.id).sort()).toEqual([logo.approvalId, cover.approvalId].sort());
+    expect((await prisma.approval.findUniqueOrThrow({ where: { id: firstLogo.approvalId } })).status).toBe("REJECTED");
+
+    await approveApproval(admin, logo.approvalId);
+    await approveApproval(admin, cover.approvalId);
+    expect(await images(id)).toEqual({ logo: logo.url, hero: cover.url });
+  });
+
+  it("keeps a proposed image when an admin edits the proposal", async () => {
+    const id = await seedEntity();
+    const proposed = await uploadListingImage(owner, id, "logo", await jpeg(300, 300));
+    await rebaseApproval(admin, proposed.approvalId, { phone: "+19165550111" });
+    const [approval] = await pendingFor(id);
+    expect(approval.payload).toEqual({ phone: "+19165550111", logoImage: proposed.url });
+  });
+
+  it("refuses anything that isn't this listing's own upload", async () => {
+    const id = await seedEntity();
+    const other = await seedEntity({ name: "Other Cafe" });
+    const elsewhere = await uploadListingImage(admin, other, "logo", await jpeg(300, 300));
+
+    for (const url of [elsewhere.url, "https://example.com/logo.png", `/uploads/entities/${id}/../${other}/x.webp`]) {
+      await expect(proposeUpdate(admin, id, { logoImage: url }, { source: "admin" })).rejects.toBeInstanceOf(ValidationError);
+    }
+    // The old all-in-one field is gone: it's ignored, not stored.
+    await expect(
+      proposeUpdate(admin, id, { images: { logo: "https://example.com/logo.png" } }, { source: "admin" })
+    ).rejects.toBeInstanceOf(NoChangesError);
+
+    await expect(uploadListingImage(stranger, id, "logo", await jpeg(300, 300))).rejects.toBeInstanceOf(ForbiddenError);
+    const refused = async (kind: "logo" | "cover", bytes: Buffer) =>
+      (await uploadListingImage(admin, id, kind, bytes).catch((e) => e)) as ValidationError;
+    expect((await refused("logo", Buffer.from("<svg onload=alert(1)>"))).fieldErrors).toEqual({
+      logoImage: "validation.image.notAnImage",
+    });
+    expect((await refused("cover", await jpeg(500, 400))).fieldErrors).toEqual({ coverImage: "validation.image.tooSmall" });
+    const huge = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(8 * 1024 * 1024)]);
+    expect((await refused("cover", huge)).fieldErrors).toEqual({ coverImage: "validation.image.tooLarge" });
+
+    // Nothing refused was left on disk.
+    expect(await listUploads(`entities/${id}`)).toEqual([]);
+    expect(await images(id)).toEqual({});
+  });
+
+  it("deletes a listing's files with the listing", async () => {
+    const id = await seedEntity();
+    const logo = await uploadListingImage(admin, id, "logo", await jpeg(300, 300));
+    await deleteEntity(admin, id);
+    expect(await stored(logo.url)).toBeNull();
   });
 });

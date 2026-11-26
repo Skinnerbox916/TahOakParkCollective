@@ -7,6 +7,7 @@ export { canManage, managesAnyEntity, memberRole } from "./access";
 export { listMembers, addMember, removeMember } from "./members";
 export { proposeNewEntity, proposeUpdate, deleteEntity, type ProposalSource } from "./propose";
 export { approveApproval, rejectApproval, rebaseApproval, getApprovalView, type ApprovalView } from "./approvals";
+export { uploadListingImage, removeListingImage, sweepListingImages } from "./images";
 export { publishListing, unpublishListing, TermsChangedError } from "./consent";
 export {
   createShareLink,

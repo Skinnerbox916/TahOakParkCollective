@@ -469,6 +469,7 @@
     "tags": "Etiquetas",
     "location": "Ubicación",
     "photo": "Foto",
+    "eventImage": "Foto del evento",
     "photos": "Fotos",
     "coverImage": "Imagen de Portada",
     "logo": "Logo",
@@ -1054,6 +1055,7 @@
     "sections": {
       "basics": "Datos básicos",
       "about": "Descripción",
+      "images": "Imágenes",
       "locationContact": "Ubicación y contacto",
       "hours": "Horario",
       "hoursEvent": "Calendario del evento",
@@ -1107,6 +1109,21 @@
         "NON_PROFIT": "Dónde pueden encontrarte, si aplica"
       },
       "statusOwnerTypes": "Las fichas ocultas son privadas. Actívala tú, o compártela con su dueño para que la publique."
+    },
+    "images": {
+      "description": "Las imágenes se guardan en cuanto eliges un archivo.",
+      "descriptionOwner": "Nuestro equipo revisa las imágenes nuevas antes de mostrarlas.",
+      "logo": "Logo",
+      "logoHint": "Mejor si es cuadrado. JPEG, PNG o WebP, hasta 8 MB.",
+      "cover": "Foto de portada",
+      "coverHint": "Una foto ancha del lugar o de tu trabajo, de al menos 600 píxeles de ancho. JPEG, PNG o WebP, hasta 8 MB.",
+      "none": "Aún no hay imagen",
+      "upload": "Subir",
+      "replace": "Reemplazar",
+      "remove": "Quitar",
+      "working": "Un momento...",
+      "pendingUpload": "Enviada para revisión. La imagen actual se queda hasta que se apruebe.",
+      "pendingRemoval": "Solicitud enviada para revisión. La imagen se queda hasta que se apruebe."
     },
     "tagGroups": {
       "IDENTITY": "Identidad",
@@ -1163,7 +1180,13 @@
       "categoryRequired": "Elige al menos una categoría.",
       "unknownCategory": "Una de las categorías ya no existe. Recarga y vuelve a elegir.",
       "unknownTag": "Una de las etiquetas ya no existe. Recarga y vuelve a elegir.",
-      "identityTagsRestricted": "Solo el dueño de la ficha o un administrador puede agregar etiquetas de identidad."
+      "identityTagsRestricted": "Solo el dueño de la ficha o un administrador puede agregar etiquetas de identidad.",
+      "invalidImage": "Las imágenes deben subirse aquí, no enlazarse.",
+      "image": {
+        "notAnImage": "Elige una imagen JPEG, PNG o WebP.",
+        "tooLarge": "El archivo es demasiado grande. El límite es de 8 MB.",
+        "tooSmall": "La imagen es demasiado pequeña. Un logo necesita al menos 64 píxeles y una foto de portada al menos 600 píxeles de ancho."
+      }
     },
     "summary": {
       "title": "Ficha propuesta",

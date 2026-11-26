@@ -14,6 +14,7 @@ import { getFormConfig, type SocialPlatform } from "@/lib/entityFormConfig";
 import { requiresConsent } from "@/lib/entities/policy";
 import { validateEntityInput } from "@/lib/schemas/entitySchema";
 import { ENTITY_STATUS, ENTITY_TYPE, TagCategory, type EntityStatus, type EntityType } from "@/lib/prismaEnums";
+import { ImageField } from "./ImageField";
 import { saveListing, SaveError, type SaveResult } from "./saveListing";
 import {
   emptyValues,
@@ -84,6 +85,8 @@ export interface ListingEditorProps {
   version?: number;
   /** Edit: whether the listing has a map pin. */
   hasMapPin?: boolean;
+  /** Edit: the listing's current logo and cover photo. */
+  images?: { logo: string | null; cover: string | null };
   onSaved?: (result: SaveResult) => void;
   onCancel?: () => void;
 }
@@ -101,6 +104,7 @@ export function ListingEditor({
   approvalId,
   version,
   hasMapPin = false,
+  images,
   onSaved,
   onCancel,
 }: ListingEditorProps) {
@@ -366,6 +370,21 @@ export function ListingEditor({
           <p className="-mt-3 text-xs text-gray-500">{t("hints.descriptionEs")}</p>
         </div>
       </FormSection>
+
+      {/* Images: saved on their own, as soon as a file is chosen */}
+      {mode === "edit" && entityId && (
+        <FormSection
+          title={t("sections.images")}
+          description={t(role === "owner" ? "images.descriptionOwner" : "images.description")}
+          defaultExpanded
+          hasData={!!(images?.logo || images?.cover)}
+        >
+          <div className="space-y-6">
+            <ImageField entityId={entityId} kind="logo" url={images?.logo ?? null} onApplied={setCurrentVersion} />
+            <ImageField entityId={entityId} kind="cover" url={images?.cover ?? null} onApplied={setCurrentVersion} />
+          </div>
+        </FormSection>
+      )}
 
       {/* Location and contact */}
       <FormSection

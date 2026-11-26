@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ListingEditor } from "@/components/listing/ListingEditor";
-import { valuesFrom } from "@/components/listing/values";
+import { imagesFrom, valuesFrom } from "@/components/listing/values";
 import { EntityWithRelations, ApiResponse } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -127,6 +127,7 @@ export default function AdminEditEntityPage() {
           entityId={entity.id}
           version={entity.version}
           hasMapPin={entity.latitude != null && entity.longitude != null}
+          images={imagesFrom(entity as unknown as Record<string, unknown>)}
           onSaved={(result) => {
             if (result.kind === "saved") setEntity(result.entity as unknown as EntityWithRelations);
           }}

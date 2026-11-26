@@ -40,7 +40,8 @@ export function PhotosSection({ entity, config }: PhotosSectionProps) {
             <p className="text-sm font-medium text-gray-500">{t("coverImage")}</p>
             <img
               src={images.hero}
-              alt={`${displayName} - Cover`}
+              alt={`${displayName} - ${t("coverImage")}`}
+              loading="lazy"
               className="w-full h-48 object-cover rounded-lg"
             />
           </div>
@@ -50,7 +51,8 @@ export function PhotosSection({ entity, config }: PhotosSectionProps) {
             <p className="text-sm font-medium text-gray-500">{t("logo")}</p>
             <img
               src={images.logo}
-              alt={`${displayName} - Logo`}
+              alt={`${displayName} - ${t("logo")}`}
+              loading="lazy"
               className="w-full h-48 object-contain bg-gray-50 rounded-lg p-4"
             />
           </div>

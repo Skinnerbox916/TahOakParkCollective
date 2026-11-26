@@ -31,6 +31,7 @@ export function ProfileImageSection({ entity, config }: ProfileImageSectionProps
       <img
         src={heroImage}
         alt={entity.nameLocalized ?? entity.name}
+        loading="lazy"
         className="w-full rounded-lg"
         style={{ 
           height: imageHeight, 

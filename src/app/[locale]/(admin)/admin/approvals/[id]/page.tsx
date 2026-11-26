@@ -61,6 +61,18 @@ interface ApprovalWithEntityDetails extends Omit<Approval, "payload" | "checks">
   resolvedTags?: ResolvedTag[];
 }
 
+/** The image fields, by their label key in the listing editor's messages. */
+const IMAGE_FIELD_LABELS: Record<string, string> = { logoImage: "images.logo", coverImage: "images.cover" };
+
+/** One cell of the changes table: a thumbnail for an image, text for everything else. */
+function ChangeValue({ field, value, empty, label }: { field: string; value: unknown; empty: string; label: string }) {
+  if (field in IMAGE_FIELD_LABELS && typeof value === "string" && value) {
+    // eslint-disable-next-line @next/next/no-img-element -- our own upload, already sized
+    return <img src={value} alt={label} className="h-24 max-w-48 rounded border border-gray-200 bg-gray-50 object-contain" />;
+  }
+  return <>{formatValue(value, empty)}</>;
+}
+
 function formatValue(value: unknown, empty: string): string {
   if (value === null || value === undefined || value === "") return empty;
   if (Array.isArray(value)) return value.length ? value.join(", ") : empty;
@@ -257,20 +269,23 @@ export default function ApprovalDetailPage() {
               </tr>
             </thead>
             <tbody className="align-top">
-              {approval.changes.map((change) => (
-                <tr key={change.field} className={change.conflict ? "bg-warning-50" : "border-t border-gray-100"}>
-                  <td className="py-2 pr-4 font-mono text-gray-700">{change.field}</td>
-                  <td className="py-2 pr-4 whitespace-pre-wrap text-gray-500">
-                    {formatValue(change.before, t("detail.emptyValue"))}
-                  </td>
-                  <td className={`py-2 pr-4 whitespace-pre-wrap ${change.conflict ? "text-warning-800 font-medium" : "text-gray-500"}`}>
-                    {formatValue(change.current, t("detail.emptyValue"))}
-                  </td>
-                  <td className="py-2 whitespace-pre-wrap text-gray-900">
-                    {formatValue(change.proposed, t("detail.emptyValue"))}
-                  </td>
-                </tr>
-              ))}
+              {approval.changes.map((change) => {
+                const imageLabel = IMAGE_FIELD_LABELS[change.field];
+                const label = imageLabel ? tEditor(imageLabel) : change.field;
+                const cell = (value: unknown) => (
+                  <ChangeValue field={change.field} value={value} empty={t("detail.emptyValue")} label={label} />
+                );
+                return (
+                  <tr key={change.field} className={change.conflict ? "bg-warning-50" : "border-t border-gray-100"}>
+                    <td className={`py-2 pr-4 text-gray-700 ${imageLabel ? "" : "font-mono"}`}>{label}</td>
+                    <td className="py-2 pr-4 whitespace-pre-wrap text-gray-500">{cell(change.before)}</td>
+                    <td className={`py-2 pr-4 whitespace-pre-wrap ${change.conflict ? "text-warning-800 font-medium" : "text-gray-500"}`}>
+                      {cell(change.current)}
+                    </td>
+                    <td className="py-2 whitespace-pre-wrap text-gray-900">{cell(change.proposed)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </Card>

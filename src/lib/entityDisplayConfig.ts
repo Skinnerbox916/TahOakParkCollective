@@ -284,15 +284,11 @@ function applyRuntimeAdjustments(
     adjusted.sections.profileImage.enabled = !hasLocation && hasHeroImage;
   }
   
-  // Photos section: adjust hero visibility based on whether profileImage is shown
+  // The cover photo shows once: as the profile image when there's no map,
+  // otherwise with the photos.
   if (adjusted.sections.photos?.settings) {
-    const profileImageShown = !hasLocation && hasHeroImage && 
-      config.sections.profileImage?.enabled;
-    
-    // If profile image is shown, don't duplicate hero in photos
-    if (profileImageShown) {
-      adjusted.sections.photos.settings.showHero = false;
-    }
+    const profileImageShown = !hasLocation && hasHeroImage && config.sections.profileImage?.enabled;
+    adjusted.sections.photos.settings.showHero = !profileImageShown;
   }
   
   return adjusted;
