@@ -1,4 +1,4 @@
-import { mkdir, readFile, unlink, writeFile } from "fs/promises";
+import { mkdir, readdir, readFile, rm, stat, unlink, writeFile } from "fs/promises";
 import path from "path";
 
 /**
@@ -10,7 +10,7 @@ import path from "path";
  * served by src/app/uploads/[...path]/route.ts at /uploads/<key>.
  *
  * In production, mount a persistent volume at UPLOAD_DIR or uploads are lost on
- * redeploy. To move to object storage (e.g. R2) later, reimplement the three
+ * redeploy. To move to object storage (e.g. R2) later, reimplement the
  * exported I/O functions; callers only deal in keys and public URLs.
  */
 
@@ -74,6 +74,31 @@ export async function deleteUpload(key: string): Promise<void> {
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
+}
+
+/** The files directly under a folder key, with when each was last written. */
+export async function listUploads(prefix: string): Promise<{ key: string; modifiedAt: Date }[]> {
+  const dir = resolveKey(prefix);
+  if (!dir) return [];
+  let names: string[];
+  try {
+    names = await readdir(dir);
+  } catch {
+    return [];
+  }
+  const files = await Promise.all(
+    names.map(async (name) => {
+      const info = await stat(path.join(dir, name)).catch(() => null);
+      return info?.isFile() ? { key: `${prefix.replace(/\/+$/, "")}/${name}`, modifiedAt: info.mtime } : null;
+    })
+  );
+  return files.filter((f): f is { key: string; modifiedAt: Date } => f !== null);
+}
+
+/** Deletes a folder key and everything in it. A missing folder is not an error. */
+export async function deleteUploadsUnder(prefix: string): Promise<void> {
+  const dir = resolveKey(prefix);
+  if (dir) await rm(dir, { recursive: true, force: true });
 }
 
 /**

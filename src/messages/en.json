@@ -469,6 +469,7 @@
     "tags": "Tags",
     "location": "Location",
     "photo": "Photo",
+    "eventImage": "Event photo",
     "photos": "Photos",
     "coverImage": "Cover Image",
     "logo": "Logo",
@@ -1054,6 +1055,7 @@
     "sections": {
       "basics": "Basics",
       "about": "About",
+      "images": "Images",
       "locationContact": "Location & contact",
       "hours": "Business hours",
       "hoursEvent": "Event schedule",
@@ -1107,6 +1109,21 @@
         "NON_PROFIT": "Where people can find you, if anywhere"
       },
       "statusOwnerTypes": "Hidden listings are private. Make it Active yourself, or share it with its owner to publish."
+    },
+    "images": {
+      "description": "Images save as soon as you choose a file.",
+      "descriptionOwner": "Our team reviews new images before they show.",
+      "logo": "Logo",
+      "logoHint": "Square works best. JPEG, PNG or WebP, up to 8 MB.",
+      "cover": "Cover photo",
+      "coverHint": "A wide photo of the place or your work, at least 600 pixels wide. JPEG, PNG or WebP, up to 8 MB.",
+      "none": "No image yet",
+      "upload": "Upload",
+      "replace": "Replace",
+      "remove": "Remove",
+      "working": "Working...",
+      "pendingUpload": "Sent for review. The current image stays until it's approved.",
+      "pendingRemoval": "Removal sent for review. The image stays until it's approved."
     },
     "tagGroups": {
       "IDENTITY": "Identity",
@@ -1163,7 +1180,13 @@
       "categoryRequired": "Pick at least one category.",
       "unknownCategory": "One of the categories no longer exists. Reload and pick again.",
       "unknownTag": "One of the tags no longer exists. Reload and pick again.",
-      "identityTagsRestricted": "Identity tags can only be added by the listing's owner or an admin."
+      "identityTagsRestricted": "Identity tags can only be added by the listing's owner or an admin.",
+      "invalidImage": "Images must be uploaded here, not linked.",
+      "image": {
+        "notAnImage": "Choose a JPEG, PNG or WebP image.",
+        "tooLarge": "That file is too large. The limit is 8 MB.",
+        "tooSmall": "That image is too small. A logo needs at least 64 pixels, and a cover photo at least 600 pixels wide."
+      }
     },
     "summary": {
       "title": "Proposed listing",

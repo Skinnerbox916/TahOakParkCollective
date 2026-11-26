@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { ListingEditor } from "@/components/listing/ListingEditor";
-import { valuesFrom } from "@/components/listing/values";
+import { imagesFrom, valuesFrom } from "@/components/listing/values";
 import { EntityWithRelations, ApiResponse } from "@/types";
 import { Card } from "@/components/ui/Card";
 import { usePortalTranslations } from "@/lib/admin-translations";
@@ -94,6 +94,7 @@ export default function PortalEditEntityPage() {
         entityId={entity.id}
         version={entity.version}
         hasMapPin={entity.latitude != null && entity.longitude != null}
+        images={imagesFrom(entity as unknown as Record<string, unknown>)}
         onSaved={() => setTimeout(() => router.push("/portal/dashboard"), 2500)}
         onCancel={() => router.push("/portal/dashboard")}
       />

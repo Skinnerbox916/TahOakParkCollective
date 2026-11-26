@@ -33,7 +33,8 @@ export function EntityCard({ entity }: EntityCardProps) {
         <div className="h-48 w-full relative bg-gray-100">
           <img
             src={images.hero}
-            alt={`${displayName} cover`}
+            alt={displayName}
+            loading="lazy"
             className="w-full h-full object-cover"
           />
         </div>
@@ -46,7 +47,8 @@ export function EntityCard({ entity }: EntityCardProps) {
             <div className="w-12 h-12 flex-shrink-0 rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
               <img 
                 src={images.logo} 
-                alt={`${displayName} logo`}
+                alt=""
+                loading="lazy"
                 className="w-full h-full object-contain p-1"
               />
             </div>

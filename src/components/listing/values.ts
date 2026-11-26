@@ -99,6 +99,12 @@ export function valuesFrom(source: Source): ListingValues {
   };
 }
 
+/** The listing's stored images, as the editor's image fields take them. */
+export function imagesFrom(source: Source): { logo: string | null; cover: string | null } {
+  const images = (source.images ?? {}) as Record<string, unknown>;
+  return { logo: text(images.logo) || null, cover: text(images.hero) || null };
+}
+
 const sameDisplay = (a: DisplaySettings, b: DisplaySettings) => DISPLAY_FIELDS.every((f) => a[f] === b[f]);
 
 /** Social links for the platforms the form shows; hidden ones are dropped. */

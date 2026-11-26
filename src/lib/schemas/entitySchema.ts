@@ -139,7 +139,6 @@ export const entityInputSchema = z.object({
   seoDescriptionTranslations: permissiveAny,
   nameTranslations: permissiveAny,
   descriptionTranslations: permissiveAny,
-  images: z.any().optional(),
   slug: z.string().optional(),
   status: z.any().optional(),
 }).passthrough(); // Use passthrough to be extra safe

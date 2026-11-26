@@ -4,6 +4,7 @@ import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { EntityDetail } from "@/components/entity/EntityDetail";
 import { getTranslatedField } from "@/lib/translations";
 import { entityIncludePublic, transformEntity } from "@/lib/entity-helpers";
+import { siteUrl } from "@/lib/site";
 import type { EntityWithRelations } from "@/types";
 
 async function getEntityBySlug(slug: string, locale: string): Promise<EntityWithRelations | null> {
@@ -48,6 +49,7 @@ export async function generateMetadata({
       descriptionTranslations: true,
       seoTitleTranslations: true,
       seoDescriptionTranslations: true,
+      images: true,
     },
   });
 
@@ -75,9 +77,15 @@ export async function generateMetadata({
     translatedDescription || `Visit ${translatedName}`
   );
 
+  // Shared links show the cover photo.
+  const cover = (rawEntity.images as { hero?: string } | null)?.hero;
+
   return {
     title: seoTitle,
     description: seoDescription,
+    ...(cover && {
+      openGraph: { title: seoTitle, description: seoDescription, images: [`${siteUrl()}${cover}`] },
+    }),
   };
 }
 

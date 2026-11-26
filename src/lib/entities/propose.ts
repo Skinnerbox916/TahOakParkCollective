@@ -11,13 +11,16 @@ import { createEntity, identityTagSlugs, loadEntityState, updateEntity } from ".
 import { ForbiddenError, NoChangesError, NotFoundError, StaleVersionError, ValidationError } from "./errors";
 import {
   assertFieldsAllowed,
+  assertOwnImages,
   diffState,
   isAdminActor,
+  listingUploadFolder,
   mirrorEnglish,
   normalizeFields,
   pickState,
   type EntityChanges,
 } from "./fields";
+import { deleteUploadsUnder } from "@/lib/storage";
 import { locate } from "./locate";
 import { withSpanishDescription } from "./translate";
 
@@ -72,9 +75,12 @@ export async function proposeNewEntity(
   }
   state.entityType ??= ENTITY_TYPE.COMMERCE;
   await assertIdentityTagsFromPeople(opts.source, state.tagSlugs);
+  // Images are uploaded to a listing once it exists (images.ts).
+  delete state.logoImage;
+  delete state.coverImage;
   if (!isAdmin) {
     // A new listing's status, slug and admin fields are decided by the reviewer.
-    for (const field of ["status", "slug", "featured", "spotCheckDate", "verificationContact", "images"] as const) {
+    for (const field of ["status", "slug", "featured", "spotCheckDate", "verificationContact"] as const) {
       delete state[field];
     }
   }
@@ -164,6 +170,7 @@ export async function proposeUpdate(
 
   if (Object.keys(changes).length === 0) throw new NoChangesError();
   assertFieldsAllowed(changes, actor.roles);
+  assertOwnImages(entityId, changes);
   await assertIdentityTagsFromPeople(
     opts.source,
     changes.tagSlugs?.filter((slug) => !current.state.tagSlugs.includes(slug))
@@ -206,14 +213,16 @@ export async function proposeUpdate(
 }
 
 /**
- * Admins only: delete a listing outright. Its approval history stays (the
- * links to the entity are cleared). Returns the image URLs so the caller can
- * remove the files. Owners take their listing down with unpublishListing (consent.ts).
+ * Admins only: delete a listing outright, with its uploaded images. Its
+ * approval history stays (the links to the entity are cleared). Owners take
+ * their listing down with unpublishListing (consent.ts).
  */
 export async function deleteEntity(actor: Actor, entityId: string) {
   if (!isAdminActor(actor.roles)) throw new ForbiddenError();
-  const entity = await prisma.entity.findUnique({ where: { id: entityId }, select: { images: true } });
+  const entity = await prisma.entity.findUnique({ where: { id: entityId }, select: { id: true } });
   if (!entity) throw new NotFoundError();
   await prisma.entity.delete({ where: { id: entityId } });
-  return { images: (entity.images ?? {}) as Record<string, string> };
+  await deleteUploadsUnder(listingUploadFolder(entityId)).catch((error) =>
+    console.warn("Could not delete uploads for", entityId, error)
+  );
 }

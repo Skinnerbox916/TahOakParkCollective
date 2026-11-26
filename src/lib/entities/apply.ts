@@ -7,7 +7,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { ENTITY_STATUS, ENTITY_TYPE, TagCategory } from "@/lib/prismaEnums";
 import { generateSlug } from "@/lib/utils";
 import { ConsentRequiredError, NotFoundError, StaleVersionError, ValidationError } from "./errors";
-import type { EntityChanges, EntityState } from "./fields";
+import { IMAGE_FIELDS, type EntityChanges, type EntityState, type ImageField } from "./fields";
 import { requiresConsent } from "./policy";
 
 export type Tx = Prisma.TransactionClient;
@@ -20,6 +20,8 @@ const stateInclude = {
 type EntityWithState = Prisma.EntityGetPayload<{ include: typeof stateInclude }>;
 
 export function toState(entity: EntityWithState): EntityState {
+  const images = (entity.images ?? {}) as Record<string, unknown>;
+  const image = (key: string) => (typeof images[key] === "string" && images[key] ? (images[key] as string) : null);
   return {
     name: entity.name,
     nameTranslations: (entity.nameTranslations as Record<string, string> | null) ?? null,
@@ -36,7 +38,8 @@ export function toState(entity: EntityWithState): EntityState {
     hours: (entity.hours as EntityState["hours"]) ?? null,
     socialMedia: (entity.socialMedia as EntityState["socialMedia"]) ?? null,
     displaySettings: (entity.displaySettings as EntityState["displaySettings"]) ?? null,
-    images: (entity.images as EntityState["images"]) ?? null,
+    logoImage: image(IMAGE_FIELDS.logoImage),
+    coverImage: image(IMAGE_FIELDS.coverImage),
     categorySlugs: entity.categories.map((c) => c.slug).sort(),
     tagSlugs: entity.tags.map((t) => t.tag.slug).sort(),
     slug: entity.slug,
@@ -67,7 +70,9 @@ function scalarData(changes: EntityChanges): Prisma.EntityUncheckedUpdateManyInp
       case "categorySlugs":
       case "tagSlugs":
       case "slug":
-        break; // relations and slug uniqueness are handled by the callers
+      case "logoImage":
+      case "coverImage":
+        break; // relations, slug uniqueness and the images column are handled by the callers
       case "nameTranslations":
       case "descriptionTranslations":
       case "seoTitleTranslations":
@@ -75,7 +80,6 @@ function scalarData(changes: EntityChanges): Prisma.EntityUncheckedUpdateManyInp
       case "hours":
       case "socialMedia":
       case "displaySettings":
-      case "images":
         (data as Record<string, unknown>)[field] = jsonOrNull(value);
         break;
       case "spotCheckDate":
@@ -226,7 +230,7 @@ export async function updateEntity(
 ) {
   const current = await db.entity.findUnique({
     where: { id: entityId },
-    select: { status: true, entityType: true, consentedAt: true, tags: { select: { tagId: true } } },
+    select: { status: true, entityType: true, consentedAt: true, images: true, tags: { select: { tagId: true } } },
   });
   if (!current) throw new NotFoundError();
   const nextStatus = changes.status ?? current.status;
@@ -253,6 +257,16 @@ export async function updateEntity(
   const data = scalarData(changes);
   if (changes.slug !== undefined) {
     data.slug = await ensureUniqueSlug(db, changes.slug, entityId);
+  }
+  const imageFields = (Object.keys(IMAGE_FIELDS) as ImageField[]).filter((field) => changes[field] !== undefined);
+  if (imageFields.length > 0) {
+    // One column holds both images; change only the ones in `changes`.
+    const images = { ...((current.images ?? {}) as Record<string, unknown>) };
+    for (const field of imageFields) {
+      if (changes[field]) images[IMAGE_FIELDS[field]] = changes[field];
+      else delete images[IMAGE_FIELDS[field]];
+    }
+    data.images = jsonOrNull(Object.keys(images).length > 0 ? images : null);
   }
   if (consent !== undefined) {
     data.consentedAt = consent?.at ?? null;

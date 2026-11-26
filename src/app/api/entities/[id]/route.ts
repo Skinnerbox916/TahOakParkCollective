@@ -7,7 +7,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { entityIncludePublic, entityIncludeWithMembers, transformEntity } from "@/lib/entity-helpers";
 import { deleteEntity, proposeUpdate, unpublishListing } from "@/lib/entities";
 import { notifyAdmins, notifyPublishChange } from "@/lib/email";
-import { deleteUpload, keyFromPublicUrl } from "@/lib/storage";
 
 /**
  * Admins and the listing's members get the full record (any status, with members).
@@ -114,11 +113,7 @@ export async function DELETE(
       const { id } = await params;
 
       if (user.roles.includes(ROLE.ADMIN)) {
-        const { images } = await deleteEntity(user, id);
-        for (const url of Object.values(images)) {
-          const key = typeof url === "string" ? keyFromPublicUrl(url) : null;
-          if (key) await deleteUpload(key).catch((e) => console.warn("Could not delete upload:", key, e));
-        }
+        await deleteEntity(user, id);
         return createSuccessResponse(null, "Entity deleted successfully");
       }
 
