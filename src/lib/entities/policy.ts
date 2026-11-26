@@ -17,7 +17,7 @@ export const CONSENT_EXEMPT_TYPES: readonly string[] = [ENTITY_TYPE.PUBLIC_SPACE
  * The version of the listing agreement an owner accepts when publishing.
  * Bump it whenever the listingAgreement text in src/messages changes.
  */
-export const LISTING_TERMS_VERSION = "2026-11-25";
+export const LISTING_TERMS_VERSION = "2026-11-25.2";
 
 export function requiresConsent(entityType: string | null | undefined): boolean {
   return !CONSENT_EXEMPT_TYPES.includes(entityType || ENTITY_TYPE.COMMERCE);

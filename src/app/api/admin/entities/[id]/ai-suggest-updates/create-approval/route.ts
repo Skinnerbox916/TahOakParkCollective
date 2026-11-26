@@ -44,7 +44,7 @@ export async function POST(
       }
 
       // The AI never sees identity tags, so its tag list must neither add nor
-      // drop them: keep exactly the ones the owner set.
+      // drop them: keep exactly the ones already on the listing.
       if (Array.isArray(fields.tagSlugs)) {
         const tags = await prisma.tag.findMany({
           where: {

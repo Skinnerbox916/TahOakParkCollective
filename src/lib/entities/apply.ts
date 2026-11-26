@@ -114,10 +114,7 @@ async function resolveCategoryIds(db: Tx, slugs: string[]): Promise<string[]> {
 
 async function resolveTags(db: Tx, slugs: string[]) {
   if (slugs.length === 0) return [];
-  const tags = await db.tag.findMany({
-    where: { slug: { in: slugs } },
-    select: { id: true, slug: true, category: true },
-  });
+  const tags = await db.tag.findMany({ where: { slug: { in: slugs } }, select: { id: true, slug: true } });
   const unknown = slugs.filter((s) => !tags.some((t) => t.slug === s));
   if (unknown.length > 0) {
     throw new ValidationError(`Unknown tags: ${unknown.join(", ")}`, { tagSlugs: "validation.unknownTag" });
@@ -125,7 +122,7 @@ async function resolveTags(db: Tx, slugs: string[]) {
   return tags;
 }
 
-/** The IDENTITY tags (Black-owned, ...) among `slugs`. Only a listing's owners add these. */
+/** The IDENTITY tags (Black-owned, ...) among `slugs`. See assertIdentityTagsFromPeople in propose.ts. */
 export async function identityTagSlugs(db: Tx, slugs: readonly string[] | undefined): Promise<string[]> {
   if (!slugs || slugs.length === 0) return [];
   const tags = await db.tag.findMany({
@@ -133,16 +130,6 @@ export async function identityTagSlugs(db: Tx, slugs: readonly string[] | undefi
     select: { slug: true },
   });
   return tags.map((t) => t.slug);
-}
-
-function assertIdentityTagsAllowed(added: { slug: string; category: string }[], allowed: boolean | undefined) {
-  if (allowed) return;
-  const identity = added.filter((t) => t.category === TagCategory.IDENTITY).map((t) => t.slug);
-  if (identity.length > 0) {
-    throw new ValidationError(`Only the listing's owner can add identity tags: ${identity.join(", ")}`, {
-      tagSlugs: "validation.identityTagsOwnerOnly",
-    });
-  }
 }
 
 /** Opt-in: a listing that needs consent can't be ACTIVE without it. */
@@ -160,8 +147,7 @@ export type ConsentWrite = { at: Date; byId: string; termsVersion: string } | nu
  * (or admin) change are verified; createdBy records who proposed them. With
  * `owner`, that user becomes the listing's OWNER; otherwise it's unclaimed.
  * A new listing has no consent yet, so types that need it start INACTIVE
- * (a private draft) and can't be created ACTIVE. Identity tags need
- * `allowIdentityTags` (the change comes from the listing's owner).
+ * (a private draft) and can't be created ACTIVE.
  */
 export async function createEntity(
   db: Tx,
@@ -170,7 +156,6 @@ export async function createEntity(
     createdBy: string | null;
     status?: string;
     owner?: { userId: string; addedBy: string | null };
-    allowIdentityTags?: boolean;
   }
 ) {
   if (!state.name) {
@@ -183,7 +168,6 @@ export async function createEntity(
 
   const categoryIds = await resolveCategoryIds(db, state.categorySlugs ?? []);
   const tags = await resolveTags(db, state.tagSlugs ?? []);
-  assertIdentityTagsAllowed(tags, opts.allowIdentityTags);
   const slug = await ensureUniqueSlug(db, state.slug || state.name);
 
   const created = await db.entity.create({
@@ -215,14 +199,14 @@ export async function createEntity(
  * Apply `changes` to an entity, bumping its version. Fails with
  * StaleVersionError if the entity is no longer at `expectedVersion`.
  * Untouched fields, and tags that stay, are left exactly as they were.
- * Refuses to leave a listing that needs consent ACTIVE without it, and to add
- * identity tags unless `allowIdentityTags`. Only consent.ts passes `consent`.
+ * Refuses to leave a listing that needs consent ACTIVE without it. Only
+ * consent.ts passes `consent`.
  */
 export async function updateEntity(
   db: Tx,
   entityId: string,
   changes: EntityChanges,
-  opts: { expectedVersion: number; createdBy: string | null; allowIdentityTags?: boolean; consent?: ConsentWrite }
+  opts: { expectedVersion: number; createdBy: string | null; consent?: ConsentWrite }
 ) {
   const current = await db.entity.findUnique({
     where: { id: entityId },
@@ -238,7 +222,6 @@ export async function updateEntity(
     const existingIds = new Set(current.tags.map((t) => t.tagId));
     const wantedIds = new Set(wanted.map((t) => t.id));
     const added = wanted.filter((t) => !existingIds.has(t.id));
-    assertIdentityTagsAllowed(added, opts.allowIdentityTags);
     tagChanges = { removed: [...existingIds].filter((id) => !wantedIds.has(id)), added };
   }
 

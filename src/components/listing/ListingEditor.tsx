@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -18,6 +18,7 @@ import { saveListing, SaveError, type SaveResult } from "./saveListing";
 import {
   emptyValues,
   toPayload,
+  valuesFrom,
   visibleSocial,
   type DisplayField,
   type EditorMode,
@@ -104,7 +105,10 @@ export function ListingEditor({
   const t = useTranslations("listingEditor");
   const locale = useLocale();
   const typeLabels = useEntityTypeLabels();
-  const start = useMemo(() => initial ?? emptyValues(), [initial]);
+  // What the form is compared against: the listing as loaded, then as last
+  // saved. The form owns it (and the version), so a save moves both forward.
+  const [start, setStart] = useState<ListingValues>(() => initial ?? emptyValues());
+  const [currentVersion, setCurrentVersion] = useState(version);
   const [values, setValues] = useState<ListingValues>(start);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -113,6 +117,7 @@ export function ListingEditor({
   const [categories, setCategories] = useState<CategoryOption[] | null>(null);
   const [tags, setTags] = useState<TagOption[] | null>(null);
   const [users, setUsers] = useState<UserOption[]>([]);
+  const statusId = useId();
 
   useEffect(() => {
     let cancelled = false;
@@ -135,6 +140,24 @@ export function ListingEditor({
   const needsOwner = requiresConsent(values.entityType);
   const statusEditable = role === "admin" && mode !== "review" && !needsOwner;
   const fitting = (categories ?? []).filter((c) => c.entityTypes.includes(values.entityType));
+
+  // An existing listing or proposal can only be saved once something differs
+  // from the baseline (compared by what would be sent, so typing and undoing
+  // counts as unchanged). A new listing can always be submitted.
+  const payloadOpts = { mode, role, platforms, hoursEnabled: hoursConfig.enabled, statusEditable };
+  const tracksChanges = mode !== "create";
+  const dirty =
+    !tracksChanges ||
+    JSON.stringify(toPayload(values, start, payloadOpts)) !== JSON.stringify(toPayload(start, start, payloadOpts));
+  const unsaved = tracksChanges && dirty && !saving;
+
+  // Warn before closing or reloading the tab with unsaved changes.
+  useEffect(() => {
+    if (!unsaved) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsaved]);
 
   const set = <K extends keyof ListingValues>(key: K, value: ListingValues[K]) =>
     setValues((v) => ({ ...v, [key]: value }));
@@ -170,6 +193,7 @@ export function ListingEditor({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!dirty) return; // The button says why: "No changes yet".
     setError(null);
     setNotice(null);
     setFieldErrors({});
@@ -193,14 +217,17 @@ export function ListingEditor({
 
     setSaving(true);
     try {
-      const payload = toPayload(values, start, {
-        mode,
-        role,
-        platforms,
-        hoursEnabled: hoursConfig.enabled,
-        statusEditable,
-      });
-      const result = await saveListing({ mode, payload, entityId, approvalId, version });
+      const payload = toPayload(values, start, payloadOpts);
+      const result = await saveListing({ mode, payload, entityId, approvalId, version: currentVersion });
+      if (result.kind === "saved") {
+        // Continue from the listing as the server stored it (normalized phone, new version).
+        const saved = valuesFrom(result.entity);
+        setStart(saved);
+        setValues(saved);
+        if (typeof result.entity.version === "number") setCurrentVersion(result.entity.version);
+      } else if (tracksChanges) {
+        setStart(values); // sent for review, or the proposal was saved: nothing unsent
+      }
       if (result.kind === "pending") setNotice(t(mode === "create" ? "notices.submittedForReview" : "notices.editsSubmitted"));
       else if (result.kind === "created") setNotice(t(needsOwner ? "notices.draftCreated" : "notices.created"));
       else if (result.kind === "saved") setNotice(t("notices.saved"));
@@ -238,10 +265,6 @@ export function ListingEditor({
           ? t("buttons.create")
           : t("buttons.save");
 
-  // Identity tags (Black-owned, ...) are the owner's to add; others only see the ones already there.
-  const initialTags = new Set(start.tagSlugs);
-  const tagShown = (tag: TagOption) =>
-    tag.category !== TagCategory.IDENTITY || role === "owner" || initialTags.has(tag.slug);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -442,14 +465,15 @@ export function ListingEditor({
       >
         <div data-field="tagSlugs" className="space-y-3">
           {TAG_GROUPS.map((group) => {
-            const groupTags = (tags ?? []).filter((tag) => tag.category === group && tagShown(tag));
+            const groupTags = (tags ?? []).filter((tag) => tag.category === group);
             if (groupTags.length === 0) return null;
             return (
               <div key={group}>
                 <p className="text-xs font-medium text-gray-500 mb-1">
                   {t(`tagGroups.${group}`)}
-                  {group === TagCategory.IDENTITY && role !== "owner" && (
-                    <span className="font-normal"> · {t("hints.identityOwnerOnly")}</span>
+                  {/* Identity tags are the owner's call; an admin adds them when the owner asks. */}
+                  {group === TagCategory.IDENTITY && role === "admin" && (
+                    <span className="font-normal"> · {t("hints.identityAtOwnersRequest")}</span>
                   )}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -527,8 +551,22 @@ export function ListingEditor({
       {error && <Alert variant="error">{error}</Alert>}
       {notice && <Alert variant="success">{notice}</Alert>}
 
+      {/* Save is inactive until something changes. It uses aria-disabled, not
+          disabled, so it stays readable, keyboard-reachable and announced, and
+          the line below says why. */}
+      {tracksChanges && !notice && (
+        <p id={statusId} role="status" className={`text-sm ${dirty ? "text-warning-700 font-medium" : "text-gray-600"}`}>
+          {dirty ? t("status.unsaved") : t("status.noChanges")}
+        </p>
+      )}
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button type="submit" disabled={saving} className="sm:flex-1">
+        <Button
+          type="submit"
+          disabled={saving}
+          aria-disabled={!dirty || undefined}
+          aria-describedby={tracksChanges ? statusId : undefined}
+          className={`sm:flex-1 ${dirty ? "" : "bg-gray-200 text-gray-600 hover:bg-gray-200 cursor-not-allowed"}`}
+        >
           {saving ? t("buttons.saving") : submitLabel}
         </Button>
         {onCancel && (

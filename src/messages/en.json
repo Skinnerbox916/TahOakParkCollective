@@ -828,8 +828,7 @@
         "outOfCoverage": "This location is outside the coverage area.",
         "staleVersion": "This listing changed since you opened it. Reload to see the latest version, then make your edits again.",
         "submittedForReview": "Your changes were submitted. An admin will review them before they appear.",
-        "noChanges": "Nothing changed.",
-        "identityTagsOwnerOnly": "only the owner can add these"
+        "noChanges": "Nothing changed."
       },
       "changedFields": "Changes: {fields}"
     },
@@ -997,7 +996,7 @@
     "intro": "Before your listing goes public, please confirm:",
     "represent": "I own this business or organization, or I'm authorized to represent it.",
     "display": "TahOak Park Collective may show the details on this listing to the public, in English and Spanish (the Spanish may be machine translated), and search engines may index the page.",
-    "identity": "Identity tags, such as Black-owned or women-owned, appear only if I add them myself.",
+    "identity": "Identity tags, such as Black-owned or women-owned, appear only if I add them or ask the site's team to add them.",
     "unpublish": "I can unpublish the listing at any time from my dashboard, and it comes off the site right away. To have it deleted entirely, I can contact the site.",
     "agree": "I agree to all of the above and to the <terms>Terms of Use</terms>."
   },
@@ -1086,7 +1085,6 @@
       "descriptionEs": "Leave it blank and we'll translate the English description automatically.",
       "categories": "Pick at least one.",
       "noCategories": "No categories fit this type yet.",
-      "identityOwnerOnly": "Only the listing's owner can add these.",
       "draftNote": "Private draft. It goes public only when its owner publishes it.",
       "publishedNote": "Published by its owner.",
       "noOwner": "No owner yet",
@@ -1101,7 +1099,8 @@
         "EVENT": "Venue, if it's always in the same place",
         "SERVICE_PROVIDER": "Optional: many service providers work from home",
         "NON_PROFIT": "Where people can find you, if anywhere"
-      }
+      },
+      "identityAtOwnersRequest": "Add these only when the owner asks for them."
     },
     "tagGroups": {
       "IDENTITY": "Identity",
@@ -1110,7 +1109,9 @@
     },
     "status": {
       "ACTIVE": "Active",
-      "INACTIVE": "Hidden"
+      "INACTIVE": "Hidden",
+      "unsaved": "You have unsaved changes.",
+      "noChanges": "No changes yet. Edit something above to save."
     },
     "buttons": {
       "create": "Create listing",
@@ -1156,7 +1157,7 @@
       "categoryRequired": "Pick at least one category.",
       "unknownCategory": "One of the categories no longer exists. Reload and pick again.",
       "unknownTag": "One of the tags no longer exists. Reload and pick again.",
-      "identityTagsOwnerOnly": "Only the listing's owner can add identity tags."
+      "identityTagsRestricted": "Identity tags can only be added by the listing's owner or an admin."
     },
     "summary": {
       "title": "Proposed listing",

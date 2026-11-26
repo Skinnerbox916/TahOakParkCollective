@@ -471,48 +471,65 @@ describe("owner opt-in", () => {
 });
 
 describe("identity tags", () => {
-  it("can't be added by admins, AI or the public", async () => {
+  const visitor: Actor = { id: null, roles: [], email: "visitor@test.local" };
+
+  it("are added by people: the listing's members, or an admin", async () => {
     const id = await seedEntity();
-    await expect(
-      proposeUpdate(admin, id, { tagSlugs: ["wifi", "black-owned"] }, { source: "admin" })
-    ).rejects.toBeInstanceOf(ValidationError);
-    await expect(
-      proposeNewEntity(admin, { name: "A", categorySlugs: ["food"], tagSlugs: ["black-owned"] }, { source: "admin" })
-    ).rejects.toBeInstanceOf(ValidationError);
+
+    // An owner proposes one; it applies when approved.
+    const { approval } = await proposeUpdate(owner, id, { tagSlugs: ["wifi", "black-owned"] }, { source: "owner" });
+    await approveApproval(admin, approval.id);
+    expect((await entity(id)).tags.map((t) => t.tag.slug).sort()).toEqual(["black-owned", "wifi"]);
+
+    // An admin adds and removes them directly (say the owner asked by phone),
+    // on a new listing or an existing one. The approval row records who did it.
+    await prisma.tag.create({ data: { name: "Veteran owned", slug: "veteran-owned", category: "IDENTITY" } });
+    const { approval: byAdmin } = await proposeUpdate(admin, id, { tagSlugs: ["wifi", "veteran-owned"] }, { source: "admin" });
+    expect(byAdmin).toMatchObject({ status: "APPROVED", submittedBy: admin.id });
+    expect((await entity(id)).tags.map((t) => t.tag.slug).sort()).toEqual(["veteran-owned", "wifi"]);
+    const { entityId } = await proposeNewEntity(
+      admin,
+      { name: "A", categorySlugs: ["food"], tagSlugs: ["black-owned"] },
+      { source: "admin" }
+    );
+    expect((await entity(entityId!)).tags.map((t) => t.tag.slug)).toEqual(["black-owned"]);
+  });
+
+  it("never come from AI output or a public suggestion", async () => {
+    const id = await seedEntity({ tagSlugs: ["wifi", "black-owned"] });
+
     await expect(
       proposeNewEntity(admin, { name: "B", categorySlugs: ["food"], tagSlugs: ["black-owned"] }, { source: "ai", autoApprove: false })
     ).rejects.toBeInstanceOf(ValidationError);
     await expect(
-      proposeNewEntity(
-        { id: null, roles: [], email: "visitor@test.local" },
-        { name: "C", categorySlugs: ["food"], tagSlugs: ["black-owned"] },
-        { source: "public", geocode: false }
-      )
+      proposeNewEntity(visitor, { name: "C", categorySlugs: ["food"], tagSlugs: ["black-owned"] }, { source: "public", geocode: false })
     ).rejects.toBeInstanceOf(ValidationError);
-  });
-
-  it("come from the owner; an admin can remove them but not slip new ones into a proposal", async () => {
-    const id = await seedEntity();
-    const { approval } = await proposeUpdate(owner, id, { tagSlugs: ["wifi", "black-owned"] }, { source: "owner" });
-    // Editing the owner's proposal keeps their tag but can't add another.
-    await rebaseApproval(admin, approval.id, { tagSlugs: ["wifi", "black-owned", "kid-friendly"] });
     await prisma.tag.create({ data: { name: "Veteran owned", slug: "veteran-owned", category: "IDENTITY" } });
     await expect(
-      rebaseApproval(admin, approval.id, { tagSlugs: ["wifi", "black-owned", "veteran-owned"] })
+      proposeUpdate(admin, id, { tagSlugs: ["wifi", "black-owned", "veteran-owned"] }, { source: "ai_suggest", autoApprove: false })
     ).rejects.toBeInstanceOf(ValidationError);
-    await approveApproval(admin, approval.id);
-    expect((await entity(id)).tags.map((t) => t.tag.slug).sort()).toEqual(["black-owned", "kid-friendly", "wifi"]);
 
-    await proposeUpdate(admin, id, { tagSlugs: ["wifi"] }, { source: "admin" });
-    expect((await entity(id)).tags.map((t) => t.tag.slug)).toEqual(["wifi"]);
+    // An AI suggestion may keep the ones already there, and change other tags.
+    const { approval } = await proposeUpdate(
+      admin,
+      id,
+      { tagSlugs: ["black-owned", "kid-friendly"] },
+      { source: "ai_suggest", autoApprove: false }
+    );
+    await approveApproval(admin, approval.id);
+    expect((await entity(id)).tags.map((t) => t.tag.slug).sort()).toEqual(["black-owned", "kid-friendly"]);
   });
 
-  it("aren't applied if the proposer is no longer a member when it's approved", async () => {
-    const id = await seedEntity();
-    await addMember(admin, id, "stranger@test.local", "MANAGER");
-    const { approval } = await proposeUpdate(stranger, id, { tagSlugs: ["wifi", "black-owned"] }, { source: "owner" });
-    await removeMember(admin, id, stranger.id!);
-    await expect(approveApproval(admin, approval.id)).rejects.toBeInstanceOf(ValidationError);
+  it("can be added by an admin reviewing a suggestion", async () => {
+    const { approval } = await proposeNewEntity(
+      visitor,
+      { name: "Suggested", categorySlugs: ["food"] },
+      { source: "public", geocode: false }
+    );
+    // The reviewer talked to the owner and adds the tag while editing the proposal.
+    await rebaseApproval(admin, approval.id, { name: "Suggested", categorySlugs: ["food"], tagSlugs: ["black-owned"] });
+    const { entityId } = await approveApproval(admin, approval.id);
+    expect((await entity(entityId)).tags.map((t) => t.tag.slug)).toEqual(["black-owned"]);
   });
 });
 

@@ -828,8 +828,7 @@
         "outOfCoverage": "Esta ubicación está fuera del área de cobertura.",
         "staleVersion": "Este listado cambió desde que lo abriste. Recarga para ver la versión más reciente y vuelve a hacer tus cambios.",
         "submittedForReview": "Tus cambios fueron enviados. Un administrador los revisará antes de que aparezcan.",
-        "noChanges": "No hubo cambios.",
-        "identityTagsOwnerOnly": "solo el dueño puede agregarlas"
+        "noChanges": "No hubo cambios."
       },
       "changedFields": "Cambios: {fields}"
     },
@@ -997,7 +996,7 @@
     "intro": "Antes de que tu ficha sea pública, confirma lo siguiente:",
     "represent": "Soy dueño(a) de este negocio u organización, o estoy autorizado(a) para representarlo.",
     "display": "TahOak Park Collective puede mostrar al público los datos de esta ficha, en inglés y en español (el español puede ser traducción automática), y los buscadores pueden indexar la página.",
-    "identity": "Las etiquetas de identidad, como «de propietarios afroamericanos» o «de propiedad de mujeres», solo aparecen si yo las agrego.",
+    "identity": "Las etiquetas de identidad, como «De propiedad afroamericana» o «De propiedad de mujeres», solo aparecen si yo las agrego o le pido al equipo del sitio que las agregue.",
     "unpublish": "Puedo despublicar la ficha en cualquier momento desde mi panel, y desaparece del sitio de inmediato. Para que se borre por completo, puedo contactar al sitio.",
     "agree": "Acepto todo lo anterior y los <terms>Términos de uso</terms>."
   },
@@ -1086,7 +1085,6 @@
       "descriptionEs": "Si la dejas en blanco, traducimos la descripción en inglés automáticamente. Si prefieres escribir solo en español, deja en blanco la de arriba.",
       "categories": "Elige al menos una.",
       "noCategories": "Todavía no hay categorías para este tipo.",
-      "identityOwnerOnly": "Solo el dueño de la ficha puede agregarlas.",
       "draftNote": "Borrador privado. Solo es pública cuando su dueño la publica.",
       "publishedNote": "Publicada por su dueño.",
       "noOwner": "Sin dueño todavía",
@@ -1101,7 +1099,8 @@
         "EVENT": "Lugar, si siempre es el mismo",
         "SERVICE_PROVIDER": "Opcional: muchos trabajan desde casa",
         "NON_PROFIT": "Dónde pueden encontrarte, si aplica"
-      }
+      },
+      "identityAtOwnersRequest": "Agrégalas solo cuando el dueño las pida."
     },
     "tagGroups": {
       "IDENTITY": "Identidad",
@@ -1110,7 +1109,9 @@
     },
     "status": {
       "ACTIVE": "Activa",
-      "INACTIVE": "Oculta"
+      "INACTIVE": "Oculta",
+      "unsaved": "Tienes cambios sin guardar.",
+      "noChanges": "Todavía no hay cambios. Edita algo arriba para guardar."
     },
     "buttons": {
       "create": "Crear ficha",
@@ -1156,7 +1157,7 @@
       "categoryRequired": "Elige al menos una categoría.",
       "unknownCategory": "Una de las categorías ya no existe. Recarga y vuelve a elegir.",
       "unknownTag": "Una de las etiquetas ya no existe. Recarga y vuelve a elegir.",
-      "identityTagsOwnerOnly": "Solo el dueño de la ficha puede agregar etiquetas de identidad."
+      "identityTagsRestricted": "Solo el dueño de la ficha o un administrador puede agregar etiquetas de identidad."
     },
     "summary": {
       "title": "Ficha propuesta",
