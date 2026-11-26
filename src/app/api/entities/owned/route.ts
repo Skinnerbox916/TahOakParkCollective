@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createSuccessResponse, createErrorResponse, withAuth } from "@/lib/api-helpers";
 import { ApprovalStatus } from "@/lib/prismaEnums";
-import { entityIncludeWithMembers } from "@/lib/entity-helpers";
+import { entityIncludeWithMembers, withoutAdminFields } from "@/lib/entity-helpers";
 
 /** Listings the signed-in user manages, with how many changes await review. */
 export async function GET() {
@@ -17,7 +17,11 @@ export async function GET() {
       });
 
       return createSuccessResponse(
-        entities.map(({ _count, ...entity }) => ({ ...entity, pendingChanges: _count.approvalTargets }))
+        // Members aren't admins: no verification contact or consent record.
+        entities.map(({ _count, ...entity }) => ({
+          ...withoutAdminFields(entity),
+          pendingChanges: _count.approvalTargets,
+        }))
       );
     } catch (error) {
       console.error("Error fetching user entities:", error);

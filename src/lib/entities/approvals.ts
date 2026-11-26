@@ -6,8 +6,8 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApprovalStatus, ApprovalType } from "@/lib/prismaEnums";
-import { memberRole, type Actor } from "./access";
-import { createEntity, identityTagSlugs, loadEntityState, updateEntity, type Tx } from "./apply";
+import type { Actor } from "./access";
+import { createEntity, loadEntityState, updateEntity, type Tx } from "./apply";
 import {
   AlreadyProcessedError,
   ConflictError,
@@ -54,7 +54,7 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
       const entityId = await createEntity(tx, state, {
         createdBy: approval.submittedBy,
         owner,
-        allowIdentityTags: !!owner,
+        actingAdminId: reviewer.id,
       });
       await tx.approval.update({ where: { id: approvalId }, data: { entityId } });
       return { approvalId, entityId, newOwnerId: owner?.userId ?? null };
@@ -75,8 +75,7 @@ export async function approveApproval(reviewer: Actor, approvalId: string, notes
         await updateEntity(tx, approval.targetEntityId, changes, {
           expectedVersion: current.version,
           createdBy: approval.submittedBy,
-          // Identity tags count only if a member of the listing proposed them.
-          allowIdentityTags: (await memberRole(approval.submittedBy, approval.targetEntityId, tx)) !== null,
+          actingAdminId: reviewer.id,
         });
       }
       await tx.approval.update({ where: { id: approvalId }, data: { entityId: approval.targetEntityId } });
@@ -97,8 +96,7 @@ export async function rejectApproval(reviewer: Actor, approvalId: string, notes?
 /**
  * An admin edits a pending proposal. `input` is the whole edited listing. For
  * updates the proposal is rebased: its base becomes the entity as it is now,
- * which is how a conflicting proposal gets resolved before approval. The edit
- * can't add identity tags the submitter didn't propose.
+ * which is how a conflicting proposal gets resolved before approval.
  */
 export async function rebaseApproval(reviewer: Actor, approvalId: string, input: Record<string, unknown>) {
   return prisma.$transaction(async (tx) => {
@@ -106,29 +104,16 @@ export async function rebaseApproval(reviewer: Actor, approvalId: string, input:
     if (!approval) throw new NotFoundError("Approval");
     if (approval.status !== ApprovalStatus.PENDING) throw new AlreadyProcessedError();
 
-    const original = (approval.payload ?? {}) as { tagSlugs?: string[] };
-    const assertNoNewIdentityTags = async (proposed: string[] | undefined, existing: string[] = []) => {
-      const allowed = new Set([...(original.tagSlugs ?? []), ...existing]);
-      const added = (await identityTagSlugs(tx, proposed)).filter((slug) => !allowed.has(slug));
-      if (added.length > 0) {
-        throw new ValidationError(`Only the listing's owner can add identity tags: ${added.join(", ")}`, {
-          tagSlugs: "validation.identityTagsOwnerOnly",
-        });
-      }
-    };
-
     let data: Prisma.ApprovalUpdateManyMutationInput;
     if (approval.type === ApprovalType.NEW_ENTITY) {
       const state = mirrorEnglish(normalizeFields(input));
       if (!state.name) throw new ValidationError("Entity name is required", { name: "validation.nameRequired" });
-      await assertNoNewIdentityTags(state.tagSlugs);
       data = { payload: json(state) };
     } else {
       if (!approval.targetEntityId) throw new NotFoundError("Target entity");
       const current = await loadEntityState(tx, approval.targetEntityId);
       const changes = diffState(current.state, mirrorEnglish(normalizeFields(input), current.state));
       if (Object.keys(changes).length === 0) throw new NoChangesError();
-      await assertNoNewIdentityTags(changes.tagSlugs, current.state.tagSlugs);
       data = {
         payload: json(changes),
         baseValues: json(pickState(current.state, Object.keys(changes))),

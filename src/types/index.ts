@@ -101,14 +101,3 @@ export interface SocialMediaLinks {
   threads?: string;
 }
 
-export interface EntityFormData {
-  name: string;
-  description?: string;
-  address?: string;
-  phone?: string;
-  website?: string;
-  categoryIds?: string[];
-  entityType?: EntityType;
-  hours?: BusinessHours;
-  socialMedia?: SocialMediaLinks;
-}

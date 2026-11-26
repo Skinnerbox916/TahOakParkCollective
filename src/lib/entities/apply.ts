@@ -114,10 +114,7 @@ async function resolveCategoryIds(db: Tx, slugs: string[]): Promise<string[]> {
 
 async function resolveTags(db: Tx, slugs: string[]) {
   if (slugs.length === 0) return [];
-  const tags = await db.tag.findMany({
-    where: { slug: { in: slugs } },
-    select: { id: true, slug: true, category: true },
-  });
+  const tags = await db.tag.findMany({ where: { slug: { in: slugs } }, select: { id: true, slug: true } });
   const unknown = slugs.filter((s) => !tags.some((t) => t.slug === s));
   if (unknown.length > 0) {
     throw new ValidationError(`Unknown tags: ${unknown.join(", ")}`, { tagSlugs: "validation.unknownTag" });
@@ -125,7 +122,7 @@ async function resolveTags(db: Tx, slugs: string[]) {
   return tags;
 }
 
-/** The IDENTITY tags (Black-owned, ...) among `slugs`. Only a listing's owners add these. */
+/** The IDENTITY tags (Black-owned, ...) among `slugs`. See assertIdentityTagsFromPeople in propose.ts. */
 export async function identityTagSlugs(db: Tx, slugs: readonly string[] | undefined): Promise<string[]> {
   if (!slugs || slugs.length === 0) return [];
   const tags = await db.tag.findMany({
@@ -135,17 +132,12 @@ export async function identityTagSlugs(db: Tx, slugs: readonly string[] | undefi
   return tags.map((t) => t.slug);
 }
 
-function assertIdentityTagsAllowed(added: { slug: string; category: string }[], allowed: boolean | undefined) {
-  if (allowed) return;
-  const identity = added.filter((t) => t.category === TagCategory.IDENTITY).map((t) => t.slug);
-  if (identity.length > 0) {
-    throw new ValidationError(`Only the listing's owner can add identity tags: ${identity.join(", ")}`, {
-      tagSlugs: "validation.identityTagsOwnerOnly",
-    });
-  }
-}
-
-/** Opt-in: a listing that needs consent can't be ACTIVE without it. */
+/**
+ * Opt-in: a listing that needs consent can't be ACTIVE without it. Consent is
+ * the owner publishing it (consent.ts), or an admin making it public
+ * themselves (`actingAdminId`). Nothing else can: not an approved suggestion,
+ * an AI draft, or an owner's ordinary edit.
+ */
 function assertPublishable(status: string, entityType: string, consented: boolean) {
   if (status === ENTITY_STATUS.ACTIVE && requiresConsent(entityType) && !consented) {
     throw new ConsentRequiredError();
@@ -153,15 +145,14 @@ function assertPublishable(status: string, entityType: string, consented: boolea
 }
 
 /** Consent fields to write with a change: set them, clear them (null), or leave them (undefined). */
-export type ConsentWrite = { at: Date; byId: string; termsVersion: string } | null | undefined;
+export type ConsentWrite = { at: Date; byId: string; termsVersion: string | null } | null | undefined;
 
 /**
  * Create an entity from a full proposed state. Tags added through an approved
  * (or admin) change are verified; createdBy records who proposed them. With
  * `owner`, that user becomes the listing's OWNER; otherwise it's unclaimed.
  * A new listing has no consent yet, so types that need it start INACTIVE
- * (a private draft) and can't be created ACTIVE. Identity tags need
- * `allowIdentityTags` (the change comes from the listing's owner).
+ * (a private draft) and can't be created ACTIVE.
  */
 export async function createEntity(
   db: Tx,
@@ -170,7 +161,8 @@ export async function createEntity(
     createdBy: string | null;
     status?: string;
     owner?: { userId: string; addedBy: string | null };
-    allowIdentityTags?: boolean;
+    /** The admin doing this themselves, who may make any listing public. */
+    actingAdminId?: string | null;
   }
 ) {
   if (!state.name) {
@@ -179,11 +171,12 @@ export async function createEntity(
   const entityType = state.entityType ?? ENTITY_TYPE.COMMERCE;
   const status =
     opts.status ?? state.status ?? (requiresConsent(entityType) ? ENTITY_STATUS.INACTIVE : ENTITY_STATUS.ACTIVE);
-  assertPublishable(status, entityType, false);
+  // An admin publishing it stands in for the owner's agreement, and is recorded as such.
+  const adminPublishes = status === ENTITY_STATUS.ACTIVE && requiresConsent(entityType) && !!opts.actingAdminId;
+  assertPublishable(status, entityType, adminPublishes);
 
   const categoryIds = await resolveCategoryIds(db, state.categorySlugs ?? []);
   const tags = await resolveTags(db, state.tagSlugs ?? []);
-  assertIdentityTagsAllowed(tags, opts.allowIdentityTags);
   const slug = await ensureUniqueSlug(db, state.slug || state.name);
 
   const created = await db.entity.create({
@@ -193,6 +186,7 @@ export async function createEntity(
       slug,
       entityType: entityType as Prisma.EntityUncheckedCreateInput["entityType"],
       status: status as Prisma.EntityUncheckedCreateInput["status"],
+      ...(adminPublishes && { consentedAt: new Date(), consentedById: opts.actingAdminId }),
       categories: { connect: categoryIds.map((id) => ({ id })) },
     },
     select: { id: true },
@@ -215,22 +209,37 @@ export async function createEntity(
  * Apply `changes` to an entity, bumping its version. Fails with
  * StaleVersionError if the entity is no longer at `expectedVersion`.
  * Untouched fields, and tags that stay, are left exactly as they were.
- * Refuses to leave a listing that needs consent ACTIVE without it, and to add
- * identity tags unless `allowIdentityTags`. Only consent.ts passes `consent`.
+ * Refuses to leave a listing that needs consent ACTIVE without it. Only
+ * consent.ts passes `consent`.
  */
 export async function updateEntity(
   db: Tx,
   entityId: string,
   changes: EntityChanges,
-  opts: { expectedVersion: number; createdBy: string | null; allowIdentityTags?: boolean; consent?: ConsentWrite }
+  opts: {
+    expectedVersion: number;
+    createdBy: string | null;
+    consent?: ConsentWrite;
+    /** The admin doing this themselves, who may make any listing public. */
+    actingAdminId?: string | null;
+  }
 ) {
   const current = await db.entity.findUnique({
     where: { id: entityId },
     select: { status: true, entityType: true, consentedAt: true, tags: { select: { tagId: true } } },
   });
   if (!current) throw new NotFoundError();
-  const consented = opts.consent !== undefined ? opts.consent !== null : current.consentedAt !== null;
-  assertPublishable(changes.status ?? current.status, changes.entityType ?? current.entityType, consented);
+  const nextStatus = changes.status ?? current.status;
+  const nextType = changes.entityType ?? current.entityType;
+  let consent = opts.consent;
+  let consented = consent !== undefined ? consent !== null : current.consentedAt !== null;
+  if (!consented && consent === undefined && opts.actingAdminId && nextStatus === ENTITY_STATUS.ACTIVE && requiresConsent(nextType)) {
+    // An admin publishing it stands in for the owner's agreement, and is
+    // recorded as such (no terms version: the owner didn't go through them).
+    consent = { at: new Date(), byId: opts.actingAdminId, termsVersion: null };
+    consented = true;
+  }
+  assertPublishable(nextStatus, nextType, consented);
 
   let tagChanges: { removed: string[]; added: { id: string }[] } | null = null;
   if (changes.tagSlugs !== undefined) {
@@ -238,7 +247,6 @@ export async function updateEntity(
     const existingIds = new Set(current.tags.map((t) => t.tagId));
     const wantedIds = new Set(wanted.map((t) => t.id));
     const added = wanted.filter((t) => !existingIds.has(t.id));
-    assertIdentityTagsAllowed(added, opts.allowIdentityTags);
     tagChanges = { removed: [...existingIds].filter((id) => !wantedIds.has(id)), added };
   }
 
@@ -246,10 +254,10 @@ export async function updateEntity(
   if (changes.slug !== undefined) {
     data.slug = await ensureUniqueSlug(db, changes.slug, entityId);
   }
-  if (opts.consent !== undefined) {
-    data.consentedAt = opts.consent?.at ?? null;
-    data.consentedById = opts.consent?.byId ?? null;
-    data.consentTermsVersion = opts.consent?.termsVersion ?? null;
+  if (consent !== undefined) {
+    data.consentedAt = consent?.at ?? null;
+    data.consentedById = consent?.byId ?? null;
+    data.consentTermsVersion = consent?.termsVersion ?? null;
   }
 
   const { count } = await db.entity.updateMany({

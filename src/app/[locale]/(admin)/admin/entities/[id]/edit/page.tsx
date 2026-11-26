@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { EntityPreview } from "@/components/admin/EntityPreview";
+import { ListingEditor } from "@/components/listing/ListingEditor";
+import { valuesFrom } from "@/components/listing/values";
 import { EntityWithRelations, ApiResponse } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -51,10 +52,6 @@ export default function AdminEditEntityPage() {
 
     fetchEntity();
   }, [params.id]);
-
-  const handleSuccess = () => {
-    router.push("/admin/entities");
-  };
 
   if (loading) {
     return (
@@ -120,45 +117,21 @@ export default function AdminEditEntityPage() {
         consentTermsVersion={entity.consentTermsVersion}
       />
       <MembersPanel entityId={entity.id} />
-      <EntityPreview
-        entityData={{
-          version: entity.version,
-          name: entity.name,
-          slug: entity.slug,
-          description: entity.description || "",
-          descriptionTranslations: entity.descriptionTranslations as any,
-          nameTranslations: entity.nameTranslations as any,
-          address: entity.address,
-          phone: entity.phone,
-          website: entity.website,
-          latitude: entity.latitude,
-          longitude: entity.longitude,
-          entityType: entity.entityType,
-          hours: entity.hours as any,
-          socialMedia: entity.socialMedia as any,
-          displaySettings: (entity as any).displaySettings || null,
-          categorySlugs: entity.categories.map((c) => c.slug),
-          tagSlugs: (entity.tags || []).map((t: any) => t.tag?.slug).filter(Boolean),
-          images: (entity as any).images,
-          seoTitleTranslations: (entity as any).seoTitleTranslations,
-          seoDescriptionTranslations: (entity as any).seoDescriptionTranslations,
-        }}
-        resolvedCategories={entity.categories.map((c) => ({
-          id: c.id,
-          name: c.name,
-          slug: c.slug,
-        }))}
-        resolvedTags={(entity.tags || []).map((et: any) => ({
-          id: et.tag.id,
-          name: et.tag.name,
-          slug: et.tag.slug,
-          category: et.tag.category,
-        }))}
-        entityId={entity.id}
-        mode="admin"
-        editable
-        onDataUpdated={() => handleSuccess()}
-      />
+      {/* After a save the page passes the saved listing back in: its version
+          guards the next save, and its values are what the next diff compares to. */}
+      <div className="max-w-3xl">
+        <ListingEditor
+          mode="edit"
+          role="admin"
+          initial={valuesFrom(entity as unknown as Record<string, unknown>)}
+          entityId={entity.id}
+          version={entity.version}
+          hasMapPin={entity.latitude != null && entity.longitude != null}
+          onSaved={(result) => {
+            if (result.kind === "saved") setEntity(result.entity as unknown as EntityWithRelations);
+          }}
+        />
+      </div>
       <AISuggestUpdatesModal
         entity={entity}
         open={suggestionsOpen}

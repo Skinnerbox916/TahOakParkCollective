@@ -654,13 +654,11 @@
           "MANAGER": "Administrador"
         }
       },
-      "waitingForOwner": "Esperando al dueño",
       "share": {
         "title": "Compartir con el dueño",
         "exempt": "Los parques y las fichas cívicas no necesitan la aprobación de un dueño. Publícalas con el interruptor de estado.",
-        "draft": "Borrador privado. Solo es pública cuando su dueño la publica.",
+        "draft": "No es pública. Cambia su estado a Activa para publicarla tú, o envía un enlace a su dueño para que lo haga.",
         "published": "Publicada por su dueño el {date} (términos {version}).",
-        "hiddenByAdmin": "Ocultada por un administrador. El dueño aceptó el {date}, así que se puede volver a activar.",
         "description": "Envía al dueño un enlace privado a esta ficha por mensaje de texto o correo. Desde ahí puede publicarla. Los enlaces sirven una vez y vencen a los 30 días.",
         "language": "Idioma",
         "createLink": "Crear un enlace",
@@ -682,7 +680,8 @@
           "expired": "Vencido"
         },
         "revoke": "Revocar",
-        "error": "No se pudieron actualizar los enlaces"
+        "error": "No se pudieron actualizar los enlaces",
+        "publishedByAdmin": "Hecha pública por un administrador el {date}."
       }
     },
     "quickAdd": {
@@ -828,8 +827,7 @@
         "outOfCoverage": "Esta ubicación está fuera del área de cobertura.",
         "staleVersion": "Este listado cambió desde que lo abriste. Recarga para ver la versión más reciente y vuelve a hacer tus cambios.",
         "submittedForReview": "Tus cambios fueron enviados. Un administrador los revisará antes de que aparezcan.",
-        "noChanges": "No hubo cambios.",
-        "identityTagsOwnerOnly": "solo el dueño puede agregarlas"
+        "noChanges": "No hubo cambios."
       },
       "changedFields": "Cambios: {fields}"
     },
@@ -904,81 +902,6 @@
       },
       "notVerified": "No verificado",
       "never": "Nunca"
-    },
-    "entityForm": {
-      "fields": {
-        "name": "Nombre de la entidad *",
-        "entityType": "Tipo de entidad *",
-        "category": "Categoría",
-        "categories": "Categorías",
-        "tags": "Etiquetas",
-        "address": "Dirección",
-        "phone": "Teléfono",
-        "website": "Sitio web"
-      },
-      "placeholders": {
-        "name": "Ingresa el nombre de la entidad",
-        "selectCategory": "Selecciona una categoría",
-        "description": "Describe la entidad...",
-        "address": "Dirección",
-        "phone": "(555) 123-4567",
-        "website": "https://ejemplo.com"
-      },
-      "sections": {
-        "about": "Acerca de",
-        "locationContact": "Ubicación y Contacto",
-        "hours": "Horario de Atención",
-        "hoursEvent": "Horario del Evento",
-        "hoursEventDescription": "¿Cuándo ocurre este evento recurrente?",
-        "hoursServiceProvider": "Disponibilidad",
-        "hoursServiceProviderDescription": "¿Cuándo estás normalmente disponible para citas?",
-        "onlinePresence": "Presencia en Línea",
-        "media": "Imágenes",
-        "tags": "Etiquetas",
-        "tagsDescription": "Las etiquetas de identidad se aplican inmediatamente. Las etiquetas de amabilidad requieren verificación del administrador."
-      },
-      "hints": {
-        "commerce": {
-          "address": "Ubicación física del local"
-        },
-        "civic": {
-          "address": "Dirección de oficina (opcional)"
-        },
-        "publicSpace": {
-          "address": "La ubicación es importante para que los visitantes te encuentren"
-        },
-        "event": {
-          "address": "Lugar del evento (si tiene ubicación fija)",
-          "hours": "Ingresa el horario típico del evento"
-        },
-        "serviceProvider": {
-          "address": "Opcional - muchos proveedores de servicios trabajan desde casa",
-          "hours": "Ingresa tu disponibilidad típica"
-        },
-        "noCategories": "No hay categorías disponibles para {type}",
-        "addMediaTagsLater": "Puedes agregar imágenes y etiquetas después de crear la entidad.",
-        "addMediaLater": "Puedes agregar imágenes después de crear la entidad."
-      },
-      "validation": {
-        "nameRequired": "El nombre de la entidad es obligatorio",
-        "invalidWebsite": "Debe incluir un dominio válido con extensión (ej: ejemplo.com, www.ejemplo.org)",
-        "invalidSocialUrl": "Debe incluir un dominio válido con extensión para {platform}",
-        "invalidPhone": "Por favor ingresa un número de teléfono válido",
-        "invalidHours": "Formato de horario no válido",
-        "fixErrors": "Por favor corrige los errores anteriores"
-      },
-      "success": {
-        "created": "¡Entidad creada exitosamente!",
-        "updated": "¡Entidad actualizada exitosamente!"
-      },
-      "buttons": {
-        "create": "Crear Entidad",
-        "update": "Actualizar Entidad",
-        "creating": "Creando...",
-        "updating": "Actualizando...",
-        "cancel": "Cancelar"
-      },
-      "loading": "Actualizando..."
     }
   },
   "portal": {
@@ -1017,81 +940,6 @@
       "errorLoading": "Error al cargar la entidad",
       "notFound": "Entidad no encontrada",
       "back": "← Volver al panel"
-    },
-    "form": {
-      "fields": {
-        "name": "Nombre de la entidad *",
-        "entityType": "Tipo de entidad *",
-        "category": "Categoría",
-        "address": "Dirección",
-        "phone": "Teléfono",
-        "website": "Sitio web"
-      },
-      "placeholders": {
-        "name": "Ingresa el nombre de la entidad",
-        "selectCategory": "Selecciona una categoría",
-        "description": "Describe la entidad...",
-        "address": "Dirección",
-        "phone": "(555) 123-4567",
-        "website": "https://ejemplo.com"
-      },
-      "sections": {
-        "about": "Acerca de",
-        "locationContact": "Ubicación y Contacto",
-        "hours": "Horario de Atención",
-        "hoursEvent": "Horario del Evento",
-        "hoursEventDescription": "¿Cuándo ocurre este evento recurrente?",
-        "hoursServiceProvider": "Disponibilidad",
-        "hoursServiceProviderDescription": "¿Cuándo estás normalmente disponible para citas?",
-        "onlinePresence": "Presencia en Línea",
-        "media": "Imágenes",
-        "tags": "Etiquetas",
-        "tagsDescription": "Las etiquetas de identidad se aplican inmediatamente. Las etiquetas de amabilidad requieren verificación del administrador."
-      },
-      "hints": {
-        "commerce": {
-          "address": "Ubicación física del local"
-        },
-        "civic": {
-          "address": "Dirección de oficina (opcional)"
-        },
-        "publicSpace": {
-          "address": "La ubicación es importante para que los visitantes te encuentren"
-        },
-        "event": {
-          "address": "Lugar del evento (si tiene ubicación fija)",
-          "hours": "Ingresa el horario típico del evento"
-        },
-        "serviceProvider": {
-          "address": "Opcional - muchos proveedores de servicios trabajan desde casa",
-          "hours": "Ingresa tu disponibilidad típica"
-        },
-        "noCategories": "No hay categorías disponibles para {type}",
-        "addMediaTagsLater": "Puedes agregar imágenes y etiquetas después de crear la entidad.",
-        "addMediaLater": "Puedes agregar imágenes después de crear la entidad."
-      },
-      "validation": {
-        "nameRequired": "El nombre de la entidad es obligatorio",
-        "invalidWebsite": "Debe incluir un dominio válido con extensión (ej: ejemplo.com, www.ejemplo.org)",
-        "invalidSocialUrl": "Debe incluir un dominio válido con extensión para {platform}",
-        "invalidPhone": "Por favor ingresa un número de teléfono válido",
-        "invalidHours": "Formato de horario no válido",
-        "fixErrors": "Por favor corrige los errores anteriores"
-      },
-      "success": {
-        "created": "¡Entidad creada exitosamente!",
-        "updated": "¡Entidad actualizada exitosamente!",
-        "submittedForReview": "¡Gracias! Enviaste tu ficha. Cuando nuestro equipo la revise, podrás publicarla desde tu panel."
-      },
-      "buttons": {
-        "create": "Crear Entidad",
-        "update": "Actualizar Entidad",
-        "creating": "Creando...",
-        "updating": "Actualizando...",
-        "cancel": "Cancelar"
-      },
-      "loading": "Actualizando...",
-      "afterReview": "Después de que nuestro equipo la revise, la publicarás desde tu panel. No es pública hasta que lo hagas."
     }
   },
   "account": {
@@ -1147,8 +995,8 @@
     "intro": "Antes de que tu ficha sea pública, confirma lo siguiente:",
     "represent": "Soy dueño(a) de este negocio u organización, o estoy autorizado(a) para representarlo.",
     "display": "TahOak Park Collective puede mostrar al público los datos de esta ficha, en inglés y en español (el español puede ser traducción automática), y los buscadores pueden indexar la página.",
-    "identity": "Las etiquetas de identidad, como «de propietarios afroamericanos» o «de propiedad de mujeres», solo aparecen si yo las agrego.",
-    "unpublish": "Puedo despublicar la ficha en cualquier momento desde mi panel, y desaparece del sitio de inmediato. Para que se borre por completo, puedo contactar al sitio.",
+    "identity": "Las etiquetas de identidad, como «De propiedad afroamericana» o «De propiedad de mujeres», las agrego yo o el equipo del sitio, y puedo pedir que quiten cualquiera.",
+    "unpublish": "Puedo despublicar la ficha en cualquier momento, desde mi panel o pidiéndoselo al equipo del sitio, y desaparece del sitio de inmediato. Para que se borre por completo, puedo contactar al sitio.",
     "agree": "Acepto todo lo anterior y los <terms>Términos de uso</terms>."
   },
   "preview": {
@@ -1174,7 +1022,16 @@
     "invalid": "Este enlace no funciona.",
     "askForNew": "Si crees que debería funcionar, pide uno nuevo a quien te lo envió.",
     "error": "Algo salió mal. Inténtalo de nuevo.",
-    "jumpToPublish": "Publicarla ↓"
+    "jumpToPublish": "Publicarla ↓",
+    "bannerTitleLive": "Esta es tu ficha en TahOak Park Collective",
+    "bannerTextLive": "Ya es pública. Hazte cargo de ella para actualizarla o quitarla tú mismo.",
+    "jumpToTakeOver": "Hacerme cargo ↓",
+    "takeOverTitle": "Administra tu ficha",
+    "signedOutTextLive": "Para administrarla, inicia sesión o crea una cuenta gratis. Toma un minuto.",
+    "takeOver": "Hacerme cargo de mi ficha",
+    "takingOver": "Guardando...",
+    "takenOverTitle": "Ahora administras esta ficha",
+    "takenOverText": "Puedes actualizarla o despublicarla cuando quieras desde tu panel."
   },
   "hours": {
     "title": "Horario",
@@ -1192,5 +1049,125 @@
   "meta": {
     "title": "TahOak Park Collective",
     "description": "Directorio de negocios, organizaciones y espacios públicos locales en Tahoe Park, Oak Park, Elmhurst, Colonial Park y Curtis Park, Sacramento."
+  },
+  "listingEditor": {
+    "sections": {
+      "basics": "Datos básicos",
+      "about": "Descripción",
+      "locationContact": "Ubicación y contacto",
+      "hours": "Horario",
+      "hoursEvent": "Calendario del evento",
+      "hoursEventDescription": "¿Cuándo se realiza este evento recurrente?",
+      "hoursServiceProvider": "Disponibilidad",
+      "hoursServiceProviderDescription": "¿Cuándo sueles estar disponible para citas?",
+      "online": "En línea",
+      "tags": "Etiquetas",
+      "tagsDescription": "Nuestro equipo revisa las etiquetas de accesibilidad y bienvenida antes de que aparezcan.",
+      "admin": "Administración"
+    },
+    "fields": {
+      "name": "Nombre",
+      "nameEs": "Nombre en español",
+      "entityType": "Tipo",
+      "categories": "Categorías",
+      "description": "Descripción en inglés",
+      "descriptionEs": "Descripción en español",
+      "address": "Dirección",
+      "phone": "Teléfono",
+      "website": "Sitio web",
+      "status": "Estado",
+      "owner": "Primer dueño",
+      "slug": "Dirección web"
+    },
+    "placeholders": {
+      "name": "p. ej. Café de la Esquina",
+      "description": "What should neighbors know about this place?",
+      "descriptionEs": "¿Qué deben saber los vecinos sobre este lugar?",
+      "address": "Dirección",
+      "phone": "(916) 555-0100",
+      "website": "https://ejemplo.com",
+      "social": "https://…"
+    },
+    "hints": {
+      "nameEs": "Solo si el nombre es distinto en español.",
+      "descriptionEs": "Si la dejas en blanco, traducimos la descripción en inglés automáticamente. Si prefieres escribir solo en español, deja en blanco la de arriba.",
+      "categories": "Elige al menos una.",
+      "noCategories": "Todavía no hay categorías para este tipo.",
+      "noOwner": "Sin dueño todavía",
+      "slug": "La parte después de /entities/ en la dirección de la ficha.",
+      "showOnProfile": "Mostrar en la ficha",
+      "mapPin": "Mostrar el mapa",
+      "noMapPin": "Todavía no hay ubicación en el mapa: se toma de la dirección al guardar.",
+      "address": {
+        "COMMERCE": "Dirección del local",
+        "CIVIC": "Dirección de la oficina (opcional)",
+        "PUBLIC_SPACE": "Ayuda a los visitantes a encontrarlo",
+        "EVENT": "Lugar, si siempre es el mismo",
+        "SERVICE_PROVIDER": "Opcional: muchos trabajan desde casa",
+        "NON_PROFIT": "Dónde pueden encontrarte, si aplica"
+      },
+      "statusOwnerTypes": "Las fichas ocultas son privadas. Actívala tú, o compártela con su dueño para que la publique."
+    },
+    "tagGroups": {
+      "IDENTITY": "Identidad",
+      "FRIENDLINESS": "Bienvenida y accesibilidad",
+      "AMENITY": "Servicios"
+    },
+    "status": {
+      "ACTIVE": "Activa",
+      "INACTIVE": "Oculta",
+      "unsaved": "Tienes cambios sin guardar.",
+      "noChanges": "Todavía no hay cambios. Edita algo arriba para guardar."
+    },
+    "buttons": {
+      "create": "Crear ficha",
+      "submit": "Enviar para revisión",
+      "save": "Guardar cambios",
+      "saveProposal": "Guardar propuesta",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "editProposal": "Editar propuesta"
+    },
+    "notices": {
+      "created": "Ficha creada.",
+      "draftCreated": "Borrador creado. Publícalo tú, o compártelo con su dueño.",
+      "submittedForReview": "¡Gracias! Enviaste tu ficha. Cuando nuestro equipo la revise, podrás publicarla desde tu panel.",
+      "editsSubmitted": "¡Gracias! Tus cambios se enviaron para revisión.",
+      "saved": "Guardado.",
+      "proposalSaved": "Propuesta actualizada."
+    },
+    "errors": {
+      "fixErrors": "Corrige los campos marcados.",
+      "generic": "Algo salió mal. Inténtalo de nuevo.",
+      "stale_version": "Alguien cambió esta ficha desde que la abriste. Recarga la página para ver la versión más reciente y vuelve a hacer tus cambios.",
+      "conflict": "La ficha cambió desde esta propuesta, en los campos marcados arriba. Edita la propuesta para que encaje con la ficha actual y luego apruébala.",
+      "no_changes": "No hubo cambios.",
+      "consent_required": "Solo su dueño puede hacer pública esta ficha.",
+      "already_processed": "Esta propuesta ya fue aprobada o rechazada.",
+      "forbidden": "No puedes editar esta ficha.",
+      "not_found": "Esta ficha ya no existe.",
+      "rate_limited": "Demasiados intentos. Inténtalo más tarde."
+    },
+    "validation": {
+      "nameRequired": "Escribe un nombre.",
+      "invalidWebsite": "Escribe una dirección web completa, como ejemplo.com.",
+      "invalidSocialUrl": "Escribe una dirección web completa para {platform}.",
+      "invalidPhone": "Escribe un número de teléfono válido.",
+      "invalidHours": "Revisa el horario: cada día abierto necesita hora de apertura y de cierre.",
+      "adminOnly": "Solo un administrador puede cambiar esto.",
+      "invalidCoordinates": "La ubicación del mapa no es válida.",
+      "invalidEntityType": "Elige un tipo.",
+      "invalidStatus": "Elige un estado.",
+      "invalidDate": "Escribe una fecha válida.",
+      "slugRequired": "Escribe una dirección web.",
+      "categoryRequired": "Elige al menos una categoría.",
+      "unknownCategory": "Una de las categorías ya no existe. Recarga y vuelve a elegir.",
+      "unknownTag": "Una de las etiquetas ya no existe. Recarga y vuelve a elegir.",
+      "identityTagsRestricted": "Solo el dueño de la ficha o un administrador puede agregar etiquetas de identidad."
+    },
+    "summary": {
+      "title": "Ficha propuesta",
+      "none": "—"
+    }
   }
 }

@@ -6,7 +6,7 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApprovalStatus, ApprovalType, ENTITY_TYPE } from "@/lib/prismaEnums";
-import { canManage, memberRole, type Actor } from "./access";
+import { canManage, type Actor } from "./access";
 import { createEntity, identityTagSlugs, loadEntityState, updateEntity } from "./apply";
 import { ForbiddenError, NoChangesError, NotFoundError, StaleVersionError, ValidationError } from "./errors";
 import {
@@ -35,12 +35,29 @@ interface ProposeOptions {
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
 /**
+ * Identity tags (Black-owned, ...) are claims about people, so only a person
+ * who can speak for the listing adds them: one of its members, or an admin
+ * acting at the owner's request. AI output and public suggestions never do.
+ * Checked here, where a proposal's source is known; approving or editing a
+ * proposal is then an admin's own decision.
+ */
+async function assertIdentityTagsFromPeople(source: ProposalSource, added: readonly string[] | undefined) {
+  if (source === "owner" || source === "admin") return;
+  const identity = await identityTagSlugs(prisma, added);
+  if (identity.length > 0) {
+    throw new ValidationError(
+      `Identity tags can only be added by the listing's owner or an admin: ${identity.join(", ")}`,
+      { tagSlugs: "validation.identityTagsRestricted" }
+    );
+  }
+}
+
+/**
  * Propose a new entity. Non-admin proposals wait for review; the entity is
  * created when an admin approves, with the submitter as its OWNER. Admins
  * create directly, unclaimed unless `initialOwnerId` names an owner. Either
  * way a listing that needs consent starts as a private draft until an owner
- * publishes it (consent.ts). Only an owner's own submission may carry
- * identity tags.
+ * publishes it (consent.ts).
  * Returns the approval and, if it was applied immediately, the new entity's id.
  */
 export async function proposeNewEntity(
@@ -54,13 +71,7 @@ export async function proposeNewEntity(
     throw new ValidationError("Entity name is required", { name: "validation.nameRequired" });
   }
   state.entityType ??= ENTITY_TYPE.COMMERCE;
-  const ownersOwnSubmission = opts.source === "owner" && !isAdmin;
-  const identity = await identityTagSlugs(prisma, state.tagSlugs);
-  if (identity.length > 0 && !ownersOwnSubmission) {
-    throw new ValidationError(`Only the listing's owner can add identity tags: ${identity.join(", ")}`, {
-      tagSlugs: "validation.identityTagsOwnerOnly",
-    });
-  }
+  await assertIdentityTagsFromPeople(opts.source, state.tagSlugs);
   if (!isAdmin) {
     // A new listing's status, slug and admin fields are decided by the reviewer.
     for (const field of ["status", "slug", "featured", "spotCheckDate", "verificationContact", "images"] as const) {
@@ -91,6 +102,7 @@ export async function proposeNewEntity(
         createdBy: actor.id,
         status: state.status,
         owner: opts.initialOwnerId ? { userId: opts.initialOwnerId, addedBy: actor.id } : undefined,
+        actingAdminId: actor.id,
       });
       const approval = await tx.approval.create({
         data: {
@@ -113,8 +125,7 @@ export async function proposeNewEntity(
  * Propose changes to an existing entity. `input` may be a partial set of
  * fields or a whole edit form; only fields that differ from the current
  * entity are kept. Pass `expectedVersion` (the version the form loaded) to
- * refuse saving over changes made in the meantime. Identity tags can only be
- * added by the listing's members, not by an admin acting as admin.
+ * refuse saving over changes made in the meantime.
  */
 export async function proposeUpdate(
   actor: Actor,
@@ -153,7 +164,10 @@ export async function proposeUpdate(
 
   if (Object.keys(changes).length === 0) throw new NoChangesError();
   assertFieldsAllowed(changes, actor.roles);
-  const isMember = (await memberRole(actor.id, entityId)) !== null;
+  await assertIdentityTagsFromPeople(
+    opts.source,
+    changes.tagSlugs?.filter((slug) => !current.state.tagSlugs.includes(slug))
+  );
 
   const base = {
     type: ApprovalType.UPDATE_ENTITY,
@@ -172,7 +186,7 @@ export async function proposeUpdate(
       const version = await updateEntity(tx, entityId, changes, {
         expectedVersion: current.version,
         createdBy: actor.id,
-        allowIdentityTags: isMember,
+        actingAdminId: actor.id,
       });
       const approval = await tx.approval.create({
         data: {

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { lookupShareLink } from "@/lib/entities";
 import { entityIncludePublic, transformEntity } from "@/lib/entity-helpers";
+import { ENTITY_STATUS } from "@/lib/prismaEnums";
 import { consume, HOUR } from "@/lib/rate-limit";
 import { EntityDetail } from "@/components/entity/EntityDetail";
 import { PreviewActions } from "@/components/entity/PreviewActions";
@@ -68,22 +69,24 @@ export default async function PreviewPage({ params }: Params) {
     );
   }
   const listing = transformEntity(entity, locale) as EntityWithRelations;
+  // Already public when an admin published it for an owner who now wants an account.
+  const live = entity.status === ENTITY_STATUS.ACTIVE;
 
   return (
     <div>
       <div className="bg-warning-50 border-b border-warning-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="font-semibold text-gray-900">{t("bannerTitle")}</p>
-          <p className="text-sm text-gray-700">{t("bannerText")}</p>
+          <p className="font-semibold text-gray-900">{t(live ? "bannerTitleLive" : "bannerTitle")}</p>
+          <p className="text-sm text-gray-700">{t(live ? "bannerTextLive" : "bannerText")}</p>
           <a href="#publish" className="mt-2 inline-block text-sm font-medium text-primary-700 underline">
-            {t("jumpToPublish")}
+            {t(live ? "jumpToTakeOver" : "jumpToPublish")}
           </a>
         </div>
       </div>
       {/* No "report an issue": the report page can't open a private draft. */}
       <EntityDetail entity={listing} hideSections={["report"]} />
       <div id="publish" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 scroll-mt-20">
-        <PreviewActions token={token} slug={entity.slug} />
+        <PreviewActions token={token} slug={entity.slug} alreadyPublished={live} />
       </div>
     </div>
   );

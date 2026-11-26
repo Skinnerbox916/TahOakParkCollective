@@ -36,7 +36,7 @@ export async function suggestEntityUpdates(entity: EntityWithRelations): Promise
     orderBy: { name: "asc" },
   });
 
-  // Identity tags (Black-owned, ...) are left to the listing's owner.
+  // Identity tags (Black-owned, ...) are added by people (the owner, or an admin for them), never by AI.
   const tags = await prisma.tag.findMany({
     where: { category: { not: "IDENTITY" } },
     select: { name: true, slug: true, category: true },

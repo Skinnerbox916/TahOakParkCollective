@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/Button";
 import { ApiResponse } from "@/types";
 import { ApprovalStatus, ApprovalType } from "@/lib/prismaEnums";
 import { Link } from "@/i18n/routing";
-import { EntityPreview } from "@/components/admin/EntityPreview";
+import { ListingEditor } from "@/components/listing/ListingEditor";
+import { ListingSummary } from "@/components/listing/ListingSummary";
+import { valuesFrom } from "@/components/listing/values";
+import { useTranslations } from "next-intl";
 import { useAdminTranslations } from "@/lib/admin-translations";
 import type { Approval } from "@/generated/prisma/client";
 
@@ -73,6 +76,8 @@ export default function ApprovalDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [notes, setNotes] = useState("");
+  const [editingProposal, setEditingProposal] = useState(false);
+  const tEditor = useTranslations("listingEditor");
   
   const { t, tStatus } = useAdminTranslations("approvals");
   const { t: tCommon } = useAdminTranslations("common");
@@ -271,22 +276,37 @@ export default function ApprovalDetailPage() {
         </Card>
       )}
 
-      {/* Entity Preview (for NEW_ENTITY and UPDATE_ENTITY) */}
+      {/* The proposed listing; a pending proposal can be edited (which rebases it) */}
       {(approval.type === ApprovalType.NEW_ENTITY || approval.type === ApprovalType.UPDATE_ENTITY) && entityData && (
-        <div className="mb-6">
-          <EntityPreview
-            entityData={entityData as Record<string, unknown>}
-            resolvedCategories={approval.resolvedCategories || []}
-            resolvedTags={approval.resolvedTags || []}
-            approvalId={approval.id}
-            entityId={approval.targetEntityId || undefined}
-            editable={approval.status === ApprovalStatus.PENDING}
-            onDataUpdated={() => {
-              // Editing rebases the proposal; reload to show the new diff.
-              fetchApproval();
-            }}
-          />
-        </div>
+        <Card className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">{tEditor("summary.title")}</h2>
+            {isPending && !editingProposal && (
+              <Button variant="outline" size="sm" onClick={() => setEditingProposal(true)}>
+                {tEditor("buttons.editProposal")}
+              </Button>
+            )}
+          </div>
+          {editingProposal ? (
+            <ListingEditor
+              mode="review"
+              role="admin"
+              initial={valuesFrom(entityData)}
+              approvalId={approval.id}
+              onSaved={() => {
+                setEditingProposal(false);
+                fetchApproval();
+              }}
+              onCancel={() => setEditingProposal(false)}
+            />
+          ) : (
+            <ListingSummary
+              values={valuesFrom(entityData)}
+              categoryNames={Object.fromEntries((approval.resolvedCategories || []).map((c) => [c.slug, c.name]))}
+              tagNames={Object.fromEntries((approval.resolvedTags || []).map((tag) => [tag.slug, tag.name]))}
+            />
+          )}
+        </Card>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

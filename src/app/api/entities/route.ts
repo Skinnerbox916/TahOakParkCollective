@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
 
 /**
  * Create a listing. Admins create it directly; anyone else submits it for
- * review (it's created, owned by them, when an admin approves). Forms send
- * category and tag ids, which are resolved to slugs here.
+ * review (it's created, owned by them, when an admin approves). Categories
+ * and tags are slugs (categorySlugs, tagSlugs), as the write service takes them.
  */
 export async function POST(request: NextRequest) {
   return withAuth(async (user) => {
@@ -75,19 +75,6 @@ export async function POST(request: NextRequest) {
       const body = await request.json();
       const isAdmin = user.roles.includes(ROLE.ADMIN);
 
-      const [categories, tags] = await Promise.all([
-        Array.isArray(body.categoryIds) && body.categoryIds.length > 0
-          ? prisma.category.findMany({ where: { id: { in: body.categoryIds } }, select: { slug: true } })
-          : null,
-        Array.isArray(body.tagIds) && body.tagIds.length > 0
-          ? prisma.tag.findMany({ where: { id: { in: body.tagIds } }, select: { slug: true } })
-          : null,
-      ]);
-      const input = {
-        ...body,
-        ...(categories && { categorySlugs: categories.map((c) => c.slug) }),
-        ...(tags && { tagSlugs: tags.map((t) => t.slug) }),
-      };
 
       // Admins may name an initial owner; otherwise an admin-created listing
       // starts unclaimed. Owners' own submissions make them the owner on approval.
@@ -98,11 +85,11 @@ export async function POST(request: NextRequest) {
         initialOwnerId = owner.id;
       }
 
-      const result = await proposeNewEntity(user, input, { source: isAdmin ? "admin" : "owner", initialOwnerId });
+      const result = await proposeNewEntity(user, body, { source: isAdmin ? "admin" : "owner", initialOwnerId });
 
       if (result.pending) {
         await notifyAdmins(
-          `New listing to review: ${String(input.name ?? "").slice(0, 120)}`,
+          `New listing to review: ${String(body.name ?? "").slice(0, 120)}`,
           [`${user.email ?? "A signed-in user"} submitted their own listing. Approving it makes them its owner; they publish it from their dashboard.`],
           `/admin/approvals/${result.approval.id}`
         );
