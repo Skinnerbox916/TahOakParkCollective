@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
-import { EntityPreview } from "@/components/admin/EntityPreview";
+import { ListingEditor } from "@/components/listing/ListingEditor";
+import { valuesFrom } from "@/components/listing/values";
 import { EntityWithRelations, ApiResponse } from "@/types";
 import { Card } from "@/components/ui/Card";
 import { usePortalTranslations } from "@/lib/admin-translations";
@@ -82,48 +83,19 @@ export default function PortalEditEntityPage() {
   }
 
   return (
-    <div>
+    <div className="max-w-3xl">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">
         {tPortal("editTitle")}
       </h1>
-      <EntityPreview
-        entityData={{
-          version: entity.version,
-          name: entity.name,
-          slug: entity.slug,
-          description: entity.description || "",
-          descriptionTranslations: entity.descriptionTranslations as any,
-          nameTranslations: entity.nameTranslations as any,
-          address: entity.address,
-          phone: entity.phone,
-          website: entity.website,
-          latitude: entity.latitude,
-          longitude: entity.longitude,
-          entityType: entity.entityType,
-          hours: entity.hours as any,
-          socialMedia: entity.socialMedia as any,
-          displaySettings: (entity as any).displaySettings || null,
-          categorySlugs: entity.categories.map((c) => c.slug),
-          tagSlugs: (entity.tags || []).map((t: any) => t.tag?.slug).filter(Boolean),
-          images: (entity as any).images,
-          seoTitleTranslations: (entity as any).seoTitleTranslations,
-          seoDescriptionTranslations: (entity as any).seoDescriptionTranslations,
-        }}
-        resolvedCategories={entity.categories.map((c) => ({
-          id: c.id,
-          name: c.name,
-          slug: c.slug,
-        }))}
-        resolvedTags={(entity.tags || []).map((et: any) => ({
-          id: et.tag.id,
-          name: et.tag.name,
-          slug: et.tag.slug,
-          category: et.tag.category,
-        }))}
+      <ListingEditor
+        mode="edit"
+        role="owner"
+        initial={valuesFrom(entity as unknown as Record<string, unknown>)}
         entityId={entity.id}
-        mode="owner"
-        editable
-        onDataUpdated={() => router.push("/portal/dashboard")}
+        version={entity.version}
+        hasMapPin={entity.latitude != null && entity.longitude != null}
+        onSaved={() => setTimeout(() => router.push("/portal/dashboard"), 2500)}
+        onCancel={() => router.push("/portal/dashboard")}
       />
     </div>
   );

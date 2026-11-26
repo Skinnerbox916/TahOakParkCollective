@@ -61,6 +61,7 @@ src/app/api/
 | `src/lib/category-helpers.ts` | Category reads; public counts include only ACTIVE entities |
 | `src/lib/search-entities.ts` | Free-text listing search: every word must match the name or description (English or Spanish) or a category or tag name, ignoring case and accents |
 | `src/lib/entityDisplayConfig.ts` | Which profile sections show per entity type, and `displaySettings` (per-field hide/show) |
+| `src/components/listing/` | The one listing form (`ListingEditor`): admin and owner, create, edit, and review (an admin editing a pending proposal). `values.ts` maps it to and from the API; `saveListing.ts` is its only submit path |
 | `src/lib/entities/` | **Entity write service.** The only code that writes Entity/EntityTag rows: `proposeNewEntity`, `proposeUpdate`, `approveApproval`, `rejectApproval`, `rebaseApproval`, `deleteEntity` |
 | `src/lib/ai/` | AI-powered entity research and update suggestions (OpenAI) |
 

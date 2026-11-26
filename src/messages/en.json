@@ -904,81 +904,6 @@
       },
       "notVerified": "Not verified",
       "never": "Never"
-    },
-    "entityForm": {
-      "fields": {
-        "name": "Entity Name *",
-        "entityType": "Entity Type *",
-        "category": "Category",
-        "categories": "Categories",
-        "tags": "Tags",
-        "address": "Address",
-        "phone": "Phone",
-        "website": "Website"
-      },
-      "placeholders": {
-        "name": "Enter entity name",
-        "selectCategory": "Select a category",
-        "description": "Describe the entity...",
-        "address": "Street address",
-        "phone": "(555) 123-4567",
-        "website": "https://example.com"
-      },
-      "sections": {
-        "about": "About",
-        "locationContact": "Location & Contact",
-        "hours": "Business Hours",
-        "hoursEvent": "Event Schedule",
-        "hoursEventDescription": "When does this recurring event take place?",
-        "hoursServiceProvider": "Availability",
-        "hoursServiceProviderDescription": "When are you typically available for appointments?",
-        "onlinePresence": "Online Presence",
-        "media": "Images",
-        "tags": "Tags",
-        "tagsDescription": "Identity tags apply immediately. Friendliness tags require admin verification."
-      },
-      "hints": {
-        "commerce": {
-          "address": "Physical storefront location"
-        },
-        "civic": {
-          "address": "Office address (optional)"
-        },
-        "publicSpace": {
-          "address": "Location is important for visitors to find you"
-        },
-        "event": {
-          "address": "Event venue (if fixed location)",
-          "hours": "Enter the typical event schedule"
-        },
-        "serviceProvider": {
-          "address": "Optional - many service providers are home-based",
-          "hours": "Enter your typical availability"
-        },
-        "noCategories": "No categories available for {type}",
-        "addMediaTagsLater": "You can add images and tags after creating the entity.",
-        "addMediaLater": "You can add images after creating the entity."
-      },
-      "validation": {
-        "nameRequired": "Entity name is required",
-        "invalidWebsite": "Must include a valid domain with extension (e.g., example.com, www.example.org)",
-        "invalidSocialUrl": "Must include a valid domain with extension for {platform}",
-        "invalidPhone": "Please enter a valid phone number",
-        "invalidHours": "Invalid business hours format",
-        "fixErrors": "Please fix the errors above"
-      },
-      "success": {
-        "created": "Entity created successfully!",
-        "updated": "Entity updated successfully!"
-      },
-      "buttons": {
-        "create": "Create Entity",
-        "update": "Update Entity",
-        "creating": "Creating...",
-        "updating": "Updating...",
-        "cancel": "Cancel"
-      },
-      "loading": "Updating..."
     }
   },
   "portal": {
@@ -1017,81 +942,6 @@
       "errorLoading": "Failed to load entity",
       "notFound": "Entity not found",
       "back": "← Back to Dashboard"
-    },
-    "form": {
-      "fields": {
-        "name": "Entity Name *",
-        "entityType": "Entity Type *",
-        "category": "Category",
-        "address": "Address",
-        "phone": "Phone",
-        "website": "Website"
-      },
-      "placeholders": {
-        "name": "Enter entity name",
-        "selectCategory": "Select a category",
-        "description": "Describe the entity...",
-        "address": "Street address",
-        "phone": "(555) 123-4567",
-        "website": "https://example.com"
-      },
-      "sections": {
-        "about": "About",
-        "locationContact": "Location & Contact",
-        "hours": "Business Hours",
-        "hoursEvent": "Event Schedule",
-        "hoursEventDescription": "When does this recurring event take place?",
-        "hoursServiceProvider": "Availability",
-        "hoursServiceProviderDescription": "When are you typically available for appointments?",
-        "onlinePresence": "Online Presence",
-        "media": "Images",
-        "tags": "Tags",
-        "tagsDescription": "Identity tags apply immediately. Friendliness tags require admin verification."
-      },
-      "hints": {
-        "commerce": {
-          "address": "Physical storefront location"
-        },
-        "civic": {
-          "address": "Office address (optional)"
-        },
-        "publicSpace": {
-          "address": "Location is important for visitors to find you"
-        },
-        "event": {
-          "address": "Event venue (if fixed location)",
-          "hours": "Enter the typical event schedule"
-        },
-        "serviceProvider": {
-          "address": "Optional - many service providers are home-based",
-          "hours": "Enter your typical availability"
-        },
-        "noCategories": "No categories available for {type}",
-        "addMediaTagsLater": "You can add images and tags after creating the entity.",
-        "addMediaLater": "You can add images after creating the entity."
-      },
-      "validation": {
-        "nameRequired": "Entity name is required",
-        "invalidWebsite": "Must include a valid domain with extension (e.g., example.com, www.example.org)",
-        "invalidSocialUrl": "Must include a valid domain with extension for {platform}",
-        "invalidPhone": "Please enter a valid phone number",
-        "invalidHours": "Invalid business hours format",
-        "fixErrors": "Please fix the errors above"
-      },
-      "success": {
-        "created": "Entity created successfully!",
-        "updated": "Entity updated successfully!",
-        "submittedForReview": "Thanks! Your listing was submitted. Once our team has reviewed it, you can publish it from your dashboard."
-      },
-      "buttons": {
-        "create": "Create Entity",
-        "update": "Update Entity",
-        "creating": "Creating...",
-        "updating": "Updating...",
-        "cancel": "Cancel"
-      },
-      "loading": "Updating...",
-      "afterReview": "After our team reviews it, you'll publish it from your dashboard. It isn't public until you do."
     }
   },
   "account": {
@@ -1192,5 +1042,125 @@
   "meta": {
     "title": "TahOak Park Collective",
     "description": "A directory of local businesses, organizations and public spaces in Tahoe Park, Oak Park, Elmhurst, Colonial Park and Curtis Park, Sacramento."
+  },
+  "listingEditor": {
+    "sections": {
+      "basics": "Basics",
+      "about": "About",
+      "locationContact": "Location & contact",
+      "hours": "Business hours",
+      "hoursEvent": "Event schedule",
+      "hoursEventDescription": "When does this recurring event take place?",
+      "hoursServiceProvider": "Availability",
+      "hoursServiceProviderDescription": "When are you usually available for appointments?",
+      "online": "Online",
+      "tags": "Tags",
+      "tagsDescription": "Our team checks friendliness tags before they show.",
+      "admin": "Admin"
+    },
+    "fields": {
+      "name": "Name",
+      "nameEs": "Name in Spanish",
+      "entityType": "Type",
+      "categories": "Categories",
+      "description": "Description (English)",
+      "descriptionEs": "Description (Spanish)",
+      "address": "Address",
+      "phone": "Phone",
+      "website": "Website",
+      "status": "Status",
+      "owner": "First owner",
+      "slug": "Web address"
+    },
+    "placeholders": {
+      "name": "e.g. Corner Cafe",
+      "description": "What should neighbors know about this place?",
+      "descriptionEs": "¿Qué deben saber los vecinos sobre este lugar?",
+      "address": "Street address",
+      "phone": "(916) 555-0100",
+      "website": "https://example.com",
+      "social": "https://…"
+    },
+    "hints": {
+      "nameEs": "Only if the name is different in Spanish.",
+      "descriptionEs": "Leave it blank and we'll translate the English description automatically.",
+      "categories": "Pick at least one.",
+      "noCategories": "No categories fit this type yet.",
+      "identityOwnerOnly": "Only the listing's owner can add these.",
+      "draftNote": "Private draft. It goes public only when its owner publishes it.",
+      "publishedNote": "Published by its owner.",
+      "noOwner": "No owner yet",
+      "slug": "The part after /entities/ in the listing's address.",
+      "showOnProfile": "Show on profile",
+      "mapPin": "Show the map",
+      "noMapPin": "No map pin yet: it's set from the address when you save.",
+      "address": {
+        "COMMERCE": "Physical storefront location",
+        "CIVIC": "Office address (optional)",
+        "PUBLIC_SPACE": "Helps visitors find it",
+        "EVENT": "Venue, if it's always in the same place",
+        "SERVICE_PROVIDER": "Optional: many service providers work from home",
+        "NON_PROFIT": "Where people can find you, if anywhere"
+      }
+    },
+    "tagGroups": {
+      "IDENTITY": "Identity",
+      "FRIENDLINESS": "Friendliness",
+      "AMENITY": "Amenities"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Hidden"
+    },
+    "buttons": {
+      "create": "Create listing",
+      "submit": "Submit for review",
+      "save": "Save changes",
+      "saveProposal": "Save proposal",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "editProposal": "Edit proposal"
+    },
+    "notices": {
+      "created": "Listing created.",
+      "draftCreated": "Draft created. Share it with its owner next.",
+      "submittedForReview": "Thanks! Your listing was submitted. Once our team has reviewed it, you can publish it from your dashboard.",
+      "editsSubmitted": "Thanks! Your changes were sent for review.",
+      "saved": "Saved.",
+      "proposalSaved": "Proposal updated."
+    },
+    "errors": {
+      "fixErrors": "Please fix the highlighted fields.",
+      "generic": "Something went wrong. Please try again.",
+      "stale_version": "Someone changed this listing since you opened it. Reload the page to see the latest version, then make your changes again.",
+      "conflict": "The listing changed since this was proposed, in the fields marked above. Edit the proposal so it fits the current listing, then approve.",
+      "no_changes": "Nothing changed.",
+      "consent_required": "Only its owner can make this listing public.",
+      "already_processed": "This proposal was already approved or rejected.",
+      "forbidden": "You can't edit this listing.",
+      "not_found": "This listing no longer exists.",
+      "rate_limited": "Too many attempts. Please try again later."
+    },
+    "validation": {
+      "nameRequired": "Enter a name.",
+      "invalidWebsite": "Enter a full web address, like example.com.",
+      "invalidSocialUrl": "Enter a full web address for {platform}.",
+      "invalidPhone": "Enter a valid phone number.",
+      "invalidHours": "Check the hours: each open day needs an opening and closing time.",
+      "adminOnly": "Only an admin can change this.",
+      "invalidCoordinates": "The map location isn't valid.",
+      "invalidEntityType": "Choose a type.",
+      "invalidStatus": "Choose a status.",
+      "invalidDate": "Enter a valid date.",
+      "slugRequired": "Enter a web address.",
+      "categoryRequired": "Pick at least one category.",
+      "unknownCategory": "One of the categories no longer exists. Reload and pick again.",
+      "unknownTag": "One of the tags no longer exists. Reload and pick again.",
+      "identityTagsOwnerOnly": "Only the listing's owner can add identity tags."
+    },
+    "summary": {
+      "title": "Proposed listing",
+      "none": "—"
+    }
   }
 }

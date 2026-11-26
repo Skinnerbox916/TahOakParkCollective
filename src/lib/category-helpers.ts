@@ -54,16 +54,12 @@ export async function fetchCategories(options: CategoryQueryOptions = {}) {
     where.featured = true;
   }
 
+  // An entityType filter already implies a non-empty list; don't let the
+  // second condition overwrite the first.
   if (entityType) {
-    where.entityTypes = {
-      has: entityType,
-    };
-  }
-
-  if (requireEntityTypes) {
-    where.entityTypes = {
-      isEmpty: false,
-    };
+    where.entityTypes = { has: entityType };
+  } else if (requireEntityTypes) {
+    where.entityTypes = { isEmpty: false };
   }
 
   return prisma.category.findMany({

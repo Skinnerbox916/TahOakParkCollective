@@ -9,7 +9,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 // Admin-only for now. Uploads publish immediately, so owner uploads need to go
 // through the approval workflow first. No page calls this route yet: the
-// current entity editor (EntityPreview) has no image section.
+// listing editor (src/components/listing) has no image section yet.
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

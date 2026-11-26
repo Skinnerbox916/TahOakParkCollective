@@ -155,9 +155,11 @@ export function validateEntityInput(
       return { success: true, data: result.data };
     }
 
+    // Keyed by the full path ("socialMedia.facebook", "hours.monday") so the
+    // form can show each error on its own input.
     const fieldErrors: Record<string, string> = {};
     for (const issue of result.error.issues) {
-      const field = issue.path[0]?.toString() || "form";
+      const field = issue.path.map(String).join(".") || "form";
       if (!fieldErrors[field]) {
         fieldErrors[field] = issue.message || "validation.fixErrors";
       }
